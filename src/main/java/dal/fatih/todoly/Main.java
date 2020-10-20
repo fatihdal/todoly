@@ -17,31 +17,25 @@ public class Main {
                 "q- Qit from Todoly");
         System.out.println("Transactions : \n" + transactions);
 
-        while (true){
+        while (true) {
 
             System.out.println("Please select the action you want to do");
-            String transaction =scn.nextLine();
+            String transaction = scn.nextLine();
 
-            if (transaction.equals("q")){
+            if (transaction.equals("q")) {
                 System.out.println("Exiting todoly");
                 break;
-            }
-
-            else if (transaction.equals("1")){
+            } else if (transaction.equals("1")) {
                 System.out.println("This option is not supported yet");
-            }
-            else if (transaction.equals("2")){
+            } else if (transaction.equals("2")) {
                 System.out.println("This option is not supported yet");
-            }
-            else if (transaction.equals("3")){
+            } else if (transaction.equals("3")) {
                 System.out.println("This option is not supported yet");
-            }
-            else if (transaction.equals("4")){
+            } else if (transaction.equals("4")) {
                 System.out.println("This option is not supported yet");
-            }
-            else if (transaction.equals("5")){
+            } else if (transaction.equals("5")) {
                 System.out.println("This option is not supported yet");
-            }else {
+            } else {
                 System.out.println("invalid input");
             }
         }
