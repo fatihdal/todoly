@@ -55,7 +55,7 @@ public class Task {
     @Override
     public String toString() {
         return "Id='" + id + '\'' +
-                ", Ditle='" + title + '\'' +
+                ", Title='" + title + '\'' +
                 ", Description='" + description + '\'' +
                 ", Duedate=" + dueDate;
     }
