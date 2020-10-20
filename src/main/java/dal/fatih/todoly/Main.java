@@ -1,8 +1,57 @@
 package dal.fatih.todoly;
 
+import java.util.Scanner;
+
 public class Main {
 
+
     public static void main(String[] args) {
+        Scanner scn = new Scanner(System.in);
+        System.out.println("Welcome to todoly");
+        System.out.println("------------------------------------");
+        String transactions = ("1- Create new task\n" +
+                "2- All tasks list\n" +
+                "3- Task details\n" +
+                "4- Delete Task\n" +
+                "5- List between two dates\n" +
+                "q- Qit from Todoly");
+        System.out.println("Transactions : \n" + transactions);
+
+        while (true){
+
+            System.out.println("Please select the action you want to do");
+            String transaction =scn.nextLine();
+
+            if (transaction.equals("q")){
+                System.out.println("Exiting todoly");
+                break;
+            }
+
+            else if (transaction.equals("1")){
+                System.out.println("Not yet active");
+            }
+            else if (transaction.equals("2")){
+                System.out.println("Not yet active");
+            }
+            else if (transaction.equals("3")){
+                System.out.println("Not yet active");
+            }
+            else if (transaction.equals("4")){
+                System.out.println("Not yet active");
+            }
+            else if (transaction.equals("5")){
+                System.out.println("Not yet active");
+            }else {
+                System.out.println("invalid input");
+            }
+
+
+
+
+
+
+        }
+
     }
 }
 
