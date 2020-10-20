@@ -28,28 +28,22 @@ public class Main {
             }
 
             else if (transaction.equals("1")){
-                System.out.println("Not yet active");
+                System.out.println("This option is not supported yet");
             }
             else if (transaction.equals("2")){
-                System.out.println("Not yet active");
+                System.out.println("This option is not supported yet");
             }
             else if (transaction.equals("3")){
-                System.out.println("Not yet active");
+                System.out.println("This option is not supported yet");
             }
             else if (transaction.equals("4")){
-                System.out.println("Not yet active");
+                System.out.println("This option is not supported yet");
             }
             else if (transaction.equals("5")){
-                System.out.println("Not yet active");
+                System.out.println("This option is not supported yet");
             }else {
                 System.out.println("invalid input");
             }
-
-
-
-
-
-
         }
 
     }
