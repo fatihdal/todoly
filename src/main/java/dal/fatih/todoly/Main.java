@@ -75,7 +75,7 @@ public class Main {
                 }
 
             } else if (transaction.equals("2")) {
-                System.out.println("invalid input");
+                System.out.println("This option is not supported yet");
             } else if (transaction.equals("3")) {
                 System.out.println("This option is not supported yet");
             } else if (transaction.equals("4")) {
