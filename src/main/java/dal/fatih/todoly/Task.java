@@ -2,23 +2,23 @@ package dal.fatih.todoly;
 
 import java.util.Date;
 
-public class TaskConstract {
+public class Task {
 
     private String id;
     private String title;
     private String description;
-    private Date date;
+    private Date dueDate;
 
-    public TaskConstract(String title,String description, Date date) {
-        this.id = id;
+    public Task(String title, String description, Date dueDate) {
+
         this.title = title;
         this.description = description;
-        this.date = date;
+        this.dueDate = dueDate;
     }
 
-    public TaskConstract(String title, Date date) {
+    public Task(String title, Date dueDate) {
         this.title = title;
-        this.date = date;
+        this.dueDate = dueDate;
 
     }
 
@@ -45,19 +45,19 @@ public class TaskConstract {
     }
 
     public Date getDate() {
-        return date;
+        return dueDate;
     }
 
     public void setDate(Date date) {
-        this.date = date;
+        this.dueDate = date;
     }
 
     @Override
     public String toString() {
-        return "id='" + id + '\'' +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", date=" + date;
+        return "Id='" + id + '\'' +
+                ", Title='" + title + '\'' +
+                ", Description='" + description + '\'' +
+                ", Duedate=" + dueDate;
     }
 }
 
