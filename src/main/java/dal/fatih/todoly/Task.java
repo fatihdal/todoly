@@ -1,6 +1,7 @@
 package dal.fatih.todoly;
 
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Task {
 
@@ -8,9 +9,11 @@ public class Task {
     private String title;
     private String description;
     private Date dueDate;
+    private static final AtomicInteger idGenerator = new AtomicInteger(1);
 
     public Task(String title, String description, Date dueDate) {
 
+        id = String.valueOf(idGenerator.getAndIncrement());
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
@@ -54,17 +57,9 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Id='" + id + '\'' +
-                ", Title='" + title + '\'' +
-                ", Description='" + description + '\'' +
-                ", Duedate=" + dueDate;
+        return "\nID =" + id +
+                "\nTITLE =" + title +
+                "\nDESCRIPTION =" + description +
+                "\nDATE = " + dueDate;
     }
 }
-
-
-/*private static long idCounter = 0;
-
-    public static synchronized String createID()
-    {
-        return String.valueOf(idCounter++);
-    }*/
