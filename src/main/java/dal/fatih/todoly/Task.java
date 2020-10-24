@@ -60,6 +60,6 @@ public class Task {
         return "\nID =" + id +
                 "\nTITLE =" + title +
                 "\nDESCRIPTION =" + description +
-                "\nDATE = " + dueDate;
+                "\nDUE DATE = " + dueDate;
     }
 }
