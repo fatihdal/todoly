@@ -85,8 +85,10 @@ public class Main {
                 handleCreateTask();
 
             } else if (transaction.equals("2")) {
-                //System.out.println("This option is not supported yet");
-                System.out.println(tasks);
+                for (Task task : tasks) {
+                    System.out.println(task.getId() + " " + task.getTitle());
+                    System.out.println("-----------------------");
+                }
             } else if (transaction.equals("3")) {
                 System.out.println("This option is not supported yet");
             } else if (transaction.equals("4")) {
