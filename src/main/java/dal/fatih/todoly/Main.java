@@ -39,10 +39,17 @@ public class Main {
         }
         return handleCreateTask();
     }
+
     public static Date convertDate(String date) throws ParseException {
         DateFormat parser = new SimpleDateFormat("dd/MM/yyyy");
         Date date1 = parser.parse(date);
         return date1;
+    }
+
+    public static void listAll() {
+        for (Task task : tasks) {
+            System.out.println(task.getId() + " " + task.getTitle());
+        }
     }
 
     static Scanner scn = new Scanner(System.in);
@@ -85,10 +92,7 @@ public class Main {
                 handleCreateTask();
 
             } else if (transaction.equals("2")) {
-                for (Task task : tasks) {
-                    System.out.println(task.getId() + " " + task.getTitle());
-                    System.out.println("-----------------------");
-                }
+                listAll();
             } else if (transaction.equals("3")) {
                 System.out.println("This option is not supported yet");
             } else if (transaction.equals("4")) {
