@@ -21,11 +21,12 @@ public class Main {
         String date = scn.nextLine();
 
         try {
-            Date date1 = new SimpleDateFormat("dd/MM/yyyy").parse(date);
+            DateFormat parser = new SimpleDateFormat("dd/MM/yyyy");
+            Date date1 = parser.parse(date);
             if (title.isEmpty()) {
                 System.out.println("fill required fields");
 
-            } else if (convertDate(date).before(new Date())) {
+            } else if (date1.before(new Date())) {
                 System.out.println("The given date can not be older than now");
 
             } else {
@@ -38,12 +39,6 @@ public class Main {
             System.out.println("Incorrect date format");
         }
         return handleCreateTask();
-    }
-
-    public static Date convertDate(String date) throws ParseException {
-        DateFormat parser = new SimpleDateFormat("dd/MM/yyyy");
-        Date date1 = parser.parse(date);
-        return date1;
     }
 
     public static void listAllTasks() {
