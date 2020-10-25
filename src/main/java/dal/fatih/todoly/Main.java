@@ -47,8 +47,10 @@ public class Main {
     }
 
     public static void listAllTasks() {
+        DateFormat formatter1 = new SimpleDateFormat("dd.MM.yyyy");
         for (Task task : tasks) {
-            System.out.println(task.getId() + " " + task.getTitle());
+            System.out.println("ID: " + task.getId() + " TITLE: " + task.getTitle() +
+                    " DUE DATE: " + formatter1.format(task.getDate()));
         }
     }
 
