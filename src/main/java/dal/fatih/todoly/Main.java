@@ -18,18 +18,19 @@ public class Main {
         System.out.print("Description(Optional): ");
         String description = scn.nextLine();
         System.out.print("Due Date dd/MM/yyyy (*): ");
-        String date = scn.nextLine();
+        String dueDateInput = scn.nextLine();
 
         try {
-            Date date1 = new SimpleDateFormat("dd/MM/yyyy").parse(date);
+            DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
+            Date dueDate = dueDateParser.parse(dueDateInput);
             if (title.isEmpty()) {
                 System.out.println("fill required fields");
 
-            } else if (convertDate(date).before(new Date())) {
+            } else if (dueDate.before(new Date())) {
                 System.out.println("The given date can not be older than now");
 
             } else {
-                Task task = new Task(title, description, date1);
+                Task task = new Task(title, description, dueDate);
                 tasks.add(task);
                 System.out.println(task.getTitle() + " titled task added");
                 return task;
@@ -39,16 +40,19 @@ public class Main {
         }
         return handleCreateTask();
     }
-    public static Date convertDate(String date) throws ParseException {
-        DateFormat parser = new SimpleDateFormat("dd/MM/yyyy");
-        Date date1 = parser.parse(date);
-        return date1;
+
+    public static void listAllTasks() {
+        DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+        for (Task task : tasks) {
+            System.out.println("ID: " + task.getId() + " TITLE: " + task.getTitle() +
+                    " DUE DATE: " + .format(task.getDate()));
+        }
     }
 
     static Scanner scn = new Scanner(System.in);
     static ArrayList<Task> tasks = new ArrayList<>();
 
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args){
 
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
@@ -85,8 +89,7 @@ public class Main {
                 handleCreateTask();
 
             } else if (transaction.equals("2")) {
-                //System.out.println("This option is not supported yet");
-                System.out.println(tasks);
+                listAllTasks();
             } else if (transaction.equals("3")) {
                 System.out.println("This option is not supported yet");
             } else if (transaction.equals("4")) {
