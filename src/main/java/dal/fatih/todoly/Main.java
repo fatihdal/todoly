@@ -18,19 +18,19 @@ public class Main {
         System.out.print("Description(Optional): ");
         String description = scn.nextLine();
         System.out.print("Due Date dd/MM/yyyy (*): ");
-        String date = scn.nextLine();
+        String dueDateInput = scn.nextLine();
 
         try {
-            DateFormat parser = new SimpleDateFormat("dd/MM/yyyy");
-            Date date1 = parser.parse(date);
+            DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
+            Date dueDate = dueDateParser.parse(dueDateInput);
             if (title.isEmpty()) {
                 System.out.println("fill required fields");
 
-            } else if (date1.before(new Date())) {
+            } else if (dueDate.before(new Date())) {
                 System.out.println("The given date can not be older than now");
 
             } else {
-                Task task = new Task(title, description, date1);
+                Task task = new Task(title, description, dueDate);
                 tasks.add(task);
                 System.out.println(task.getTitle() + " titled task added");
                 return task;
