@@ -40,7 +40,6 @@ public class Main {
         }
         return handleCreateTask();
     }
-
     public static void listAllTasks() {
         DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
         for (Task task : tasks) {
@@ -48,11 +47,28 @@ public class Main {
                     " DUE DATE: " + dueDateFormat.format(task.getDate()));
         }
     }
+    public static void showTaskDetails(){
+        DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+        System.out.println("Task Id :");
+        String taskId = scn.nextLine();
+        boolean isThere = false;
+        for (Task task : tasks) {
+            if (task.getId().equals(taskId)) {
+                System.out.println("ID: " + task.getId() + "\nTITLE: " + task.getTitle() +
+                        "\nDESCRIPTION: " + task.getDescription() +
+                        "\nDUE DATE: " + dueDateFormat.format(task.getDate()));
+                isThere = true;
+            }
+        }
+        if (isThere == false) {
+            System.out.println("No task found in this id");
+        }
+    }
 
     static Scanner scn = new Scanner(System.in);
     static ArrayList<Task> tasks = new ArrayList<>();
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
@@ -87,11 +103,10 @@ public class Main {
                 loopCounter = 0;
             } else if (transaction.equals("1")) {
                 handleCreateTask();
-
             } else if (transaction.equals("2")) {
                 listAllTasks();
             } else if (transaction.equals("3")) {
-                System.out.println("This option is not supported yet");
+               showTaskDetails();
             } else if (transaction.equals("4")) {
                 System.out.println("This option is not supported yet");
             } else if (transaction.equals("5")) {
