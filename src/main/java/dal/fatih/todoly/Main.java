@@ -42,17 +42,17 @@ public class Main {
     }
 
     public static void listAllTasks() {
-        DateFormat formatter1 = new SimpleDateFormat("dd.MM.yyyy");
+        DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
         for (Task task : tasks) {
             System.out.println("ID: " + task.getId() + " TITLE: " + task.getTitle() +
-                    " DUE DATE: " + formatter1.format(task.getDate()));
+                    " DUE DATE: " + .format(task.getDate()));
         }
     }
 
     static Scanner scn = new Scanner(System.in);
     static ArrayList<Task> tasks = new ArrayList<>();
 
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args){
 
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
