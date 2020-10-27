@@ -45,7 +45,7 @@ public class Main {
         DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
         for (Task task : tasks) {
             System.out.println("ID: " + task.getId() + " TITLE: " + task.getTitle() +
-                    " DUE DATE: " + .format(task.getDate()));
+                    " DUE DATE: " + dueDateFormat.format(task.getDate()));
         }
     }
 
