@@ -48,9 +48,13 @@ public class Main {
     }
 
     public static void listAllTasks() {
-        for (Task task : tasks) {
-            System.out.println("ID: " + task.getId() + " TITLE: " + task.getTitle() +
-                    " DUE DATE: " + dateFormatter(task.getDate()));
+        if (tasks.isEmpty()) {
+            System.out.println("Task list is empty");
+        } else {
+            for (Task task : tasks) {
+                System.out.println("ID: " + task.getId() + " TITLE: " + task.getTitle() +
+                        " DUE DATE: " + dateFormatter(task.getDate()));
+            }
         }
     }
 
