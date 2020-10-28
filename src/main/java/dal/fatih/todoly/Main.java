@@ -10,6 +10,12 @@ import java.util.Scanner;
 
 public class Main {
 
+    public static String dateFormatter(Date date) {
+        DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+        String resultDate = dueDateFormat.format(date);
+        return resultDate;
+    }
+
     public static Task handleCreateTask() {
 
         System.out.println("(*)  Can't be empty");
@@ -40,15 +46,15 @@ public class Main {
         }
         return handleCreateTask();
     }
+
     public static void listAllTasks() {
-        DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
         for (Task task : tasks) {
             System.out.println("ID: " + task.getId() + " TITLE: " + task.getTitle() +
-                    " DUE DATE: " + dueDateFormat.format(task.getDate()));
+                    " DUE DATE: " + dateFormatter(task.getDate()));
         }
     }
+
     public static void showTaskDetails() {
-        DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
         if (tasks.isEmpty()) {
             System.out.println("Task list is empty");
         } else {
@@ -63,7 +69,7 @@ public class Main {
             if (task != null) {
                 System.out.println("ID: " + task.getId() + "\nTITLE: " + task.getTitle() +
                         "\nDESCRIPTION: " + task.getDescription() +
-                        "\nDUE DATE: " + dueDateFormat.format(task.getDate()));
+                        "\nDUE DATE: " + dateFormatter(task.getDate()));
             } else {
                 System.out.println("Task not found");
             }
@@ -111,7 +117,7 @@ public class Main {
             } else if (transaction.equals("2")) {
                 listAllTasks();
             } else if (transaction.equals("3")) {
-               showTaskDetails();
+                showTaskDetails();
             } else if (transaction.equals("4")) {
                 System.out.println("This option is not supported yet");
             } else if (transaction.equals("5")) {
