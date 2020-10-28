@@ -47,21 +47,26 @@ public class Main {
                     " DUE DATE: " + dueDateFormat.format(task.getDate()));
         }
     }
-    public static void showTaskDetails(){
+    public static void showTaskDetails() {
         DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
-        System.out.println("Task Id :");
-        String taskId = scn.nextLine();
-        boolean isThere = false;
-        for (Task task : tasks) {
-            if (task.getId().equals(taskId)) {
+        if (tasks.isEmpty()) {
+            System.out.println("Task list is empty");
+        } else {
+            System.out.println("Task Id :");
+            String taskId = scn.nextLine();
+            Task task = null;
+            for (Task task_ : tasks) {
+                if (task_.getId().equals(taskId)) {
+                    task = task_;
+                }
+            }
+            if (task != null) {
                 System.out.println("ID: " + task.getId() + "\nTITLE: " + task.getTitle() +
                         "\nDESCRIPTION: " + task.getDescription() +
                         "\nDUE DATE: " + dueDateFormat.format(task.getDate()));
-                isThere = true;
+            } else {
+                System.out.println("Task not found");
             }
-        }
-        if (isThere == false) {
-            System.out.println("No task found in this id");
         }
     }
 
