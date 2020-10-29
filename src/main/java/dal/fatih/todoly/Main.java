@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-
 public class Main {
 
    /* public static String dateFormatter(Date date) {
@@ -35,7 +34,8 @@ public class Main {
                 System.out.println("The given date can not be older than now");
 
             } else {
-                Task task = new Task(title, description, dueDate);
+                UUID uniqId = UUID.randomUUID();
+                Task task = new Task(uniqId, title, description, dueDate);
                 tasks.put(idGenerator.getAndIncrement(), task);
                 System.out.println(task.getTitle() + " titled task added");
                 return task;
@@ -50,7 +50,8 @@ public class Main {
             System.out.println("Task list is empty");
         } else {
             for (Map.Entry task : tasks.entrySet()) {
-                System.out.println("ID: " + task.getKey() + task.getValue());
+                System.out.println("KEY: " + task.getKey() + task.getValue());
+                System.out.println("----------------------------------");
             }
         }
     }
@@ -60,7 +61,7 @@ public class Main {
         String task = null;
         for (Map.Entry task_ : tasks.entrySet()) {
             if (task_.getKey().toString().equals(taskId)) {
-                task = "ID= " + task_.getKey() + task_.getValue().toString();
+                task = "KEY : " + task_.getKey() + task_.getValue().toString();
             }
         }
         if (task == null) {

@@ -1,25 +1,34 @@
 package dal.fatih.todoly;
 
 import java.util.Date;
+import java.util.UUID;
 
 public class Task {
 
+    private UUID id;
     private String title;
     private String description;
     private Date dueDate;
 
-    public Task(String title, String description, Date dueDate) {
+    public Task(UUID id, String title, String description, Date dueDate) {
 
+        this.id = id;
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
     }
 
-    public Task(String title, Date dueDate) {
+    public Task(int id, String title, Date dueDate) {
         this.title = title;
         this.dueDate = dueDate;
 
     }
+
+
+    public UUID getId() {
+        return id;
+    }
+
 
     public String getTitle() {
         return title;
@@ -47,8 +56,9 @@ public class Task {
 
     @Override
     public String toString() {
-        return "\nTITLE = " + title +
-                "\nDESCRIPTION =" + description +
-                "\nDUE DATE = " + dueDate;
+        return "\nID : " + id +
+                "\nTITLE : " + title +
+                "\nDESCRIPTION : " + description +
+                "\nDUE DATE : " + dueDate;
     }
 }
