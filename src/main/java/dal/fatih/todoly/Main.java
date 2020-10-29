@@ -3,7 +3,7 @@ package dal.fatih.todoly;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+
 
 
 public class Main {
@@ -36,7 +36,7 @@ public class Main {
             } else {
                 UUID uniqId = UUID.randomUUID();
                 Task task = new Task(uniqId, title, description, dueDate);
-                tasks.put(idGenerator.getAndIncrement(), task);
+                tasks.put(uniqId.toString() , task);
                 System.out.println(task.getTitle() + " titled task added");
                 return task;
             }
@@ -50,25 +50,24 @@ public class Main {
             System.out.println("Task list is empty");
         } else {
             for (Map.Entry task : tasks.entrySet()) {
-                System.out.println("KEY: " + task.getKey() + task.getValue());
+                System.out.println(task.getValue());
                 System.out.println("----------------------------------");
             }
         }
     }
     public static void showTaskDetails() {
         System.out.print("Task Id :");
-        int taskId = scn.nextInt();
-        scn.nextLine();
-        if (tasks.containsKey(taskId)) {
+        String taskId = scn.nextLine();
+        Task task=tasks.get(taskId);
+        if (task != null) {
             System.out.println(tasks.get(taskId));
         } else {
             System.out.println("Task not found");
         }
     }
-
+    
     static Scanner scn = new Scanner(System.in);
-    static AtomicInteger idGenerator = new AtomicInteger(1);
-    static Map<Integer, Task> tasks = new HashMap<Integer, Task>();
+    static Map<String, Task> tasks = new HashMap<String, Task>();
 
     public static void main(String[] args) {
 
