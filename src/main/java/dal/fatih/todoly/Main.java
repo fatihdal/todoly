@@ -1,20 +1,19 @@
 package dal.fatih.todoly;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Scanner;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 
 public class Main {
 
-    public static String dateFormatter(Date date) {
+   /* public static String dateFormatter(Date date) {
         DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
         String resultDate = dueDateFormat.format(date);
         return resultDate;
-    }
+    }*/
 
     public static Task handleCreateTask() {
 
@@ -37,7 +36,7 @@ public class Main {
 
             } else {
                 Task task = new Task(title, description, dueDate);
-                tasks.add(task);
+                tasks.put(idGenerator.getAndIncrement(), task);
                 System.out.println(task.getTitle() + " titled task added");
                 return task;
             }
@@ -46,48 +45,38 @@ public class Main {
         }
         return handleCreateTask();
     }
-
     public static void listAllTasks() {
         if (tasks.isEmpty()) {
             System.out.println("Task list is empty");
         } else {
-            for (Task task : tasks) {
-                System.out.println("ID: " + task.getId() + " TITLE: " + task.getTitle() +
-                        " DUE DATE: " + dateFormatter(task.getDate()));
+            for (Map.Entry task : tasks.entrySet()) {
+                System.out.println("ID: " + task.getKey() + task.getValue());
             }
         }
     }
-
     public static void showTaskDetails() {
-        if (tasks.isEmpty()) {
-            System.out.println("Task list is empty");
-        } else {
-            System.out.println("Task Id :");
-            String taskId = scn.nextLine();
-            Task task = null;
-            for (Task task_ : tasks) {
-                if (task_.getId().equals(taskId)) {
-                    task = task_;
-                }
-            }
-            if (task != null) {
-                System.out.println("ID: " + task.getId() + "\nTITLE: " + task.getTitle() +
-                        "\nDESCRIPTION: " + task.getDescription() +
-                        "\nDUE DATE: " + dateFormatter(task.getDate()));
-            } else {
-                System.out.println("Task not found");
+        System.out.print("Task Id :");
+        String taskId = scn.nextLine();
+        String task = null;
+        for (Map.Entry task_ : tasks.entrySet()) {
+            if (task_.getKey().toString().equals(taskId)) {
+                task = "ID= " + task_.getKey() + task_.getValue().toString();
             }
         }
+        if (task == null) {
+            System.out.println("Task not found");
+        } else
+            System.out.println(task);
     }
 
     static Scanner scn = new Scanner(System.in);
-    static ArrayList<Task> tasks = new ArrayList<>();
+    static AtomicInteger idGenerator = new AtomicInteger(1);
+    static Map<Integer, Task> tasks = new HashMap<Integer, Task>();
 
     public static void main(String[] args) {
 
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
-
         String transactions = ("1- Create new task\n" +
                 "2- All tasks list\n" +
                 "3- Task details\n" +
@@ -95,18 +84,15 @@ public class Main {
                 "5- List between two dates\n" +
                 "q- Qit from Todoly");
         System.out.println("Transactions : \n" + transactions);
-
-
         System.out.println("Please select the action you want to do");
         int loopCounter = 0;
         while (true) {
 
             if (loopCounter >= 1) {
                 System.out.println("To see the actions menu (t) ");
-
             }
             loopCounter++;
-
+            System.out.print("Choice: ");
             String transaction = scn.nextLine();
 
             if (transaction.equals("q")) {
