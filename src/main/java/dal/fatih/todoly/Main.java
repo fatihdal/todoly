@@ -57,17 +57,13 @@ public class Main {
     }
     public static void showTaskDetails() {
         System.out.print("Task Id :");
-        String taskId = scn.nextLine();
-        String task = null;
-        for (Map.Entry task_ : tasks.entrySet()) {
-            if (task_.getKey().toString().equals(taskId)) {
-                task = "KEY : " + task_.getKey() + task_.getValue().toString();
-            }
-        }
-        if (task == null) {
+        int taskId = scn.nextInt();
+        scn.nextLine();
+        if (tasks.containsKey(taskId)) {
+            System.out.println(tasks.get(taskId));
+        } else {
             System.out.println("Task not found");
-        } else
-            System.out.println(task);
+        }
     }
 
     static Scanner scn = new Scanner(System.in);
