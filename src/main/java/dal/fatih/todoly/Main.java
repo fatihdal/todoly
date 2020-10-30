@@ -65,6 +65,17 @@ public class Main {
             System.out.println("Task not found");
         }
     }
+    public static void deleteTask(){
+        System.out.print("Task Id :");
+        String taskId = scn.nextLine();
+        Task task=tasks.get(taskId);
+        if (task != null) {
+            tasks.remove(taskId);
+            System.out.println(task.getTitle() +"titled task deleted");
+        } else {
+            System.out.println("Task not found");
+        }
+    }
     
     static Scanner scn = new Scanner(System.in);
     static Map<String, Task> tasks = new HashMap<String, Task>();
@@ -105,7 +116,7 @@ public class Main {
             } else if (transaction.equals("3")) {
                 showTaskDetails();
             } else if (transaction.equals("4")) {
-                System.out.println("This option is not supported yet");
+                deleteTask();
             } else if (transaction.equals("5")) {
                 System.out.println("This option is not supported yet");
             } else {
