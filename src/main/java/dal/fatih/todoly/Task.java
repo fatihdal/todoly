@@ -1,32 +1,31 @@
 package dal.fatih.todoly;
 
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.UUID;
 
 public class Task {
 
-    private String id;
+    private UUID id;
     private String title;
     private String description;
     private Date dueDate;
-    private static final AtomicInteger idGenerator = new AtomicInteger(1);
 
-    public Task(String title, String description, Date dueDate) {
+    public Task(UUID id, String title, String description, Date dueDate) {
 
-        id = String.valueOf(idGenerator.getAndIncrement());
+        this.id = id;
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
     }
 
-    public Task(String title, Date dueDate) {
+    public Task(int id, String title, Date dueDate) {
         this.title = title;
         this.dueDate = dueDate;
 
     }
 
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -57,9 +56,9 @@ public class Task {
 
     @Override
     public String toString() {
-        return "\nID =" + id +
-                "\nTITLE =" + title +
-                "\nDESCRIPTION =" + description +
-                "\nDUE DATE = " + dueDate;
+        return "\nID : " + id +
+                "\nTITLE : " + title +
+                "\nDESCRIPTION : " + description +
+                "\nDUE DATE : " + dueDate;
     }
 }
