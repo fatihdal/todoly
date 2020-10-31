@@ -1,7 +1,6 @@
 package dal.fatih.todoly;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -13,10 +12,6 @@ public class Main {
          String resultDate = dueDateFormat.format(date);
          return resultDate;
      }*/
-    public static Date dateParser(String date) throws ParseException {
-        DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
-        return dueDateParser.parse(date);
-    }
 
     public static Task handleCreateTask() {
 
@@ -29,7 +24,7 @@ public class Main {
         String dueDateInput = scn.nextLine();
 
         try {
-            Date dueDate = dateParser(dueDateInput);
+            Date dueDate = dueDateParser.parse(dueDateInput);
             if (title.isEmpty()) {
                 System.out.println("fill required fields");
 
@@ -90,7 +85,7 @@ public class Main {
             List<Task> foundTask = new ArrayList<>();
             System.out.println("Last Date");
             String lastDateInput = scn.nextLine();
-            Date lastDate = dateParser(lastDateInput);
+            Date lastDate = dueDateParser.parse(lastDateInput);
 
             for (Task task : taskDate.values()) {
                 if (task.getDate().before(lastDate)) {
@@ -107,8 +102,9 @@ public class Main {
         }
     }
 
-    static Scanner scn = new Scanner(System.in);
-    static Map<String, Task> tasks = new HashMap<String, Task>();
+    private static Scanner scn = new Scanner(System.in);
+    private static Map<String, Task> tasks = new HashMap<String, Task>();
+    private static final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
 
     public static void main(String[] args) {
 
