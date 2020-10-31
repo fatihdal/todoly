@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
-
 public class Main {
 
    /* public static String dateFormatter(Date date) {
@@ -36,7 +35,7 @@ public class Main {
             } else {
                 UUID uniqId = UUID.randomUUID();
                 Task task = new Task(uniqId, title, description, dueDate);
-                tasks.put(uniqId.toString() , task);
+                tasks.put(uniqId.toString(), task);
                 System.out.println(task.getTitle() + " titled task added");
                 return task;
             }
@@ -45,6 +44,7 @@ public class Main {
         }
         return handleCreateTask();
     }
+
     public static void listAllTasks() {
         if (tasks.isEmpty()) {
             System.out.println("Task list is empty");
@@ -55,28 +55,54 @@ public class Main {
             }
         }
     }
+
     public static void showTaskDetails() {
         System.out.print("Task Id :");
         String taskId = scn.nextLine();
-        Task task=tasks.get(taskId);
+        Task task = tasks.get(taskId);
         if (task != null) {
             System.out.println(tasks.get(taskId));
         } else {
             System.out.println("Task not found");
         }
     }
-    public static void deleteTask(){
+
+    public static void deleteTask() {
         System.out.print("Task Id :");
         String taskId = scn.nextLine();
-        Task task=tasks.get(taskId);
+        Task task = tasks.get(taskId);
         if (task != null) {
             tasks.remove(taskId);
-            System.out.println(task.getTitle() +"titled task deleted");
+            System.out.println(task.getTitle() + "titled task deleted");
         } else {
             System.out.println("Task not found");
         }
     }
-    
+
+    public static void filterTask() {
+
+        try {
+            DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
+            ArrayList<Task> taskList = new ArrayList<>(tasks.values());
+            System.out.println("Last Date");
+            String lastDateInput = scn.nextLine();
+            Date lastDate = dueDateParser.parse(lastDateInput);
+
+            int none = 0;
+            for (Task task : taskList) {
+                if (task.getDate().before(lastDate)) {
+                    System.out.println(task);
+                    none++;
+                }
+            }
+            if (none == 0) {
+                System.out.println("No tasks found between these dates");
+            }
+        } catch (Exception e) {
+            System.out.println("Incorrect date format");
+        }
+    }
+
     static Scanner scn = new Scanner(System.in);
     static Map<String, Task> tasks = new HashMap<String, Task>();
 
@@ -118,7 +144,7 @@ public class Main {
             } else if (transaction.equals("4")) {
                 deleteTask();
             } else if (transaction.equals("5")) {
-                System.out.println("This option is not supported yet");
+                filterTask();
             } else {
                 System.out.println("invalid input");
             }
