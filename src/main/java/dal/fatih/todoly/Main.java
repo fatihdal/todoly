@@ -87,20 +87,20 @@ public class Main {
 
         try {
             Map<String, Task> taskDate = tasks;
-            Map<String, Task> foundTasks = new HashMap<>();
+            List<Task> foundTask = new ArrayList<>();
             System.out.println("Last Date");
             String lastDateInput = scn.nextLine();
             Date lastDate = dateParser(lastDateInput);
 
             for (Task task : taskDate.values()) {
                 if (task.getDate().before(lastDate)) {
-                    foundTasks.put(task.getId().toString(), task);
+                    foundTask.add(task);
                 }
             }
-            if (foundTasks.isEmpty()) {
+            if (foundTask.isEmpty()) {
                 System.out.println("No tasks found between these dates");
             } else {
-                System.out.println(foundTasks.values());
+                System.out.println(foundTask);
             }
         } catch (Exception e) {
             System.out.println("Incorrect date format");
