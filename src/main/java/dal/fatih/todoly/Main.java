@@ -8,14 +8,14 @@ import java.util.*;
 
 public class Main {
 
-   /* public static String dateFormatter(Date date) {
-        DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
-        String resultDate = dueDateFormat.format(date);
-        return resultDate;
-    }*/
-    public static Date dateParser (String date) throws ParseException {
+    /* public static String dateFormatter(Date date) {
+         DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+         String resultDate = dueDateFormat.format(date);
+         return resultDate;
+     }*/
+    public static Date dateParser(String date) throws ParseException {
         DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
-            return dueDateParser.parse(date);
+        return dueDateParser.parse(date);
     }
 
     public static Task handleCreateTask() {
@@ -86,20 +86,21 @@ public class Main {
     public static void filterTask() {
 
         try {
-            ArrayList<Task> taskList = new ArrayList<>(tasks.values());
+            Map<String, Task> taskDate = tasks;
+            Map<String, Task> foundTasks = new HashMap<>();
             System.out.println("Last Date");
             String lastDateInput = scn.nextLine();
             Date lastDate = dateParser(lastDateInput);
 
-            int none = 0;
-            for (Task task : taskList) {
+            for (Task task : taskDate.values()) {
                 if (task.getDate().before(lastDate)) {
-                    System.out.println(task);
-                    none++;
+                    foundTasks.put(task.getId().toString(), task);
                 }
             }
-            if (none == 0) {
+            if (foundTasks.isEmpty()) {
                 System.out.println("No tasks found between these dates");
+            } else {
+                System.out.println(foundTasks.values());
             }
         } catch (Exception e) {
             System.out.println("Incorrect date format");
