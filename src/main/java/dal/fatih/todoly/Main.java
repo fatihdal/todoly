@@ -6,12 +6,10 @@ import java.util.*;
 
 
 public class Main {
+    private static final Scanner scn = new Scanner(System.in);
+    private static final Map<String, Task> tasks = new HashMap<String, Task>();
+    private static final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
 
-    /* public static String dateFormatter(Date date) {
-         DateFormat dueDateFormat = new SimpleDateFormat("dd.MM.yyyy");
-         String resultDate = dueDateFormat.format(date);
-         return resultDate;
-     }*/
 
     public static Task handleCreateTask() {
 
@@ -72,7 +70,7 @@ public class Main {
         Task task = tasks.get(taskId);
         if (task != null) {
             tasks.remove(taskId);
-            System.out.println(task.getTitle() + "titled task deleted");
+            System.out.println(task.getTitle() + " titled task deleted");
         } else {
             System.out.println("Task not found");
         }
@@ -101,10 +99,6 @@ public class Main {
             System.out.println("Incorrect date format");
         }
     }
-
-    private static Scanner scn = new Scanner(System.in);
-    private static Map<String, Task> tasks = new HashMap<String, Task>();
-    private static final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
 
     public static void main(String[] args) {
 
