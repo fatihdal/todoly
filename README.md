@@ -2,13 +2,13 @@
  `Todoly` is a task organizer
 
 ## Usage
-1.Build <br/>
+### Build
 
 ```
-docker build -t <image name> .
+docker build -t todoly:latest .
 ```
-2.Run
+### Run
 ```
-docker run --rm -i --name <container name> -t <image name>
+docker run --rm -it --name todoly-app todoly:latest
 ```
 
