@@ -1,5 +1,6 @@
 package dal.fatih.todoly;
 
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -7,9 +8,11 @@ import java.util.*;
 
 public class Main {
     private static final Scanner scn = new Scanner(System.in);
-    private static final Map<String, Task> tasks = new HashMap<String, Task>();
+    private static Map<String, Task> tasks = new HashMap<String, Task>();
     private static final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
-
+    private static final String file = "Tasks.bin";
+    public static ObjectInputStream inputTask;
+    public static ObjectOutputStream outputTask;
 
     public static Task handleCreateTask() {
 
@@ -30,10 +33,14 @@ public class Main {
                 System.out.println("The given date can not be older than now");
 
             } else {
+
                 UUID uniqId = UUID.randomUUID();
                 Task task = new Task(uniqId, title, description, dueDate);
                 tasks.put(uniqId.toString(), task);
                 System.out.println(task.getTitle() + " titled task added");
+                outputTask = new ObjectOutputStream(new FileOutputStream(file));
+                outputTask.writeObject(tasks);
+                outputTask.close();
                 return task;
             }
         } catch (Exception e) {
@@ -43,42 +50,76 @@ public class Main {
     }
 
     public static void listAllTasks() {
-        if (tasks.isEmpty()) {
-            System.out.println("Task list is empty");
-        } else {
-            for (Map.Entry task : tasks.entrySet()) {
-                System.out.println(task.getValue());
-                System.out.println("----------------------------------");
+        try {
+            inputTask = new ObjectInputStream(new FileInputStream(file));
+            tasks = (HashMap) inputTask.readObject();
+            Set set = tasks.entrySet();
+            Iterator iterator = set.iterator();
+            while (iterator.hasNext()) {
+                Map.Entry task = (Map.Entry) iterator.next();
+
+                if (tasks.isEmpty()) {
+                    System.out.println("Task list is empty");
+                } else {
+                    System.out.println(task.getValue());
+                    System.out.println("----------------------------------");
+                }
             }
+        } catch (FileNotFoundException ex) {
+            System.out.println("Tasks file not found");
+        } catch (Exception e) {
+            System.out.println(e);
         }
     }
 
     public static void showTaskDetails() {
-        System.out.print("Task Id :");
-        String taskId = scn.nextLine();
-        Task task = tasks.get(taskId);
-        if (task != null) {
-            System.out.println(tasks.get(taskId));
-        } else {
-            System.out.println("Task not found");
+        try {
+            inputTask = new ObjectInputStream(new FileInputStream(file));
+            tasks = (HashMap) inputTask.readObject();
+            System.out.print("Task Id :");
+            String taskId = scn.nextLine();
+            Task task = tasks.get(taskId);
+            if (task != null) {
+                System.out.println(tasks.get(taskId));
+            } else {
+                System.out.println("Task not found");
+            }
+        } catch (FileNotFoundException ex) {
+            System.out.println("Tasks file not found");
+        } catch (Exception e) {
+            System.out.println(e);
         }
     }
 
     public static void deleteTask() {
-        System.out.print("Task Id :");
-        String taskId = scn.nextLine();
-        Task task = tasks.get(taskId);
-        if (task != null) {
-            tasks.remove(taskId);
-            System.out.println(task.getTitle() + " titled task deleted");
-        } else {
-            System.out.println("Task not found");
+        try {
+            inputTask = new ObjectInputStream(new FileInputStream(file));
+            tasks = (HashMap) inputTask.readObject();
+            System.out.print("Task Id :");
+            String taskId = scn.nextLine();
+            Task task = tasks.get(taskId);
+            if (task != null) {
+                tasks.remove(taskId);
+                System.out.println(task.getTitle() + " titled task deleted");
+                new FileOutputStream(file).close();
+                outputTask = new ObjectOutputStream(new FileOutputStream(file));
+                outputTask.writeObject(tasks);
+                outputTask.close();
+            } else {
+                System.out.println("Task not found");
+            }
+        } catch (FileNotFoundException ex) {
+            System.out.println("Tasks file not found");
+        } catch (Exception e) {
+            System.out.println(e);
         }
     }
 
     public static void filterTask() {
 
         try {
+            inputTask = new ObjectInputStream(new FileInputStream(file));
+            tasks = (HashMap) inputTask.readObject();
             Map<String, Task> taskDate = tasks;
             List<Task> foundTask = new ArrayList<>();
             System.out.println("Last Date");
@@ -95,6 +136,8 @@ public class Main {
             } else {
                 System.out.println(foundTask);
             }
+        } catch (FileNotFoundException ex) {
+            System.out.println("Tasks file not found");
         } catch (Exception e) {
             System.out.println("Incorrect date format");
         }
