@@ -51,8 +51,6 @@ public class Main {
 
     public static void listAllTasks() {
         try {
-            inputTask = new ObjectInputStream(new FileInputStream(file));
-            tasks = (HashMap) inputTask.readObject();
             Set set = tasks.entrySet();
             Iterator iterator = set.iterator();
             while (iterator.hasNext()) {
@@ -65,8 +63,6 @@ public class Main {
                     System.out.println("----------------------------------");
                 }
             }
-        } catch (FileNotFoundException ex) {
-            System.out.println("Tasks file not found");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -74,8 +70,6 @@ public class Main {
 
     public static void showTaskDetails() {
         try {
-            inputTask = new ObjectInputStream(new FileInputStream(file));
-            tasks = (HashMap) inputTask.readObject();
             System.out.print("Task Id :");
             String taskId = scn.nextLine();
             Task task = tasks.get(taskId);
@@ -84,8 +78,6 @@ public class Main {
             } else {
                 System.out.println("Task not found");
             }
-        } catch (FileNotFoundException ex) {
-            System.out.println("Tasks file not found");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -93,8 +85,6 @@ public class Main {
 
     public static void deleteTask() {
         try {
-            inputTask = new ObjectInputStream(new FileInputStream(file));
-            tasks = (HashMap) inputTask.readObject();
             System.out.print("Task Id :");
             String taskId = scn.nextLine();
             Task task = tasks.get(taskId);
@@ -118,15 +108,12 @@ public class Main {
     public static void filterTask() {
 
         try {
-            inputTask = new ObjectInputStream(new FileInputStream(file));
-            tasks = (HashMap) inputTask.readObject();
-            Map<String, Task> taskDate = tasks;
             List<Task> foundTask = new ArrayList<>();
             System.out.println("Last Date");
             String lastDateInput = scn.nextLine();
             Date lastDate = dueDateParser.parse(lastDateInput);
 
-            for (Task task : taskDate.values()) {
+            for (Task task : tasks.values()) {
                 if (task.getDate().before(lastDate)) {
                     foundTask.add(task);
                 }
@@ -136,14 +123,19 @@ public class Main {
             } else {
                 System.out.println(foundTask);
             }
-        } catch (FileNotFoundException ex) {
-            System.out.println("Tasks file not found");
         } catch (Exception e) {
             System.out.println("Incorrect date format");
         }
     }
 
     public static void main(String[] args) {
+        try {
+            inputTask = new ObjectInputStream(new FileInputStream(file));
+            tasks = (HashMap) inputTask.readObject();
+            inputTask.close();
+        } catch (Exception e) {
+
+        }
 
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
