@@ -14,6 +14,16 @@ public class Main {
     public static ObjectInputStream inputTask;
     public static ObjectOutputStream outputTask;
 
+    public static final void writeTaskFile() {
+        try {
+            outputTask = new ObjectOutputStream(new FileOutputStream(file));
+            outputTask.writeObject(tasks);
+            outputTask.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
     public static Task handleCreateTask() {
 
         System.out.println("(*)  Can't be empty");
@@ -38,9 +48,7 @@ public class Main {
                 Task task = new Task(uniqId, title, description, dueDate);
                 tasks.put(uniqId.toString(), task);
                 System.out.println(task.getTitle() + " titled task added");
-                outputTask = new ObjectOutputStream(new FileOutputStream(file));
-                outputTask.writeObject(tasks);
-                outputTask.close();
+                writeTaskFile();
                 return task;
             }
         } catch (Exception e) {
@@ -56,12 +64,8 @@ public class Main {
             while (iterator.hasNext()) {
                 Map.Entry task = (Map.Entry) iterator.next();
 
-                if (tasks.isEmpty()) {
-                    System.out.println("Task list is empty");
-                } else {
-                    System.out.println(task.getValue());
-                    System.out.println("----------------------------------");
-                }
+                System.out.println(task.getValue());
+                System.out.println("----------------------------------");
             }
         } catch (Exception e) {
             System.out.println(e);
@@ -92,9 +96,7 @@ public class Main {
                 tasks.remove(taskId);
                 System.out.println(task.getTitle() + " titled task deleted");
                 new FileOutputStream(file).close();
-                outputTask = new ObjectOutputStream(new FileOutputStream(file));
-                outputTask.writeObject(tasks);
-                outputTask.close();
+                writeTaskFile();
             } else {
                 System.out.println("Task not found");
             }
@@ -134,7 +136,7 @@ public class Main {
             tasks = (HashMap) inputTask.readObject();
             inputTask.close();
         } catch (Exception e) {
-
+            System.out.println(e);
         }
 
         System.out.println("Welcome to todoly");
@@ -160,7 +162,6 @@ public class Main {
             if (transaction.equals("q")) {
                 System.out.println("Exiting todoly");
                 break;
-
             } else if (transaction.equals("t")) {
                 System.out.println(transactions);
                 loopCounter = 0;
