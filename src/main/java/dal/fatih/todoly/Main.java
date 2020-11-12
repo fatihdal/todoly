@@ -82,22 +82,16 @@ public class Main {
     }
 
     public static void deleteTask() {
-        try {
-            System.out.print("Task Id :");
-            String taskId = scn.nextLine();
-            Task task = tasks.get(taskId);
-            if (task != null) {
-                tasks.remove(taskId);
-                System.out.println(task.getTitle() + " titled task deleted");
-                new FileOutputStream(file).close();
-                writeTaskFile();
-            } else {
-                System.out.println("Task not found");
-            }
-        } catch (FileNotFoundException ex) {
-            System.out.println("Tasks file not found");
-        } catch (Exception e) {
-            System.out.println(e);
+
+        System.out.print("Task Id :");
+        String taskId = scn.nextLine();
+        Task task = tasks.get(taskId);
+        if (task != null) {
+            tasks.remove(taskId);
+            System.out.println(task.getTitle() + " titled task deleted");
+            writeTaskFile();
+        } else {
+            System.out.println("Task not found");
         }
     }
 
