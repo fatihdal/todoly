@@ -69,13 +69,13 @@ public class Main {
 
     public static void listAllTasks() {
 
-        Set set = tasks.entrySet();
-        Iterator iterator = set.iterator();
-        while (iterator.hasNext()) {
-            Map.Entry task = (Map.Entry) iterator.next();
-
-            System.out.println(task.getValue());
-            System.out.println("----------------------------------");
+        if (tasks.isEmpty()) {
+            System.out.println("Task list is empty");
+        } else {
+            for (Map.Entry task : tasks.entrySet()) {
+                System.out.println(task.getValue());
+                System.out.println("----------------------------------");
+            }
         }
     }
 
