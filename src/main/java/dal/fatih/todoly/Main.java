@@ -58,32 +58,26 @@ public class Main {
     }
 
     public static void listAllTasks() {
-        try {
-            Set set = tasks.entrySet();
-            Iterator iterator = set.iterator();
-            while (iterator.hasNext()) {
-                Map.Entry task = (Map.Entry) iterator.next();
 
-                System.out.println(task.getValue());
-                System.out.println("----------------------------------");
-            }
-        } catch (Exception e) {
-            System.out.println(e);
+        Set set = tasks.entrySet();
+        Iterator iterator = set.iterator();
+        while (iterator.hasNext()) {
+            Map.Entry task = (Map.Entry) iterator.next();
+
+            System.out.println(task.getValue());
+            System.out.println("----------------------------------");
         }
     }
 
     public static void showTaskDetails() {
-        try {
-            System.out.print("Task Id :");
-            String taskId = scn.nextLine();
-            Task task = tasks.get(taskId);
-            if (task != null) {
-                System.out.println(tasks.get(taskId));
-            } else {
-                System.out.println("Task not found");
-            }
-        } catch (Exception e) {
-            System.out.println(e);
+
+        System.out.print("Task Id :");
+        String taskId = scn.nextLine();
+        Task task = tasks.get(taskId);
+        if (task != null) {
+            System.out.println(tasks.get(taskId));
+        } else {
+            System.out.println("Task not found");
         }
     }
 
