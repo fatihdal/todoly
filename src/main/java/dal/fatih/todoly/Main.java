@@ -14,6 +14,16 @@ public class Main {
     public static ObjectInputStream inputTask;
     public static ObjectOutputStream outputTask;
 
+    public static void loadTasksFromFile() {
+        try {
+            inputTask = new ObjectInputStream(new FileInputStream(file));
+            tasks = (HashMap) inputTask.readObject();
+            inputTask.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
     public static final void writeTaskFile() {
         try {
             outputTask = new ObjectOutputStream(new FileOutputStream(file));
@@ -119,13 +129,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        try {
-            inputTask = new ObjectInputStream(new FileInputStream(file));
-            tasks = (HashMap) inputTask.readObject();
-            inputTask.close();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+        loadTasksFromFile();
 
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
