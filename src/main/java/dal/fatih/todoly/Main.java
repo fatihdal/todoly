@@ -1,5 +1,6 @@
 package dal.fatih.todoly;
 
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -7,9 +8,31 @@ import java.util.*;
 
 public class Main {
     private static final Scanner scn = new Scanner(System.in);
-    private static final Map<String, Task> tasks = new HashMap<String, Task>();
+    private static Map<String, Task> tasks = new HashMap<String, Task>();
     private static final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
+    private static final String file = "Tasks.bin";
+    public static ObjectInputStream inputTask;
+    public static ObjectOutputStream outputTask;
 
+    public static void loadTasksFromFile() {
+        try {
+            inputTask = new ObjectInputStream(new FileInputStream(file));
+            tasks = (HashMap) inputTask.readObject();
+            inputTask.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public static final void writeTaskFile() {
+        try {
+            outputTask = new ObjectOutputStream(new FileOutputStream(file));
+            outputTask.writeObject(tasks);
+            outputTask.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
 
     public static Task handleCreateTask() {
 
@@ -30,10 +53,12 @@ public class Main {
                 System.out.println("The given date can not be older than now");
 
             } else {
+
                 UUID uniqId = UUID.randomUUID();
                 Task task = new Task(uniqId, title, description, dueDate);
                 tasks.put(uniqId.toString(), task);
                 System.out.println(task.getTitle() + " titled task added");
+                writeTaskFile();
                 return task;
             }
         } catch (Exception e) {
@@ -43,6 +68,7 @@ public class Main {
     }
 
     public static void listAllTasks() {
+
         if (tasks.isEmpty()) {
             System.out.println("Task list is empty");
         } else {
@@ -54,6 +80,7 @@ public class Main {
     }
 
     public static void showTaskDetails() {
+
         System.out.print("Task Id :");
         String taskId = scn.nextLine();
         Task task = tasks.get(taskId);
@@ -65,12 +92,14 @@ public class Main {
     }
 
     public static void deleteTask() {
+
         System.out.print("Task Id :");
         String taskId = scn.nextLine();
         Task task = tasks.get(taskId);
         if (task != null) {
             tasks.remove(taskId);
             System.out.println(task.getTitle() + " titled task deleted");
+            writeTaskFile();
         } else {
             System.out.println("Task not found");
         }
@@ -79,13 +108,12 @@ public class Main {
     public static void filterTask() {
 
         try {
-            Map<String, Task> taskDate = tasks;
             List<Task> foundTask = new ArrayList<>();
             System.out.println("Last Date");
             String lastDateInput = scn.nextLine();
             Date lastDate = dueDateParser.parse(lastDateInput);
 
-            for (Task task : taskDate.values()) {
+            for (Task task : tasks.values()) {
                 if (task.getDate().before(lastDate)) {
                     foundTask.add(task);
                 }
@@ -101,6 +129,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        loadTasksFromFile();
 
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
@@ -125,7 +154,6 @@ public class Main {
             if (transaction.equals("q")) {
                 System.out.println("Exiting todoly");
                 break;
-
             } else if (transaction.equals("t")) {
                 System.out.println(transactions);
                 loopCounter = 0;
