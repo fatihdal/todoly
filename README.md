@@ -5,10 +5,17 @@
 ### Build
 
 ```
-docker build -t todoly:latest .
+docker build --tag todoly:latest .
 ```
 ### Run
+
 ```
-docker run --rm -it --name todoly-app todoly:latest
+docker volume create --name root
+```
+
+
+
+```
+docker run --rm -it --name todoly-app -v root:/root todoly:latest
 ```
 
