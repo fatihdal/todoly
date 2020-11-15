@@ -10,12 +10,6 @@ docker build --tag todoly:latest .
 ### Run
 
 ```
-docker volume create --name root
-```
-
-
-
-```
-docker run --rm -it --name todoly-app -v root:/root todoly:latest
+docker run --rm -it --name todoly-app -v $PWD/.output/:/root/.output todoly:latest
 ```
 
