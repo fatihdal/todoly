@@ -10,7 +10,7 @@ public class Main {
     private static final Scanner scn = new Scanner(System.in);
     private static Map<String, Task> tasks = new HashMap<String, Task>();
     private static final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
-    private static final String file = "Tasks.bin";
+    private static final String file = ".output/tasks.bin";
     public static ObjectInputStream inputTask;
     public static ObjectOutputStream outputTask;
 
