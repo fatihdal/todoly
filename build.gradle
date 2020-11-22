@@ -1,0 +1,15 @@
+plugins {
+    id "application"
+}
+apply plugin : "java"
+ext {
+   javaMainClass = "com.baeldung.gradle.exec.MainClass"
+}
+
+application {
+    mainClassName = "dal.fatih.todoly.App"
+}
+
+run{
+    standardInput = System.in
+}

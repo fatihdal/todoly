@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
-public class Main {
+public class App {
     private static final Scanner scn = new Scanner(System.in);
     private static Map<String, Task> tasks = new HashMap<String, Task>();
     private static final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
