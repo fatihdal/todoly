@@ -59,7 +59,7 @@ public class TaskManager {
                 UUID uniqId = UUID.randomUUID();
                 Task task = new Task(uniqId, title, description, dueDate);
                 tasks.put(uniqId.toString(), task);
-                System.out.println(task.getTitle() + " titled task added");
+                System.out.println("task added");
                 writeTaskFile();
                 return task;
             }

@@ -54,9 +54,9 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindTasksByTitleNotCaseSensitive() {
+    public void shouldIgnoreCaseWhenFiltertingTasksByTitle() {
         addTask("title-of-task", "", "21/12/2021");
-        provideInput(Arrays.asList("6", "<TLE-OF>", "q"));
+        provideInput(Arrays.asList("6", "TLE-OF", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("title-of-task"));
     }
@@ -70,7 +70,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindTasksByDescriptionNotCaseSensitive() {
+    public void shouldIgnoreCaseWhenFiltertingTasksByDescription() {
         addTask("title-of-task", "description-of-task", "21/12/2021");
         provideInput(Arrays.asList("6", "DESCR", "q"));
         App.main(new String[]{});
