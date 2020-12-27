@@ -130,6 +130,23 @@ public class TaskManager {
         }
     }
 
+    private void filterTasksbyNameAndDescription() {
+        List<Task> foundTasks = new ArrayList<>();
+        System.out.println("Word to search");
+        String searchingWord = scn.nextLine();
+
+        for (Task task : tasks.values()) {
+            if (task.getTitle().toLowerCase().contains(searchingWord.toLowerCase()) || task.getDescription().toLowerCase().contains(searchingWord.toLowerCase())) {
+                foundTasks.add(task);
+            }
+        }
+        if (foundTasks.isEmpty()) {
+            System.out.println("No tasks found");
+        } else {
+            System.out.println(foundTasks);
+        }
+    }
+
     public void handleInputs() {
         loadTasksFromFile();
         System.out.println("Welcome to todoly");
@@ -140,12 +157,11 @@ public class TaskManager {
                 "4- Delete Task\n" +
                 "5- List between two dates\n" +
                 "6- Filter tasks by name and description\n" +
-                "q- Quit from Todoly");
+                "Q- Quit from Todoly");
         System.out.println("Transactions : \n" + transactions);
         System.out.println("Please select the action you want to do");
         int loopCounter = 0;
         while (true) {
-
 
             if (loopCounter >= 1) {
                 System.out.println("To see the actions menu (t) ");
@@ -154,10 +170,10 @@ public class TaskManager {
             System.out.print("Choice: ");
             String transaction = scn.nextLine();
 
-            if (transaction.equals("q")) {
+            if (transaction.equals("q") || transaction.equals("Q")) {
                 System.out.println("Exiting todoly");
                 break;
-            } else if (transaction.equals("t")) {
+            } else if (transaction.equals("t") || transaction.equals("T")) {
                 System.out.println(transactions);
                 loopCounter = 0;
             } else if (transaction.equals("1")) {
@@ -171,11 +187,10 @@ public class TaskManager {
             } else if (transaction.equals("5")) {
                 filterTask();
             } else if (transaction.equals("6")) {
-                System.out.println("ERROR: This option is not supported yet");
+                filterTasksbyNameAndDescription();
             } else {
                 System.out.println("invalid input");
             }
-
         }
         scn.close();
     }
