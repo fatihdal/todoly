@@ -1,9 +1,6 @@
 package dal.fatih.todoly;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -12,7 +9,7 @@ public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
     private Map<String, Task> tasks = new HashMap<String, Task>();
     private final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
-    private final String file = "./output/tasks.bin";
+    private final File file = new File("./output/task.bin");
     public ObjectInputStream inputTask;
     public ObjectOutputStream outputTask;
 
@@ -28,6 +25,7 @@ public class TaskManager {
 
     private final void writeTaskFile() {
         try {
+            file.getParentFile().mkdirs();
             outputTask = new ObjectOutputStream(new FileOutputStream(file));
             outputTask.writeObject(tasks);
             outputTask.close();
