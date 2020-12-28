@@ -4,9 +4,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -16,19 +16,11 @@ import java.util.List;
 public class TodolyTest {
 
     private ByteArrayOutputStream outContent;
-    private final PrintStream originalOut = System.out;
-    private final InputStream originalIn = System.in;
 
     @Before
     public void setUp() {
         outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
-    }
-
-    @After
-    public void tearDown() {
-        System.setIn(originalIn);
-        System.setOut(originalOut);
     }
 
     @Test
@@ -47,7 +39,7 @@ public class TodolyTest {
 
     @Test
     public void shouldFindTasksByTitle() {
-        addTask("title-of-task", "", "21/12/2021");
+        addTask("title-of-task", "description-of-task", "21/12/2021");
         provideInput(Arrays.asList("6", "tle-of", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("title-of-task"));
@@ -55,7 +47,7 @@ public class TodolyTest {
 
     @Test
     public void shouldIgnoreCaseWhenFiltertingTasksByTitle() {
-        addTask("title-of-task", "", "21/12/2021");
+        addTask("title-of-task", "description-of-task", "21/12/2021");
         provideInput(Arrays.asList("6", "TLE-OF", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("title-of-task"));
@@ -75,6 +67,34 @@ public class TodolyTest {
         provideInput(Arrays.asList("6", "DESCR", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("description-of-task"));
+    }
+
+    @Test
+    public void shouldNotAllowEmptyTitle() {
+        provideInput(Arrays.asList("1", "", "description-of-task", "21/10/2021", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("fill required fields"));
+    }
+
+    @Test
+    public void shouldNotAllowIncorrectDate() {
+        provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "21102021", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
+    }
+
+    @Test
+    public void shouldNotAllowOldDateFromNow() {
+        provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "01/01/2020", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("The given date can not be older than now"));
+    }
+
+    @Test
+    public void shouldAllowEmptyDescription() {
+        provideInput(Arrays.asList("1", "title-of-task", "", "21/10/2021", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("task added"));
     }
 
     private void provideInput(List<String> inputs) {
