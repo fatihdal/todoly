@@ -64,7 +64,7 @@ public class TaskManager {
         } catch (Exception e) {
             System.out.println("Incorrect date format");
         }
-        return handleCreateTask();
+        return null;
     }
 
     private void listAllTasks() {
@@ -192,5 +192,4 @@ public class TaskManager {
         }
         scn.close();
     }
-
 }
