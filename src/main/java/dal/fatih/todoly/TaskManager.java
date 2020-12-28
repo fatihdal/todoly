@@ -5,16 +5,15 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+public class TaskManager {
+    private final Scanner scn = new Scanner(System.in);
+    private Map<String, Task> tasks = new HashMap<String, Task>();
+    private final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
+    private final File file = new File("./output/task.bin");
+    public ObjectInputStream inputTask;
+    public ObjectOutputStream outputTask;
 
-public class Main {
-    private static final Scanner scn = new Scanner(System.in);
-    private static Map<String, Task> tasks = new HashMap<String, Task>();
-    private static final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
-    private static final String file = ".output/tasks.bin";
-    public static ObjectInputStream inputTask;
-    public static ObjectOutputStream outputTask;
-
-    public static void loadTasksFromFile() {
+    private void loadTasksFromFile() {
         try {
             inputTask = new ObjectInputStream(new FileInputStream(file));
             tasks = (HashMap) inputTask.readObject();
@@ -24,8 +23,9 @@ public class Main {
         }
     }
 
-    public static final void writeTaskFile() {
+    private final void writeTaskFile() {
         try {
+            file.getParentFile().mkdirs();
             outputTask = new ObjectOutputStream(new FileOutputStream(file));
             outputTask.writeObject(tasks);
             outputTask.close();
@@ -34,7 +34,7 @@ public class Main {
         }
     }
 
-    public static Task handleCreateTask() {
+    private Task handleCreateTask() {
 
         System.out.println("(*)  Can't be empty");
         System.out.print("Title of the task (*) : ");
@@ -57,7 +57,7 @@ public class Main {
                 UUID uniqId = UUID.randomUUID();
                 Task task = new Task(uniqId, title, description, dueDate);
                 tasks.put(uniqId.toString(), task);
-                System.out.println(task.getTitle() + " titled task added");
+                System.out.println("task added");
                 writeTaskFile();
                 return task;
             }
@@ -67,7 +67,7 @@ public class Main {
         return handleCreateTask();
     }
 
-    public static void listAllTasks() {
+    private void listAllTasks() {
 
         if (tasks.isEmpty()) {
             System.out.println("Task list is empty");
@@ -79,7 +79,7 @@ public class Main {
         }
     }
 
-    public static void showTaskDetails() {
+    private void showTaskDetails() {
 
         System.out.print("Task Id :");
         String taskId = scn.nextLine();
@@ -91,7 +91,7 @@ public class Main {
         }
     }
 
-    public static void deleteTask() {
+    private void deleteTask() {
 
         System.out.print("Task Id :");
         String taskId = scn.nextLine();
@@ -105,7 +105,7 @@ public class Main {
         }
     }
 
-    public static void filterTask() {
+    private void filterTask() {
 
         try {
             List<Task> foundTask = new ArrayList<>();
@@ -128,9 +128,25 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
-        loadTasksFromFile();
+    private void filterTasksbyNameAndDescription() {
+        List<Task> foundTasks = new ArrayList<>();
+        System.out.println("Word to search");
+        String searchingWord = scn.nextLine();
 
+        for (Task task : tasks.values()) {
+            if (task.getTitle().toLowerCase().contains(searchingWord.toLowerCase()) || task.getDescription().toLowerCase().contains(searchingWord.toLowerCase())) {
+                foundTasks.add(task);
+            }
+        }
+        if (foundTasks.isEmpty()) {
+            System.out.println("No tasks found");
+        } else {
+            System.out.println(foundTasks);
+        }
+    }
+
+    public void handleInputs() {
+        loadTasksFromFile();
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
         String transactions = ("1- Create new task\n" +
@@ -138,7 +154,8 @@ public class Main {
                 "3- Task details\n" +
                 "4- Delete Task\n" +
                 "5- List between two dates\n" +
-                "q- Qit from Todoly");
+                "6- Filter tasks by name and description\n" +
+                "Q- Quit from Todoly");
         System.out.println("Transactions : \n" + transactions);
         System.out.println("Please select the action you want to do");
         int loopCounter = 0;
@@ -151,10 +168,10 @@ public class Main {
             System.out.print("Choice: ");
             String transaction = scn.nextLine();
 
-            if (transaction.equals("q")) {
+            if (transaction.equals("q") || transaction.equals("Q")) {
                 System.out.println("Exiting todoly");
                 break;
-            } else if (transaction.equals("t")) {
+            } else if (transaction.equals("t") || transaction.equals("T")) {
                 System.out.println(transactions);
                 loopCounter = 0;
             } else if (transaction.equals("1")) {
@@ -167,9 +184,13 @@ public class Main {
                 deleteTask();
             } else if (transaction.equals("5")) {
                 filterTask();
+            } else if (transaction.equals("6")) {
+                filterTasksbyNameAndDescription();
             } else {
                 System.out.println("invalid input");
             }
         }
+        scn.close();
     }
+
 }

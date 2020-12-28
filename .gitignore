@@ -11,7 +11,6 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.nar
 *.ear
@@ -23,4 +22,6 @@
 hs_err_pid*
 .idea
 build
-.output
+output
+# Ignore Gradle project-specific cache directory
+.gradle

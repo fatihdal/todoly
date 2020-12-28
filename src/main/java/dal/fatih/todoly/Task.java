@@ -19,17 +19,9 @@ public class Task implements Serializable {
         this.dueDate = dueDate;
     }
 
-    public Task(int id, String title, Date dueDate) {
-        this.title = title;
-        this.dueDate = dueDate;
-
-    }
-
-
     public UUID getId() {
         return id;
     }
-
 
     public String getTitle() {
         return title;
