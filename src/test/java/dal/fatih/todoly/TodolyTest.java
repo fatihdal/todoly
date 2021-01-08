@@ -1,13 +1,11 @@
 package dal.fatih.todoly;
 
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -130,7 +128,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindNoTaskToFilter() {
+    public void shouldFindNoTask() {
         provideInput(Arrays.asList("6", "un-existing-task-name", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("No tasks found"));

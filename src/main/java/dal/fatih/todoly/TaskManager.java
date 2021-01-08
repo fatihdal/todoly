@@ -1,12 +1,9 @@
 package dal.fatih.todoly;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
