@@ -19,33 +19,20 @@ public class Task implements Serializable {
         this.dueDate = dueDate;
     }
 
-    public UUID getId() {
-        return id;
-    }
+    public UUID getId() { return id; }
 
     public String getTitle() {
         return title;
     }
 
-    /*public void setTitle(String title) {
-        this.title = title;
-    }*/
-
     public String getDescription() {
         return description;
     }
-
-    /*public void setDescription(String description) {
-        this.description = description;
-    }*/
 
     public Date getDate() {
         return dueDate;
     }
 
-    /*public void setDate(Date date) {
-        this.dueDate = date;
-    }*/
 
     @Override
     public String toString() {

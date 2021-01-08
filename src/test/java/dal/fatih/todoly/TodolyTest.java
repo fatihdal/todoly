@@ -26,15 +26,6 @@ public class TodolyTest {
         System.setOut(new PrintStream(outContent));
     }
 
-    @AfterClass
-    public static void clean() {
-        File dir = new File("./output");
-        for (File file : dir.listFiles()) {
-            file.delete();
-        }
-        dir.delete();
-    }
-
     @Test
     public void shouldNotAllowEmptyTitle() {
         provideInput(Arrays.asList("1", "", "description-of-task", "21/10/2021", "q"));
@@ -65,15 +56,15 @@ public class TodolyTest {
 
     @Test
     public void shouldAllowEmptyDescription() {
-        provideInput(Arrays.asList("1", "title-of-task", "", "21/10/2021", "q"));
+        provideInput(Arrays.asList("1", "title-of-task", "", "21/10/2027", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Task added"));
     }
 
     @Test
     public void shouldListAllTasks() {
-        addTask("title-of-the-task-to-be-listed", "description-of-task", "21/12/2021");
-        addTask("title-of-the-task-to-be-listed-2", "description-of-task", "21/12/2021");
+        addTask("title-of-the-task-to-be-listed", "description-of-task", "21/12/2027");
+        addTask("title-of-the-task-to-be-listed-2", "description-of-task", "21/12/2027");
         provideInput(Arrays.asList("2", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("title-of-the-task-to-be-listed"));
@@ -91,7 +82,7 @@ public class TodolyTest {
     public void shouldShowTaskDetails() {
         String title = "title-of-the-task";
         String description = "description-of-task";
-        addTask(title, description, "06/06/2025");
+        addTask(title, description, "06/06/2027");
 
         String taskIdPattern = "^(.+)\\sTask\\sadded";
         Pattern r = Pattern.compile(taskIdPattern, Pattern.MULTILINE);
@@ -117,7 +108,7 @@ public class TodolyTest {
     @Test
     public void shouldDeleteTask() {
         String title = "title-of-the-task-to-be-deleted";
-        addTask(title, "description-of-task", "21/12/2021");
+        addTask(title, "description-of-task", "21/12/2027");
 
         String taskIdPattern = "^(.+)\\sTask\\sadded";
         Pattern r = Pattern.compile(taskIdPattern, Pattern.MULTILINE);
@@ -147,7 +138,7 @@ public class TodolyTest {
 
     @Test
     public void shouldFindTasksByTitle() {
-        addTask("title-of-task", "description-of-task", "21/12/2021");
+        addTask("title-of-task", "description-of-task", "21/12/2027");
         provideInput(Arrays.asList("6", "tle-of", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("title-of-task"));
@@ -155,7 +146,7 @@ public class TodolyTest {
 
     @Test
     public void shouldIgnoreCaseWhenFiltertingTasksByTitle() {
-        addTask("title-of-task", "description-of-task", "21/12/2021");
+        addTask("title-of-task", "description-of-task", "21/12/2027");
         provideInput(Arrays.asList("6", "TLE-OF", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("title-of-task"));
@@ -163,7 +154,7 @@ public class TodolyTest {
 
     @Test
     public void shouldFindTasksByDescription() {
-        addTask("title-of-task", "description-of-task", "21/12/2021");
+        addTask("title-of-task", "description-of-task", "21/12/2027");
         provideInput(Arrays.asList("6", "descr", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("description-of-task"));
@@ -171,10 +162,41 @@ public class TodolyTest {
 
     @Test
     public void shouldIgnoreCaseWhenFiltertingTasksByDescription() {
-        addTask("title-of-task", "description-of-task", "21/12/2021");
+        addTask("title-of-task", "description-of-task", "21/12/2027");
         provideInput(Arrays.asList("6", "DESCR", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("description-of-task"));
+    }
+
+    @Test
+    public void shouldFilterByDate() {
+        addTask("title-of-the-task-to-be-filter", "description-of-task", "21/12/2024");
+        addTask("title-of-the-task-to-be-filter-2", "description-of-task", "21/12/2027");
+        provideInput(Arrays.asList("5", "01/01/2025", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("title-of-the-task-to-be-filter"));
+        Assert.assertFalse(outContent.toString().contains("title-of-the-task-to-be-filter-2"));
+    }
+
+    @Test
+    public void shouldFindNoTaskBetweenTwoDates() {
+        provideInput(Arrays.asList("5", "01/01/2022", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("No task found in this date range"));
+    }
+
+    @Test
+    public void shouldNotAllowIncorrectDateFormatWhenFilteringByDate() {
+        provideInput(Arrays.asList("5", "01/012022", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
+    }
+
+    @Test
+    public void shouldNotAllowEmptyDateWhenFilteringByDate() {
+        provideInput(Arrays.asList("5", "", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
     }
 
     private void provideInput(List<String> inputs) {

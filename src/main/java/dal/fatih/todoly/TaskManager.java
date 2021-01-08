@@ -91,6 +91,7 @@ public class TaskManager {
         Task task = tasks.get(taskId);
         if (task != null) {
             System.out.println(task);
+            System.out.println("----------------------------------");
         } else {
             System.out.println("Task not found");
         }
@@ -124,7 +125,7 @@ public class TaskManager {
                 }
             }
             if (foundTask.isEmpty()) {
-                System.out.println("No tasks found between these dates");
+                System.out.println("No task found in this date range");
             } else {
                 System.out.println(foundTask);
             }
