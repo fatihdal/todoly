@@ -1,9 +1,12 @@
 package dal.fatih.todoly;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
@@ -47,7 +50,7 @@ public class TaskManager {
         try {
             Date dueDate = dueDateParser.parse(dueDateInput);
             if (title.isEmpty()) {
-                System.out.println("fill required fields");
+                System.out.println("Fill required fields");
 
             } else if (dueDate.before(new Date())) {
                 System.out.println("The given date can not be older than now");
@@ -57,7 +60,8 @@ public class TaskManager {
                 UUID uniqId = UUID.randomUUID();
                 Task task = new Task(uniqId, title, description, dueDate);
                 tasks.put(uniqId.toString(), task);
-                System.out.println("task added");
+                System.out.println();
+                System.out.println(task.getId() + " Task added");
                 writeTaskFile();
                 return task;
             }
@@ -72,10 +76,11 @@ public class TaskManager {
         if (tasks.isEmpty()) {
             System.out.println("Task list is empty");
         } else {
-            for (Map.Entry task : tasks.entrySet()) {
-                System.out.println(task.getValue());
+            tasks.entrySet().forEach(stringTaskEntry -> {
+                System.out.println("Title : " + stringTaskEntry.getValue().getTitle() +
+                        "\n" + "ID :" + stringTaskEntry.getValue().getId());
                 System.out.println("----------------------------------");
-            }
+            });
         }
     }
 
@@ -85,7 +90,7 @@ public class TaskManager {
         String taskId = scn.nextLine();
         Task task = tasks.get(taskId);
         if (task != null) {
-            System.out.println(tasks.get(taskId));
+            System.out.println(task);
         } else {
             System.out.println("Task not found");
         }

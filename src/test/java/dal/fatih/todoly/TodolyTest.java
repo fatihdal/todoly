@@ -1,17 +1,20 @@
 package dal.fatih.todoly;
 
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TodolyTest {
 
@@ -23,6 +26,111 @@ public class TodolyTest {
         System.setOut(new PrintStream(outContent));
     }
 
+    @AfterClass
+    public static void clean() {
+        File dir = new File("./output");
+        for (File file : dir.listFiles()) {
+            file.delete();
+        }
+        dir.delete();
+    }
+
+    @Test
+    public void shouldNotAllowEmptyTitle() {
+        provideInput(Arrays.asList("1", "", "description-of-task", "21/10/2021", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("Fill required fields"));
+    }
+
+    @Test
+    public void shouldNotAllowIncorrectDate() {
+        provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "21102021", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
+    }
+
+    @Test
+    public void shouldNotAllowOldDateFromNow() {
+        provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "01/01/2020", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("The given date can not be older than now"));
+    }
+
+    @Test
+    public void shouldNotAllowEmptyDueDate() {
+        provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
+    }
+
+    @Test
+    public void shouldAllowEmptyDescription() {
+        provideInput(Arrays.asList("1", "title-of-task", "", "21/10/2021", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("Task added"));
+    }
+
+    @Test
+    public void shouldListAllTasks() {
+        addTask("title-of-the-task-to-be-listed", "description-of-task", "21/12/2021");
+        addTask("title-of-the-task-to-be-listed-2", "description-of-task", "21/12/2021");
+        provideInput(Arrays.asList("2", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("title-of-the-task-to-be-listed"));
+        Assert.assertTrue(outContent.toString().contains("title-of-the-task-to-be-listed-2"));
+    }
+
+    @Test
+    public void shouldFindNoTaskToShowDetails() {
+        provideInput(Arrays.asList("3", "", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("Task not found"));
+    }
+
+    @Test
+    public void shouldShowTaskDetails() {
+        String title = "title-of-the-task";
+        String description = "description-of-task";
+        addTask(title, description, "06/06/2025");
+
+        String taskIdPattern = "^(.+)\\sTask\\sadded";
+        Pattern r = Pattern.compile(taskIdPattern, Pattern.MULTILINE);
+        Matcher m = r.matcher(outContent.toString());
+        Assert.assertTrue(m.find());
+        String taskId = m.group(1);
+        Assert.assertNotNull(taskId);
+
+        provideInput(Arrays.asList("3", taskId, "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains(taskId));
+        Assert.assertTrue(outContent.toString().contains(title));
+        Assert.assertTrue(outContent.toString().contains(description));
+    }
+
+    @Test
+    public void shouldFindNoTaskToDelete() {
+        provideInput(Arrays.asList("4", "", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("Task not found"));
+    }
+
+    @Test
+    public void shouldDeleteTask() {
+        String title = "title-of-the-task-to-be-deleted";
+        addTask(title, "description-of-task", "21/12/2021");
+
+        String taskIdPattern = "^(.+)\\sTask\\sadded";
+        Pattern r = Pattern.compile(taskIdPattern, Pattern.MULTILINE);
+        Matcher m = r.matcher(outContent.toString());
+        Assert.assertTrue(m.find());
+        String taskId = m.group(1);
+        Assert.assertNotNull(taskId);
+
+        provideInput(Arrays.asList("4", taskId, "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains(title + " titled task deleted"));
+    }
+
     @Test
     public void shouldShowFilteringTaskByNameAndDescriptionWithMenuIndex6() {
         provideInput(Collections.singletonList("q"));
@@ -31,7 +139,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindNoTask() {
+    public void shouldFindNoTaskToFilter() {
         provideInput(Arrays.asList("6", "un-existing-task-name", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("No tasks found"));
@@ -67,34 +175,6 @@ public class TodolyTest {
         provideInput(Arrays.asList("6", "DESCR", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("description-of-task"));
-    }
-
-    @Test
-    public void shouldNotAllowEmptyTitle() {
-        provideInput(Arrays.asList("1", "", "description-of-task", "21/10/2021", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("fill required fields"));
-    }
-
-    @Test
-    public void shouldNotAllowIncorrectDate() {
-        provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "21102021", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
-    }
-
-    @Test
-    public void shouldNotAllowOldDateFromNow() {
-        provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "01/01/2020", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("The given date can not be older than now"));
-    }
-
-    @Test
-    public void shouldAllowEmptyDescription() {
-        provideInput(Arrays.asList("1", "title-of-task", "", "21/10/2021", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("task added"));
     }
 
     private void provideInput(List<String> inputs) {
