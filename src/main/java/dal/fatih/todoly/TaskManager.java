@@ -47,7 +47,7 @@ public class TaskManager {
         try {
             Date dueDate = dueDateParser.parse(dueDateInput);
             if (title.isEmpty()) {
-                System.out.println("fill required fields");
+                System.out.println("Fill required fields");
 
             } else if (dueDate.before(new Date())) {
                 System.out.println("The given date can not be older than now");
@@ -57,7 +57,8 @@ public class TaskManager {
                 UUID uniqId = UUID.randomUUID();
                 Task task = new Task(uniqId, title, description, dueDate);
                 tasks.put(uniqId.toString(), task);
-                System.out.println("task added");
+                System.out.println();
+                System.out.println(task.getId() + " Task added");
                 writeTaskFile();
                 return task;
             }
@@ -72,10 +73,11 @@ public class TaskManager {
         if (tasks.isEmpty()) {
             System.out.println("Task list is empty");
         } else {
-            for (Map.Entry task : tasks.entrySet()) {
-                System.out.println(task.getValue());
+            tasks.entrySet().forEach(stringTaskEntry -> {
+                System.out.println("Title : " + stringTaskEntry.getValue().getTitle() +
+                        "\n" + "ID :" + stringTaskEntry.getValue().getId());
                 System.out.println("----------------------------------");
-            }
+            });
         }
     }
 
@@ -85,7 +87,8 @@ public class TaskManager {
         String taskId = scn.nextLine();
         Task task = tasks.get(taskId);
         if (task != null) {
-            System.out.println(tasks.get(taskId));
+            System.out.println(task);
+            System.out.println("----------------------------------");
         } else {
             System.out.println("Task not found");
         }
@@ -119,7 +122,7 @@ public class TaskManager {
                 }
             }
             if (foundTask.isEmpty()) {
-                System.out.println("No tasks found between these dates");
+                System.out.println("No task found in this date range");
             } else {
                 System.out.println(foundTask);
             }
