@@ -126,20 +126,47 @@ public class TaskManager {
         } catch (SQLException e) {
             System.out.println("Check database connections, drivers and restart todoly");
         }
-
-
     }
 
     private void showTaskDetails() {
+        System.out.print("Task Id (min first three characters) :");
+        String taskIdInput = scn.nextLine();
+        if (taskIdInput.length() < 3) {
+            System.out.println("Please enter min first three characters!!!");
+            return;
+        }
+        Task task = null;
 
-        System.out.print("Task Id :");
-        String taskId = scn.nextLine();
-        Task task = tasks.get(taskId);
-        if (task != null) {
-            System.out.println(task);
-            System.out.println("----------------------------------");
-        } else {
-            System.out.println("Task not found");
+        try {
+            connection = dbConnection.getConnection();
+
+
+            String sql = "SELECT id,taskId,title,description,duedate FROM tasks WHERE taskId like ?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setObject(1, taskIdInput + "%");
+            resultSet = preparedStatement.executeQuery();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        try {
+            while (resultSet.next()) {
+                UUID userId = resultSet.getObject("taskId", java.util.UUID.class);
+                String title = resultSet.getString("title");
+                String description = resultSet.getString("description");
+                Date dueDate = resultSet.getObject("dueDate", java.sql.Date.class);
+                task = new Task(userId, title, description, dueDate);
+            }
+            if (task != null) {
+                System.out.println(task);
+            } else {
+                System.out.println("Task not found");
+            }
+            preparedStatement.close();
+            resultSet.close();
+            connection.close();
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
         }
     }
 

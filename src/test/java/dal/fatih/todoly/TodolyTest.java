@@ -8,7 +8,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -79,9 +78,15 @@ public class TodolyTest {
 
     @Test
     public void shouldFindNoTaskToShowDetails() {
-        provideInput(Arrays.asList("3", "", "q"));
+        provideInput(Arrays.asList("3", "46856845672662", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Task not found"));
+    }
+    @Test
+    public void shouldNotAllowLessThanTheTopThreeCharacters() {
+        provideInput(Arrays.asList("3", "", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("Please enter min first three characters!!!"));
     }
 
     @Test
@@ -102,6 +107,28 @@ public class TodolyTest {
         Assert.assertTrue(outContent.toString().contains(taskId));
         Assert.assertTrue(outContent.toString().contains(title));
         Assert.assertTrue(outContent.toString().contains(description));
+    }
+
+    @Test
+    public void shouldShowTaskDetailsWithFirstThreeCaracters() {
+        String title = "title-of-the-task";
+        String description = "description-of-task";
+        String dueDate="2030-05-05";
+        addTask(title, description, dueDate);
+
+        String taskIdPattern = "(.+)\\sTask\\sadded";
+        Pattern r = Pattern.compile(taskIdPattern, Pattern.MULTILINE);
+        Matcher m = r.matcher(outContent.toString());
+        Assert.assertTrue(m.find());
+        String taskId = m.group(1).substring(0,3);
+        Assert.assertNotNull(taskId);
+
+        provideInput(Arrays.asList("3", taskId, "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains(taskId));
+        Assert.assertTrue(outContent.toString().contains(title));
+        Assert.assertTrue(outContent.toString().contains(description));
+        Assert.assertTrue(outContent.toString().contains(dueDate));
     }
 
     @Test
