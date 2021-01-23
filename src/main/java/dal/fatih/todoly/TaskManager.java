@@ -1,17 +1,23 @@
 package dal.fatih.todoly;
 
-import java.io.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.sql.*;
+import java.sql.Date;
+import java.time.Instant;
 import java.util.*;
 
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
     private Map<String, Task> tasks = new HashMap<String, Task>();
-    private final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
     private final File file = new File("./output/task.bin");
-    public ObjectInputStream inputTask;
-    public ObjectOutputStream outputTask;
+    private ObjectInputStream inputTask;
+    private ObjectOutputStream outputTask;
+    private PreparedStatement preparedStatement;
+    private Connection connection;
+    private DBConnection dbConnection = new DBConnection();
 
     private void loadTasksFromFile() {
         try {
@@ -23,49 +29,73 @@ public class TaskManager {
         }
     }
 
-    private final void writeTaskFile() {
+    private void createTable() {
+        Statement statement = null;
+        String sql = "CREATE TABLE IF NOT EXISTS tasks"
+                + "  (Id INT AUTO_INCREMENT primary key NOT NULL,"
+                + "   taskId UUID(36),"
+                + "   title VARCHAR(25),"
+                + "   description VARCHAR(35),"
+                + "   dueDate DATE)";
         try {
-            file.getParentFile().mkdirs();
-            outputTask = new ObjectOutputStream(new FileOutputStream(file));
-            outputTask.writeObject(tasks);
-            outputTask.close();
-        } catch (Exception e) {
-            System.out.println(e);
+            connection = dbConnection.getConnection();
+            statement = connection.createStatement();
+            statement.execute(sql);
+            connection.close();
+            statement.close();
+        } catch (SQLException exception) {
+            System.out.println("Database may already be in use,close all other connections and restart todoly!!!");
         }
     }
 
-    private Task handleCreateTask() {
-
+    private void handleCreateTask() {
+        Date dueDate = null;
         System.out.println("(*)  Can't be empty");
         System.out.print("Title of the task (*) : ");
         String title = scn.nextLine();
         System.out.print("Description(Optional): ");
         String description = scn.nextLine();
-        System.out.print("Due Date dd/MM/yyyy (*): ");
+        System.out.print("Due Date yyyy-MM-dd (*): ");
         String dueDateInput = scn.nextLine();
-
         try {
-            Date dueDate = dueDateParser.parse(dueDateInput);
-            if (title.isEmpty()) {
-                System.out.println("Fill required fields");
+            dueDate = Date.valueOf(dueDateInput);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Incorrect date format");
+            return;
+        }
+        if (title.isEmpty()) {
+            System.out.println("Fill required fields");
 
-            } else if (dueDate.before(new Date())) {
-                System.out.println("The given date can not be older than now");
+        } else if (dueDate.before(Date.from(Instant.now()))) {
 
-            } else {
+            System.out.println("The given date can not be older than now");
 
+        } else {
+
+            try {
                 UUID uniqId = UUID.randomUUID();
                 Task task = new Task(uniqId, title, description, dueDate);
-                tasks.put(uniqId.toString(), task);
-                System.out.println();
-                System.out.println(task.getId() + " Task added");
-                writeTaskFile();
-                return task;
+                connection = dbConnection.getConnection();
+                String sql = ("INSERT INTO TASKS " + "VALUES (?,?,?,?,?)");
+                preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.setString(1, null);
+                preparedStatement.setString(2, uniqId.toString());
+                preparedStatement.setString(3, title);
+                preparedStatement.setString(4, description);
+                preparedStatement.setString(5, dueDate.toString());
+                preparedStatement.executeUpdate();
+
+                System.out.println("\n" + task.getId() + " Task added");
+
+                preparedStatement.close();
+                connection.close();
+            } catch (IllegalArgumentException e) {
+                System.out.println("Incorrect date format");
+
+            } catch (Exception e) {
+                System.out.println("Database may already be in use,close all other connections and restart todoly!!!");
             }
-        } catch (Exception e) {
-            System.out.println("Incorrect date format");
         }
-        return null;
     }
 
     private void listAllTasks() {
@@ -102,7 +132,7 @@ public class TaskManager {
         if (task != null) {
             tasks.remove(taskId);
             System.out.println(task.getTitle() + " titled task deleted");
-            writeTaskFile();
+            //writeTaskFile();
         } else {
             System.out.println("Task not found");
         }
@@ -110,7 +140,7 @@ public class TaskManager {
 
     private void filterTask() {
 
-        try {
+       /* try {
             List<Task> foundTask = new ArrayList<>();
             System.out.println("Last Date");
             String lastDateInput = scn.nextLine();
@@ -128,7 +158,7 @@ public class TaskManager {
             }
         } catch (Exception e) {
             System.out.println("Incorrect date format");
-        }
+        }*/
     }
 
     private void filterTasksbyNameAndDescription() {
@@ -137,7 +167,8 @@ public class TaskManager {
         String searchingWord = scn.nextLine();
 
         for (Task task : tasks.values()) {
-            if (task.getTitle().toLowerCase().contains(searchingWord.toLowerCase()) || task.getDescription().toLowerCase().contains(searchingWord.toLowerCase())) {
+            if (task.getTitle().toLowerCase().contains(searchingWord.toLowerCase()) ||
+                    task.getDescription().toLowerCase().contains(searchingWord.toLowerCase())) {
                 foundTasks.add(task);
             }
         }
@@ -149,6 +180,7 @@ public class TaskManager {
     }
 
     public void handleInputs() {
+
         loadTasksFromFile();
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
@@ -161,9 +193,13 @@ public class TaskManager {
                 "Q- Quit from Todoly");
         System.out.println("Transactions : \n" + transactions);
         System.out.println("Please select the action you want to do");
-        int loopCounter = 0;
-        while (true) {
 
+        int loopCounter = 0;
+
+        if (loopCounter == 0) {
+            createTable();
+        }
+        while (true) {
             if (loopCounter >= 1) {
                 System.out.println("To see the actions menu (t) ");
             }
@@ -190,7 +226,7 @@ public class TaskManager {
             } else if (transaction.equals("6")) {
                 filterTasksbyNameAndDescription();
             } else {
-                System.out.println("invalid input");
+                System.out.println("Invalid input");
             }
         }
         scn.close();

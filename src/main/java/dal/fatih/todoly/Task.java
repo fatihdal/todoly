@@ -1,10 +1,9 @@
 package dal.fatih.todoly;
 
-import java.io.Serializable;
-import java.util.Date;
+import java.sql.Date;
 import java.util.UUID;
 
-public class Task implements Serializable {
+public class Task  {
 
     private UUID id;
     private String title;
