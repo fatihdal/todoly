@@ -33,42 +33,42 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldNotAllowEmptyTitle() throws SQLException {
+    public void shouldNotAllowEmptyTitle() {
         provideInput(Arrays.asList("1", "", "description-of-task", "2030-05-05", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Fill required fields"));
     }
 
     @Test
-    public void shouldNotAllowIncorrectDate() throws SQLException {
+    public void shouldNotAllowIncorrectDate() {
         provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "21102021", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
     }
 
     @Test
-    public void shouldNotAllowOldDateFromNow() throws SQLException {
+    public void shouldNotAllowOldDateFromNow() {
         provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "2020-05-05", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("The given date can not be older than now"));
     }
 
     @Test
-    public void shouldNotAllowEmptyDueDate() throws SQLException {
+    public void shouldNotAllowEmptyDueDate() {
         provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
     }
 
     @Test
-    public void shouldAllowEmptyDescription() throws SQLException {
+    public void shouldAllowEmptyDescription() {
         provideInput(Arrays.asList("1", "title-of-task", "", "2030-05-05", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Task added"));
     }
 
     @Test
-    public void shouldListAllTasks() throws SQLException {
+    public void shouldListAllTasks() {
         addTask("title-of-the-task-to-be-listed", "description-of-task", "2030-05-05");
         addTask("title-of-the-task-to-be-listed-2", "description-of-task", "2030-05-05");
         provideInput(Arrays.asList("2", "q"));
@@ -78,14 +78,14 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindNoTaskToShowDetails() throws SQLException {
+    public void shouldFindNoTaskToShowDetails() {
         provideInput(Arrays.asList("3", "", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Task not found"));
     }
 
     @Test
-    public void shouldShowTaskDetails() throws SQLException {
+    public void shouldShowTaskDetails() {
         String title = "title-of-the-task";
         String description = "description-of-task";
         addTask(title, description, "2030-05-05");
@@ -105,14 +105,14 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindNoTaskToDelete() throws SQLException {
+    public void shouldFindNoTaskToDelete() {
         provideInput(Arrays.asList("4", "", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Task not found"));
     }
 
     @Test
-    public void shouldDeleteTask() throws SQLException {
+    public void shouldDeleteTask() {
         String title = "title-of-the-task-to-be-deleted";
         addTask(title, "description-of-task", "2030-05-05");
 
@@ -129,21 +129,21 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldShowFilteringTaskByNameAndDescriptionWithMenuIndex6() throws SQLException {
+    public void shouldShowFilteringTaskByNameAndDescriptionWithMenuIndex6() {
         provideInput(Collections.singletonList("q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("6- Filter tasks by name and description"));
     }
 
     @Test
-    public void shouldFindNoTask() throws SQLException {
+    public void shouldFindNoTask() {
         provideInput(Arrays.asList("6", "un-existing-task-name", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("No tasks found"));
     }
 
     @Test
-    public void shouldFindTasksByTitle() throws SQLException {
+    public void shouldFindTasksByTitle() {
         addTask("title-of-task", "description-of-task", "2030-05-05");
         provideInput(Arrays.asList("6", "tle-of", "q"));
         App.main(new String[]{});
@@ -151,7 +151,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldIgnoreCaseWhenFiltertingTasksByTitle() throws SQLException {
+    public void shouldIgnoreCaseWhenFiltertingTasksByTitle() {
         addTask("title-of-task", "description-of-task", "2030-05-05");
         provideInput(Arrays.asList("6", "TLE-OF", "q"));
         App.main(new String[]{});
@@ -159,7 +159,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindTasksByDescription() throws SQLException {
+    public void shouldFindTasksByDescription() {
         addTask("title-of-task", "description-of-task", "2030-05-05");
         provideInput(Arrays.asList("6", "descr", "q"));
         App.main(new String[]{});
@@ -167,7 +167,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldIgnoreCaseWhenFiltertingTasksByDescription() throws SQLException {
+    public void shouldIgnoreCaseWhenFiltertingTasksByDescription() {
         addTask("title-of-task", "description-of-task", "2030-05-05");
         provideInput(Arrays.asList("6", "DESCR", "q"));
         App.main(new String[]{});
@@ -175,7 +175,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFilterByDate() throws SQLException {
+    public void shouldFilterByDate() {
         addTask("title-of-the-task-to-be-filter", "description-of-task", "2024-05-05");
         addTask("title-of-the-task-to-be-filter-2", "description-of-task", "2030-05-05");
         provideInput(Arrays.asList("5", "2025-05-05", "q"));
@@ -185,21 +185,21 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindNoTaskBetweenTwoDates() throws SQLException {
+    public void shouldFindNoTaskBetweenTwoDates() {
         provideInput(Arrays.asList("5", "2030-05-05", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("No task found in this date range"));
     }
 
     @Test
-    public void shouldNotAllowIncorrectDateFormatWhenFilteringByDate() throws SQLException {
+    public void shouldNotAllowIncorrectDateFormatWhenFilteringByDate() {
         provideInput(Arrays.asList("5", "01/012022", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
     }
 
     @Test
-    public void shouldNotAllowEmptyDateWhenFilteringByDate() throws SQLException {
+    public void shouldNotAllowEmptyDateWhenFilteringByDate() {
         provideInput(Arrays.asList("5", "", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
@@ -210,7 +210,7 @@ public class TodolyTest {
         System.setIn(in);
     }
 
-    private void addTask(String title, String description, String dueDate) throws SQLException {
+    private void addTask(String title, String description, String dueDate) {
         provideInput(Arrays.asList("1", title, description, dueDate, "q"));
         App.main(new String[]{});
     }

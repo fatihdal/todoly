@@ -18,6 +18,7 @@ public class TaskManager {
     private PreparedStatement preparedStatement;
     private Connection connection;
     private DBConnection dbConnection = new DBConnection();
+    private ResultSet resultSet;
 
     private void loadTasksFromFile() {
         try {
@@ -34,8 +35,8 @@ public class TaskManager {
         String sql = "CREATE TABLE IF NOT EXISTS tasks"
                 + "  (Id INT AUTO_INCREMENT primary key NOT NULL,"
                 + "   taskId UUID(36),"
-                + "   title VARCHAR(25),"
-                + "   description VARCHAR(35),"
+                + "   title VARCHAR(35),"
+                + "   description VARCHAR(250),"
                 + "   dueDate DATE)";
         try {
             connection = dbConnection.getConnection();
@@ -44,7 +45,7 @@ public class TaskManager {
             connection.close();
             statement.close();
         } catch (SQLException exception) {
-            System.out.println("Database may already be in use,close all other connections and restart todoly!!!");
+            System.out.println("Check database connections, drivers and restart todoly!!!");
         }
     }
 
@@ -92,23 +93,41 @@ public class TaskManager {
             } catch (IllegalArgumentException e) {
                 System.out.println("Incorrect date format");
 
+            } catch (SQLDataException e) {
+                System.out.println(e.getMessage().substring(0, 45));
             } catch (Exception e) {
-                System.out.println("Database may already be in use,close all other connections and restart todoly!!!");
+                System.out.println(e.getMessage());
             }
         }
     }
 
     private void listAllTasks() {
+        int counter = 0;
+        try {
+            connection = dbConnection.getConnection();
 
-        if (tasks.isEmpty()) {
-            System.out.println("Task list is empty");
-        } else {
-            tasks.entrySet().forEach(stringTaskEntry -> {
-                System.out.println("Title : " + stringTaskEntry.getValue().getTitle() +
-                        "\n" + "ID :" + stringTaskEntry.getValue().getId());
-                System.out.println("----------------------------------");
-            });
+            String sql = "select ID,TASKID,TITLE,DESCRIPTION,DUEDATE from TASKS";
+            preparedStatement = connection.prepareStatement(sql);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                counter = +1;
+                String taskId = resultSet.getString(2);
+                String title = resultSet.getString(3);
+                System.out.println("Id: " + taskId);
+                System.out.println("Title: " + title);
+                System.out.println("-------------------------------------------------");
+            }
+            connection.close();
+            preparedStatement.close();
+            resultSet.close();
+            if (counter < 1) {
+                System.out.println("------------------");
+            }
+        } catch (SQLException e) {
+            System.out.println("Check database connections, drivers and restart todoly");
         }
+
+
     }
 
     private void showTaskDetails() {
