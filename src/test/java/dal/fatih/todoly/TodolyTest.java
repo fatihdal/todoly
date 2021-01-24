@@ -30,7 +30,6 @@ public class TodolyTest {
         outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
     }
-
     @After
     public void tearDown() {
         try {

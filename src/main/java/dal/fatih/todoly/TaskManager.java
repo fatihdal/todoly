@@ -22,10 +22,8 @@ public class TaskManager {
                 + "   description VARCHAR(250),"
                 + "   dueDate DATE)";
         try {
-            connection = dbConnection.getConnection();
             statement = connection.createStatement();
             statement.execute(sql);
-            connection.close();
             statement.close();
         } catch (SQLException exception) {
             System.out.println("Check database connections, drivers!!!");
@@ -58,7 +56,6 @@ public class TaskManager {
 
             try {
                 UUID uniqId = UUID.randomUUID();
-                connection = dbConnection.getConnection();
                 String sql = ("INSERT INTO TASKS " + "VALUES (?,?,?,?,?)");
                 preparedStatement = connection.prepareStatement(sql);
                 preparedStatement.setString(1, null);
@@ -69,14 +66,12 @@ public class TaskManager {
                 preparedStatement.executeUpdate();
 
                 System.out.println("\n" + uniqId + " Task added");
-
                 preparedStatement.close();
-                connection.close();
             } catch (IllegalArgumentException e) {
                 System.out.println("Incorrect date format");
 
             } catch (SQLDataException e) {
-                System.out.println(e.getMessage().substring(0, 45));
+                System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
@@ -86,8 +81,6 @@ public class TaskManager {
     private void listAllTasks() {
         int counter = 0;
         try {
-            connection = dbConnection.getConnection();
-
             String sql = "select ID,TASKID,TITLE,DESCRIPTION,DUEDATE from TASKS";
             preparedStatement = connection.prepareStatement(sql);
             resultSet = preparedStatement.executeQuery();
@@ -99,14 +92,13 @@ public class TaskManager {
                 System.out.println("Title: " + title);
                 System.out.println("-------------------------------------------------");
             }
-            connection.close();
             preparedStatement.close();
             resultSet.close();
             if (counter < 1) {
                 System.out.println("------------------");
             }
-        } catch (SQLException e) {
-            System.out.println("Check database connections, drivers!!!");
+        } catch (Exception e) {
+            System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
         }
     }
 
@@ -118,19 +110,11 @@ public class TaskManager {
             System.out.println("Please enter min first three characters!!!");
             return;
         }
-        Task task = null;
-
         try {
-            connection = dbConnection.getConnection();
-
             String sql = "SELECT taskId,title,description,duedate FROM tasks WHERE taskId like ?";
             preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setObject(1, "%" + taskIdInput + "%");
             resultSet = preparedStatement.executeQuery();
-        } catch (SQLException e) {
-            System.out.println(e);
-        }
-        try {
             while (resultSet.next()) {
                 counter++;
                 UUID taskId = resultSet.getObject("taskId", java.util.UUID.class);
@@ -147,8 +131,9 @@ public class TaskManager {
             }
             preparedStatement.close();
             resultSet.close();
-            connection.close();
 
+        } catch (NullPointerException e) {
+            System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -160,7 +145,6 @@ public class TaskManager {
         String taskIdInput = scn.nextLine();
 
         try {
-            connection = dbConnection.getConnection();
             String sql = "delete FROM tasks WHERE taskId=?";
             preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setObject(1, taskIdInput);
@@ -171,7 +155,6 @@ public class TaskManager {
             } else {
                 System.out.println("No task found");
             }
-            connection.close();
             preparedStatement.close();
         } catch (SQLDataException e) {
             System.out.println("No task found");
@@ -187,7 +170,6 @@ public class TaskManager {
 
         int counter = 0;
         try {
-            connection = dbConnection.getConnection();
             Date date = Date.valueOf(lastDateInput);
             String sql = "select * from TASKS where DUEDATE BETWEEN now() and ?";
             preparedStatement = connection.prepareStatement(sql);
@@ -201,7 +183,6 @@ public class TaskManager {
                 System.out.println("Due Date: " + duedate);
                 System.out.println("-------------------------------------------------");
             }
-            connection.close();
             preparedStatement.close();
             resultSet.close();
             if (counter < 1) {
@@ -210,51 +191,55 @@ public class TaskManager {
         } catch (IllegalArgumentException e) {
             System.out.println("Incorrect date format");
         } catch (SQLException e) {
-            System.out.println("Check database connections, drivers!!!");
+            System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
         }
     }
 
     private void filterTasksbyNameAndDescription() {
         System.out.print("Word to search : ");
         String searchingWord = scn.nextLine();
-        int counter = 0;
+        if (searchingWord.length() < 4) {
+            System.out.println("PLease enter the word to search!");
+        } else {
+            int counter = 0;
+            try {
+                String sql = "select taskId,title,description,dueDate from TASKS where title like ?" + "or description like ?";
+                preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.setObject(1, "%" + searchingWord.toLowerCase() + "%");
+                preparedStatement.setObject(2, "%" + searchingWord.toLowerCase() + "%");
+                resultSet = preparedStatement.executeQuery();
 
-        try {
-            connection = dbConnection.getConnection();
+                while (resultSet.next()) {
+                    counter++;
+                    String taskId = resultSet.getString(1);
+                    String title = resultSet.getString(2);
+                    String description = resultSet.getString(3);
+                    String duedate = resultSet.getString(4);
 
-            String sql = "select taskId,title,description,dueDate from TASKS where title like ?" + "or description like ?";
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setObject(1, "%" + searchingWord.toLowerCase() + "%");
-            preparedStatement.setObject(2, "%" + searchingWord.toLowerCase() + "%");
-            resultSet = preparedStatement.executeQuery();
-
-            while (resultSet.next()) {
-                counter++;
-                String taskId = resultSet.getString(1);
-                String title = resultSet.getString(2);
-                String description = resultSet.getString(3);
-                String duedate = resultSet.getString(4);
-
-                System.out.println("Task ıd: " + taskId);
-                System.out.println("Title: " + title);
-                System.out.println("Description: " + description);
-                System.out.println("Due Date: " + duedate);
-                System.out.println("-------------------------------------------------");
+                    System.out.println("Task ıd: " + taskId);
+                    System.out.println("Title: " + title);
+                    System.out.println("Description: " + description);
+                    System.out.println("Due Date: " + duedate);
+                    System.out.println("-------------------------------------------------");
+                }
+                preparedStatement.close();
+                resultSet.close();
+                if (counter < 1) {
+                    System.out.println("No task found");
+                }
+            } catch (SQLException e) {
+                System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
             }
-
-            connection.close();
-            preparedStatement.close();
-            resultSet.close();
-            if (counter < 1) {
-                System.out.println("No task found");
-            }
-        } catch (SQLException e) {
-            System.out.println("Check database connections, drivers!!!");
         }
     }
 
     public void handleInputs() {
-        createTable();
+        try {
+            connection = dbConnection.getConnection();
+            createTable();
+        } catch (SQLException e) {
+            System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
+        }
         int loopCounter = 0;
 
         System.out.println("Welcome to todoly");
@@ -302,5 +287,12 @@ public class TaskManager {
             }
         }
         scn.close();
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException exception) {
+                exception.printStackTrace();
+            }
+        }
     }
 }
