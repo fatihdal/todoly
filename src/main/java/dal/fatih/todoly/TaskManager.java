@@ -58,7 +58,6 @@ public class TaskManager {
 
             try {
                 UUID uniqId = UUID.randomUUID();
-                Task task = new Task(uniqId, title, description, dueDate);
                 connection = dbConnection.getConnection();
                 String sql = ("INSERT INTO TASKS " + "VALUES (?,?,?,?,?)");
                 preparedStatement = connection.prepareStatement(sql);
@@ -69,7 +68,7 @@ public class TaskManager {
                 preparedStatement.setString(5, dueDate.toString());
                 preparedStatement.executeUpdate();
 
-                System.out.println("\n" + task.getId() + " Task added");
+                System.out.println("\n" + uniqId + " Task added");
 
                 preparedStatement.close();
                 connection.close();
@@ -112,6 +111,7 @@ public class TaskManager {
     }
 
     private void showTaskDetails() {
+        int counter = 0;
         System.out.print("Task Id (min first three characters) :");
         String taskIdInput = scn.nextLine();
         if (taskIdInput.length() < 3) {
@@ -132,15 +132,17 @@ public class TaskManager {
         }
         try {
             while (resultSet.next()) {
+                counter++;
                 UUID taskId = resultSet.getObject("taskId", java.util.UUID.class);
                 String title = resultSet.getString("title");
                 String description = resultSet.getString("description");
                 Date dueDate = resultSet.getObject("dueDate", java.sql.Date.class);
-                task = new Task(taskId, title, description, dueDate);
+                System.out.println("Task id : "+taskId);
+                System.out.println("Title : "+title);
+                System.out.println("Description : "+description);
+                System.out.println("Due date : "+dueDate);
             }
-            if (task != null) {
-                System.out.println(task);
-            } else {
+            if (counter<1) {
                 System.out.println("No task found");
             }
             preparedStatement.close();
@@ -179,7 +181,7 @@ public class TaskManager {
         }
     }
 
-    private void filterTask() {
+    private void filterTasks() {
         System.out.print("Due Date yyyy-MM-dd (*): ");
         String lastDateInput = scn.nextLine();
         int counter = 0;
@@ -291,7 +293,7 @@ public class TaskManager {
             } else if (transaction.equals("4")) {
                 deleteTask();
             } else if (transaction.equals("5")) {
-                filterTask();
+                filterTasks();
             } else if (transaction.equals("6")) {
                 filterTasksbyNameAndDescription();
             } else {
