@@ -3,7 +3,7 @@ package dal.fatih.todoly;
 import java.sql.Date;
 import java.util.UUID;
 
-public class Task  {
+public class Task {
 
     private UUID id;
     private String title;
@@ -18,7 +18,9 @@ public class Task  {
         this.dueDate = dueDate;
     }
 
-    public UUID getId() { return id; }
+    public UUID getId() {
+        return id;
+    }
 
     public String getTitle() {
         return title;
@@ -31,7 +33,6 @@ public class Task  {
     public Date getDate() {
         return dueDate;
     }
-
 
     @Override
     public String toString() {

@@ -1,19 +1,12 @@
 package dal.fatih.todoly;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.sql.*;
-import java.sql.Date;
 import java.time.Instant;
-import java.util.*;
+import java.util.Scanner;
+import java.util.UUID;
 
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
-    private Map<String, Task> tasks = new HashMap<String, Task>();
-    private final File file = new File("./output/task.bin");
-    private ObjectInputStream inputTask;
     private PreparedStatement preparedStatement;
     private Statement statement;
     private Connection connection;
@@ -130,25 +123,25 @@ public class TaskManager {
         try {
             connection = dbConnection.getConnection();
 
-            String sql = "SELECT id,taskId,title,description,duedate FROM tasks WHERE taskId like ?";
+            String sql = "SELECT taskId,title,description,duedate FROM tasks WHERE taskId like ?";
             preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setObject(1, taskIdInput + "%");
+            preparedStatement.setObject(1, "%" + taskIdInput + "%");
             resultSet = preparedStatement.executeQuery();
         } catch (SQLException e) {
             System.out.println(e);
         }
         try {
             while (resultSet.next()) {
-                UUID userId = resultSet.getObject("taskId", java.util.UUID.class);
+                UUID taskId = resultSet.getObject("taskId", java.util.UUID.class);
                 String title = resultSet.getString("title");
                 String description = resultSet.getString("description");
                 Date dueDate = resultSet.getObject("dueDate", java.sql.Date.class);
-                task = new Task(userId, title, description, dueDate);
+                task = new Task(taskId, title, description, dueDate);
             }
             if (task != null) {
                 System.out.println(task);
             } else {
-                System.out.println("Task not found");
+                System.out.println("No task found");
             }
             preparedStatement.close();
             resultSet.close();
@@ -174,12 +167,12 @@ public class TaskManager {
             if (rows > 0) {
                 System.out.println("Task deleted");
             } else {
-                System.out.println("Task not found");
+                System.out.println("No task found");
             }
             connection.close();
             preparedStatement.close();
         } catch (SQLDataException e) {
-            System.out.println("Task not found");
+            System.out.println("No task found");
         } catch (Exception e) {
             System.out.println(e.getMessage().substring(0, 45));
             System.out.println(e.getStackTrace());
@@ -187,43 +180,73 @@ public class TaskManager {
     }
 
     private void filterTask() {
+        System.out.print("Due Date yyyy-MM-dd (*): ");
+        String lastDateInput = scn.nextLine();
+        int counter = 0;
+        try {
+            connection = dbConnection.getConnection();
 
-       /* try {
-            List<Task> foundTask = new ArrayList<>();
-            System.out.println("Last Date");
-            String lastDateInput = scn.nextLine();
-            Date lastDate = dueDateParser.parse(lastDateInput);
-
-            for (Task task : tasks.values()) {
-                if (task.getDate().before(lastDate)) {
-                    foundTask.add(task);
-                }
+            String sql = "select * from TASKS where DUEDATE BETWEEN now() and ?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setObject(1, lastDateInput);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                counter++;
+                String title = resultSet.getString(3);
+                String duedate = resultSet.getString(5);
+                System.out.println("Title: " + title);
+                System.out.println("Due Date: " + duedate);
+                System.out.println("-------------------------------------------------");
             }
-            if (foundTask.isEmpty()) {
+            connection.close();
+            preparedStatement.close();
+            resultSet.close();
+            if (counter < 1) {
                 System.out.println("No task found in this date range");
-            } else {
-                System.out.println(foundTask);
             }
-        } catch (Exception e) {
+        } catch (SQLDataException e) {
             System.out.println("Incorrect date format");
-        }*/
+        } catch (SQLException e) {
+            System.out.println("Check database connections, drivers!!!");
+        }
     }
 
     private void filterTasksbyNameAndDescription() {
-        List<Task> foundTasks = new ArrayList<>();
-        System.out.println("Word to search");
+        System.out.print("Word to search : ");
         String searchingWord = scn.nextLine();
+        int counter = 0;
 
-        for (Task task : tasks.values()) {
-            if (task.getTitle().toLowerCase().contains(searchingWord.toLowerCase()) ||
-                    task.getDescription().toLowerCase().contains(searchingWord.toLowerCase())) {
-                foundTasks.add(task);
+        try {
+            connection = dbConnection.getConnection();
+
+            String sql = "select taskId,title,description,dueDate from TASKS where title like ?" + "or description like ?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setObject(1, "%" + searchingWord.toLowerCase() + "%");
+            preparedStatement.setObject(2, "%" + searchingWord.toLowerCase() + "%");
+            resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                counter++;
+                String taskId = resultSet.getString(1);
+                String title = resultSet.getString(2);
+                String description = resultSet.getString(3);
+                String duedate = resultSet.getString(4);
+
+                System.out.println("Task ıd: " + taskId);
+                System.out.println("Title: " + title);
+                System.out.println("Description: " + description);
+                System.out.println("Due Date: " + duedate);
+                System.out.println("-------------------------------------------------");
             }
-        }
-        if (foundTasks.isEmpty()) {
-            System.out.println("No tasks found");
-        } else {
-            System.out.println(foundTasks);
+
+            connection.close();
+            preparedStatement.close();
+            resultSet.close();
+            if (counter < 1) {
+                System.out.println("No task found");
+            }
+        } catch (SQLException e) {
+            System.out.println("Check database connections, drivers!!!");
         }
     }
 

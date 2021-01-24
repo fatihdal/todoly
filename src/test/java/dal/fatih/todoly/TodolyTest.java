@@ -26,7 +26,7 @@ public class TodolyTest {
 
     @Test
     public void shouldNotAllowWrongSelection() {
-        provideInput(Arrays.asList("8", "q"));
+        provideInput(Arrays.asList("10", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Invalid input"));
     }
@@ -80,7 +80,7 @@ public class TodolyTest {
     public void shouldFindNoTaskToShowDetails() {
         provideInput(Arrays.asList("3", "46856845672662", "q"));
         App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Task not found"));
+        Assert.assertTrue(outContent.toString().contains("No task found"));
     }
 
     @Test
@@ -136,7 +136,7 @@ public class TodolyTest {
     public void shouldFindNoTaskToDelete() {
         provideInput(Arrays.asList("4", "", "q"));
         App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Task not found"));
+        Assert.assertTrue(outContent.toString().contains("No task found"));
     }
 
     @Test
@@ -167,7 +167,7 @@ public class TodolyTest {
     public void shouldFindNoTask() {
         provideInput(Arrays.asList("6", "un-existing-task-name", "q"));
         App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("No tasks found"));
+        Assert.assertTrue(outContent.toString().contains("No task found"));
     }
 
     @Test
@@ -204,9 +204,9 @@ public class TodolyTest {
 
     @Test
     public void shouldFilterByDate() {
-        addTask("title-of-the-task-to-be-filter", "description-of-task", "2024-05-05");
+        addTask("title-of-the-task-to-be-filter", "description-of-task", "2026-05-05");
         addTask("title-of-the-task-to-be-filter-2", "description-of-task", "2030-05-05");
-        provideInput(Arrays.asList("5", "2025-05-05", "q"));
+        provideInput(Arrays.asList("5", "2027-05-05", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("title-of-the-task-to-be-filter"));
         Assert.assertFalse(outContent.toString().contains("title-of-the-task-to-be-filter-2"));
@@ -214,7 +214,7 @@ public class TodolyTest {
 
     @Test
     public void shouldFindNoTaskBetweenTwoDates() {
-        provideInput(Arrays.asList("5", "2030-05-05", "q"));
+        provideInput(Arrays.asList("5", "2023-05-05", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("No task found in this date range"));
     }
