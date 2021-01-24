@@ -184,18 +184,19 @@ public class TaskManager {
     private void filterTasks() {
         System.out.print("Due Date yyyy-MM-dd (*): ");
         String lastDateInput = scn.nextLine();
+
         int counter = 0;
         try {
             connection = dbConnection.getConnection();
-
+            Date date=Date.valueOf(lastDateInput);
             String sql = "select * from TASKS where DUEDATE BETWEEN now() and ?";
             preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setObject(1, lastDateInput);
+            preparedStatement.setObject(1, date);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 counter++;
                 String title = resultSet.getString(3);
-                String duedate = resultSet.getString(5);
+                Date duedate = resultSet.getDate(5);
                 System.out.println("Title: " + title);
                 System.out.println("Due Date: " + duedate);
                 System.out.println("-------------------------------------------------");
@@ -206,7 +207,7 @@ public class TaskManager {
             if (counter < 1) {
                 System.out.println("No task found in this date range");
             }
-        } catch (SQLDataException e) {
+        } catch (IllegalArgumentException e) {
             System.out.println("Incorrect date format");
         } catch (SQLException e) {
             System.out.println("Check database connections, drivers!!!");

@@ -1,13 +1,18 @@
 package dal.fatih.todoly;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.PipedReader;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -17,11 +22,27 @@ import java.util.regex.Pattern;
 public class TodolyTest {
 
     private ByteArrayOutputStream outContent;
+    private DBConnection dbconnection = new DBConnection();
+    private Connection connection;
+    private PreparedStatement preparedStatement;
 
     @Before
     public void setUp() {
         outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
+    }
+
+    @After
+    public void tearDown() {
+        try {
+            connection = dbconnection.getConnection();
+            preparedStatement = connection.prepareStatement("TRUNCATE TABLE tasks");
+            preparedStatement.execute();
+            connection.close();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Test
@@ -242,4 +263,5 @@ public class TodolyTest {
         provideInput(Arrays.asList("1", title, description, dueDate, "q"));
         App.main(new String[]{});
     }
+
 }
