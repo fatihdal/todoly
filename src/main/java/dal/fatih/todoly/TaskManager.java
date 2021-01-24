@@ -14,24 +14,14 @@ public class TaskManager {
     private Map<String, Task> tasks = new HashMap<String, Task>();
     private final File file = new File("./output/task.bin");
     private ObjectInputStream inputTask;
-    private ObjectOutputStream outputTask;
     private PreparedStatement preparedStatement;
+    private Statement statement;
     private Connection connection;
-    private DBConnection dbConnection = new DBConnection();
     private ResultSet resultSet;
-
-    private void loadTasksFromFile() {
-        try {
-            inputTask = new ObjectInputStream(new FileInputStream(file));
-            tasks = (HashMap) inputTask.readObject();
-            inputTask.close();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
+    private DBConnection dbConnection = new DBConnection();
 
     private void createTable() {
-        Statement statement = null;
+
         String sql = "CREATE TABLE IF NOT EXISTS tasks"
                 + "  (Id INT AUTO_INCREMENT primary key NOT NULL,"
                 + "   taskId UUID(36),"
@@ -45,7 +35,7 @@ public class TaskManager {
             connection.close();
             statement.close();
         } catch (SQLException exception) {
-            System.out.println("Check database connections, drivers and restart todoly!!!");
+            System.out.println("Check database connections, drivers!!!");
         }
     }
 
@@ -110,7 +100,7 @@ public class TaskManager {
             preparedStatement = connection.prepareStatement(sql);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                counter = +1;
+                counter++;
                 String taskId = resultSet.getString(2);
                 String title = resultSet.getString(3);
                 System.out.println("Id: " + taskId);
@@ -124,7 +114,7 @@ public class TaskManager {
                 System.out.println("------------------");
             }
         } catch (SQLException e) {
-            System.out.println("Check database connections, drivers and restart todoly");
+            System.out.println("Check database connections, drivers!!!");
         }
     }
 
@@ -139,7 +129,6 @@ public class TaskManager {
 
         try {
             connection = dbConnection.getConnection();
-
 
             String sql = "SELECT id,taskId,title,description,duedate FROM tasks WHERE taskId like ?";
             preparedStatement = connection.prepareStatement(sql);
@@ -172,15 +161,28 @@ public class TaskManager {
 
     private void deleteTask() {
 
-        System.out.print("Task Id :");
-        String taskId = scn.nextLine();
-        Task task = tasks.get(taskId);
-        if (task != null) {
-            tasks.remove(taskId);
-            System.out.println(task.getTitle() + " titled task deleted");
-            //writeTaskFile();
-        } else {
+        System.out.print("Task Id: ");
+        String taskIdInput = scn.nextLine();
+
+        try {
+            connection = dbConnection.getConnection();
+            String sql = "delete FROM tasks WHERE taskId=?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setObject(1, taskIdInput);
+            int rows = preparedStatement.executeUpdate();
+
+            if (rows > 0) {
+                System.out.println("Task deleted");
+            } else {
+                System.out.println("Task not found");
+            }
+            connection.close();
+            preparedStatement.close();
+        } catch (SQLDataException e) {
             System.out.println("Task not found");
+        } catch (Exception e) {
+            System.out.println(e.getMessage().substring(0, 45));
+            System.out.println(e.getStackTrace());
         }
     }
 
@@ -226,8 +228,9 @@ public class TaskManager {
     }
 
     public void handleInputs() {
+        createTable();
+        int loopCounter = 0;
 
-        loadTasksFromFile();
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
         String transactions = ("1- Create new task\n" +
@@ -240,16 +243,13 @@ public class TaskManager {
         System.out.println("Transactions : \n" + transactions);
         System.out.println("Please select the action you want to do");
 
-        int loopCounter = 0;
-
-        if (loopCounter == 0) {
-            createTable();
-        }
         while (true) {
+
             if (loopCounter >= 1) {
-                System.out.println("To see the actions menu (t) ");
+                System.out.println("To see the actions menu (T) ");
             }
             loopCounter++;
+
             System.out.print("Choice: ");
             String transaction = scn.nextLine();
 

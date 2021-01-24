@@ -82,6 +82,7 @@ public class TodolyTest {
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("Task not found"));
     }
+
     @Test
     public void shouldNotAllowLessThanTheTopThreeCharacters() {
         provideInput(Arrays.asList("3", "", "q"));
@@ -113,14 +114,14 @@ public class TodolyTest {
     public void shouldShowTaskDetailsWithFirstThreeCaracters() {
         String title = "title-of-the-task";
         String description = "description-of-task";
-        String dueDate="2030-05-05";
+        String dueDate = "2030-05-05";
         addTask(title, description, dueDate);
 
         String taskIdPattern = "(.+)\\sTask\\sadded";
         Pattern r = Pattern.compile(taskIdPattern, Pattern.MULTILINE);
         Matcher m = r.matcher(outContent.toString());
         Assert.assertTrue(m.find());
-        String taskId = m.group(1).substring(0,3);
+        String taskId = m.group(1).substring(0, 3);
         Assert.assertNotNull(taskId);
 
         provideInput(Arrays.asList("3", taskId, "q"));
@@ -152,7 +153,7 @@ public class TodolyTest {
 
         provideInput(Arrays.asList("4", taskId, "q"));
         App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains(title + " titled task deleted"));
+        Assert.assertTrue(outContent.toString().contains("Task deleted"));
     }
 
     @Test
