@@ -7,9 +7,9 @@ import java.sql.SQLException;
 public class DBConnection {
     static String userName = "sa";
     static String password = "sa";
-    static String dbUrl = "jdbc:h2:~/taskss" ;
+    static String dbUrl = "jdbc:h2:~/todoly_db";
 
-    public Connection getConnection() throws SQLException{
+    public Connection getConnection() throws SQLException {
 
         return (Connection) DriverManager.getConnection(dbUrl, userName, password);
     }

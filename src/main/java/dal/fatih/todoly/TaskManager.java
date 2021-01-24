@@ -137,12 +137,12 @@ public class TaskManager {
                 String title = resultSet.getString("title");
                 String description = resultSet.getString("description");
                 Date dueDate = resultSet.getObject("dueDate", java.sql.Date.class);
-                System.out.println("Task id : "+taskId);
-                System.out.println("Title : "+title);
-                System.out.println("Description : "+description);
-                System.out.println("Due date : "+dueDate);
+                System.out.println("Task id : " + taskId);
+                System.out.println("Title : " + title);
+                System.out.println("Description : " + description);
+                System.out.println("Due date : " + dueDate);
             }
-            if (counter<1) {
+            if (counter < 1) {
                 System.out.println("No task found");
             }
             preparedStatement.close();
@@ -188,7 +188,7 @@ public class TaskManager {
         int counter = 0;
         try {
             connection = dbConnection.getConnection();
-            Date date=Date.valueOf(lastDateInput);
+            Date date = Date.valueOf(lastDateInput);
             String sql = "select * from TASKS where DUEDATE BETWEEN now() and ?";
             preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setObject(1, date);

@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.PipedReader;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -263,5 +262,4 @@ public class TodolyTest {
         provideInput(Arrays.asList("1", title, description, dueDate, "q"));
         App.main(new String[]{});
     }
-
 }
