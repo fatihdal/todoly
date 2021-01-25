@@ -30,6 +30,7 @@ public class TodolyTest {
         outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
     }
+
     @After
     public void tearDown() {
         try {
@@ -127,28 +128,6 @@ public class TodolyTest {
         Assert.assertTrue(outContent.toString().contains(taskId));
         Assert.assertTrue(outContent.toString().contains(title));
         Assert.assertTrue(outContent.toString().contains(description));
-    }
-
-    @Test
-    public void shouldShowTaskDetailsWithFirstThreeCaracters() {
-        String title = "title-of-the-task";
-        String description = "description-of-task";
-        String dueDate = "2030-05-05";
-        addTask(title, description, dueDate);
-
-        String taskIdPattern = "(.+)\\sTask\\sadded";
-        Pattern r = Pattern.compile(taskIdPattern, Pattern.MULTILINE);
-        Matcher m = r.matcher(outContent.toString());
-        Assert.assertTrue(m.find());
-        String taskId = m.group(1).substring(0, 3);
-        Assert.assertNotNull(taskId);
-
-        provideInput(Arrays.asList("3", taskId, "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains(taskId));
-        Assert.assertTrue(outContent.toString().contains(title));
-        Assert.assertTrue(outContent.toString().contains(description));
-        Assert.assertTrue(outContent.toString().contains(dueDate));
     }
 
     @Test
