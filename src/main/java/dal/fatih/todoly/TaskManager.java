@@ -10,7 +10,7 @@ public class TaskManager {
     private Connection connection;
     TaskRepository taskRepository = new TaskRepository();
 
-    private void handleCreateTask(){
+    private void handleCreateTask() {
         Date dueDate = null;
         System.out.println("(*)  Can't be empty");
         System.out.print("Title of the task (*) : ");
@@ -65,7 +65,7 @@ public class TaskManager {
     }
 
     private void filterTasksbyNameAndDescription() {
-        System.out.print("Word to search : ");
+        System.out.print("Word to search(min four char) : ");
         String keyword = scn.nextLine();
         if (keyword.length() < 4) {
             System.out.println("PLease enter the word to search!");

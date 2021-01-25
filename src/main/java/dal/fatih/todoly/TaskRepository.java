@@ -6,15 +6,23 @@ import java.sql.Date;
 
 public class TaskRepository implements DBManager {
 
-    private PreparedStatement preparedStatement;
-    private Statement statement;
     private Connection connection;
     private ResultSet resultSet;
     final DBConnection dbConnection = new DBConnection();
+    private PreparedStatement preparedStatement;
 
     public Connection connect() throws SQLException {
         connection = dbConnection.getConnection();
         return connection;
+    }
+
+    public String sqlPrepare(String sql) {
+        try {
+            preparedStatement = connection.prepareStatement(sql);
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
+        return sql;
     }
 
     @Override
@@ -27,9 +35,8 @@ public class TaskRepository implements DBManager {
                 + "   description VARCHAR(250),"
                 + "   dueDate DATE)";
         try {
-            statement = connection.createStatement();
-            statement.execute(sql);
-            statement.close();
+            sqlPrepare(sql);
+            preparedStatement.executeUpdate();
         } catch (SQLException exception) {
             System.out.println("Check database connections, drivers!!!");
         }
@@ -39,7 +46,7 @@ public class TaskRepository implements DBManager {
     public void create(Task task) {
         String sql = ("INSERT INTO TASKS " + "VALUES (?,?,?,?,?)");
         try {
-            preparedStatement = connection.prepareStatement(sql);
+            sqlPrepare(sql);
             preparedStatement.setString(1, null);
             preparedStatement.setString(2, task.getId().toString());
             preparedStatement.setString(3, task.getTitle());
@@ -64,7 +71,7 @@ public class TaskRepository implements DBManager {
         int counter = 0;
         try {
             String sql = "select ID,TASKID,TITLE,DESCRIPTION,DUEDATE from TASKS";
-            preparedStatement = connection.prepareStatement(sql);
+            sqlPrepare(sql);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 counter++;
@@ -88,7 +95,7 @@ public class TaskRepository implements DBManager {
         int counter = 0;
         try {
             String sql = "SELECT taskId,title,description,duedate FROM tasks WHERE taskId=? limit 1";
-            preparedStatement = connection.prepareStatement(sql);
+            sqlPrepare(sql);
             preparedStatement.setObject(1, taskIdInput);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -120,7 +127,7 @@ public class TaskRepository implements DBManager {
     public void delete(String taskIdInput) {
         try {
             String sql = "delete FROM tasks WHERE taskId=?";
-            preparedStatement = connection.prepareStatement(sql);
+            sqlPrepare(sql);
             preparedStatement.setObject(1, taskIdInput);
             int rows = preparedStatement.executeUpdate();
 
@@ -147,7 +154,7 @@ public class TaskRepository implements DBManager {
         try {
             Date date = Date.valueOf(lastDate);
             String sql = "select * from TASKS where DUEDATE BETWEEN now() and ?";
-            preparedStatement = connection.prepareStatement(sql);
+            sqlPrepare(sql);
             preparedStatement.setObject(1, date);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -178,7 +185,7 @@ public class TaskRepository implements DBManager {
         int counter = 0;
         try {
             String sql = "select taskId,title,description,dueDate from TASKS where title like ?" + "or description like ?";
-            preparedStatement = connection.prepareStatement(sql);
+            sqlPrepare(sql);
             preparedStatement.setObject(1, "%" + keyword.toLowerCase() + "%");
             preparedStatement.setObject(2, "%" + keyword.toLowerCase() + "%");
             resultSet = preparedStatement.executeQuery();
