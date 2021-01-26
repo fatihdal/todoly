@@ -1,14 +1,19 @@
 package dal.fatih.todoly;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Scanner;
 import java.util.UUID;
 
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
-    private Connection connection;
     TaskRepository taskRepository = new TaskRepository();
+    private Connection connection = taskRepository.connection;
+
+    public TaskManager() throws SQLException {
+    }
 
     private void handleCreateTask() {
         Date dueDate = null;
@@ -76,12 +81,7 @@ public class TaskManager {
     }
 
     public void handleInputs() throws SQLException {
-        try {
-            connection = taskRepository.connect();
-            taskRepository.createTable();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+
         int loopCounter = 0;
 
         System.out.println("Welcome to todoly");
@@ -132,5 +132,6 @@ public class TaskManager {
         if (connection != null) {
             connection.close();
         }
+        System.out.println(connection.isClosed());
     }
 }

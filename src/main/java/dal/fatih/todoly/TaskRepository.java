@@ -4,75 +4,69 @@ import java.sql.*;
 import java.util.UUID;
 import java.sql.Date;
 
-public class TaskRepository implements DBManager {
+public class TaskRepository {
 
-    private Connection connection;
     private ResultSet resultSet;
     final DBConnection dbConnection = new DBConnection();
-    private PreparedStatement preparedStatement;
+    protected Connection connection = dbConnection.getConnection();
+    final PreparedStatement createTablePreparedStatement;
+    final PreparedStatement createTaskPrepareStatement;
+    final PreparedStatement listAllTaskPrepareStatement;
+    final PreparedStatement getDetailsPreparedStatement;
+    final PreparedStatement deleteTaskByIdPreparedStatement;
+    final PreparedStatement listBetweenPreparedStatement;
+    final PreparedStatement filterByTitlePreparedStatement;
 
-    public Connection connect() throws SQLException {
-        connection = dbConnection.getConnection();
-        return connection;
-    }
-
-    public String sqlPrepare(String sql) {
-        try {
-            preparedStatement = connection.prepareStatement(sql);
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        }
-        return sql;
-    }
-
-    @Override
-    public void createTable() {
-
-        String sql = "CREATE TABLE IF NOT EXISTS tasks"
+    public TaskRepository() throws SQLException {
+        createTablePreparedStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS tasks"
                 + "  (Id INT AUTO_INCREMENT primary key NOT NULL,"
                 + "   taskId UUID(36),"
                 + "   title VARCHAR(35),"
                 + "   description VARCHAR(250),"
-                + "   dueDate DATE)";
+                + "   dueDate DATE)");
+        createTable();
+        createTaskPrepareStatement =
+                connection.prepareStatement("INSERT INTO TASKS " + "VALUES (?,?,?,?,?)");
+        listAllTaskPrepareStatement =
+                connection.prepareStatement("select ID,TASKID,TITLE,DESCRIPTION,DUEDATE from TASKS");
+        getDetailsPreparedStatement =
+                connection.prepareStatement("SELECT taskId,title,description,duedate FROM tasks WHERE taskId=? limit 1");
+        deleteTaskByIdPreparedStatement =
+                connection.prepareStatement("delete FROM tasks WHERE taskId=?");
+        listBetweenPreparedStatement =
+                connection.prepareStatement("select * from TASKS where DUEDATE BETWEEN now() and ?");
+        filterByTitlePreparedStatement =
+                connection.prepareStatement("select taskId,title,description,dueDate from TASKS where title like ? "
+                        + "or description like ?");
+    }
+
+    public void createTable() {
         try {
-            sqlPrepare(sql);
-            preparedStatement.executeUpdate();
+            createTablePreparedStatement.executeUpdate();
         } catch (SQLException exception) {
             System.out.println("Check database connections, drivers!!!");
         }
     }
 
-    @Override
     public void create(Task task) {
-        String sql = ("INSERT INTO TASKS " + "VALUES (?,?,?,?,?)");
         try {
-            sqlPrepare(sql);
-            preparedStatement.setString(1, null);
-            preparedStatement.setString(2, task.getId().toString());
-            preparedStatement.setString(3, task.getTitle());
-            preparedStatement.setString(4, task.getDescription());
-            preparedStatement.setString(5, task.getDate().toString());
-            preparedStatement.executeUpdate();
+            createTaskPrepareStatement.setString(1, null);
+            createTaskPrepareStatement.setString(2, task.getId().toString());
+            createTaskPrepareStatement.setString(3, task.getTitle());
+            createTaskPrepareStatement.setString(4, task.getDescription());
+            createTaskPrepareStatement.setString(5, task.getDate().toString());
+            createTaskPrepareStatement.executeUpdate();
 
             System.out.println("\n" + task.getId() + " Task added");
-            preparedStatement.close();
-        } catch (IllegalArgumentException e) {
-            System.out.println("Incorrect date format");
-
-        } catch (SQLDataException e) {
-            System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
-    @Override
     public void listAll() {
         int counter = 0;
         try {
-            String sql = "select ID,TASKID,TITLE,DESCRIPTION,DUEDATE from TASKS";
-            sqlPrepare(sql);
-            resultSet = preparedStatement.executeQuery();
+            resultSet = listAllTaskPrepareStatement.executeQuery();
             while (resultSet.next()) {
                 counter++;
                 String taskId = resultSet.getString(2);
@@ -81,23 +75,19 @@ public class TaskRepository implements DBManager {
                 System.out.println("Title: " + title);
                 System.out.println("-------------------------------------------------");
             }
-            preparedStatement.close();
             if (counter < 1) {
                 System.out.println("------------------");
             }
         } catch (Exception e) {
-            System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
+            System.out.println(e.getMessage());
         }
     }
 
-    @Override
     public void getDetails(String taskIdInput) {
         int counter = 0;
         try {
-            String sql = "SELECT taskId,title,description,duedate FROM tasks WHERE taskId=? limit 1";
-            sqlPrepare(sql);
-            preparedStatement.setObject(1, taskIdInput);
-            resultSet = preparedStatement.executeQuery();
+            getDetailsPreparedStatement.setObject(1, taskIdInput);
+            resultSet = getDetailsPreparedStatement.executeQuery();
             while (resultSet.next()) {
                 counter++;
                 UUID taskId = resultSet.getObject("taskId", java.util.UUID.class);
@@ -112,31 +102,22 @@ public class TaskRepository implements DBManager {
             if (counter < 1) {
                 System.out.println("No task found");
             }
-            preparedStatement.close();
 
-        } catch (NullPointerException e) {
-            System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
-        } catch (SQLDataException e) {
-            System.out.println("No task found");
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
-    @Override
     public void delete(String taskIdInput) {
         try {
-            String sql = "delete FROM tasks WHERE taskId=?";
-            sqlPrepare(sql);
-            preparedStatement.setObject(1, taskIdInput);
-            int rows = preparedStatement.executeUpdate();
+            deleteTaskByIdPreparedStatement.setObject(1, taskIdInput);
+            int rows = deleteTaskByIdPreparedStatement.executeUpdate();
 
             if (rows > 0) {
                 System.out.println("Task deleted");
             } else {
                 System.out.println("No task found");
             }
-            preparedStatement.close();
         } catch (NullPointerException e) {
             System.out.println("null pon");
         } catch
@@ -148,15 +129,12 @@ public class TaskRepository implements DBManager {
         }
     }
 
-    @Override
     public void listBetweenTwoDays(String lastDate) {
         int counter = 0;
         try {
             Date date = Date.valueOf(lastDate);
-            String sql = "select * from TASKS where DUEDATE BETWEEN now() and ?";
-            sqlPrepare(sql);
-            preparedStatement.setObject(1, date);
-            resultSet = preparedStatement.executeQuery();
+            listBetweenPreparedStatement.setObject(1, date);
+            resultSet = listBetweenPreparedStatement.executeQuery();
             while (resultSet.next()) {
                 counter++;
                 String title = resultSet.getString(3);
@@ -165,30 +143,25 @@ public class TaskRepository implements DBManager {
                 System.out.println("Due Date: " + duedate);
                 System.out.println("-------------------------------------------------");
             }
-            preparedStatement.close();
             if (counter < 1) {
                 System.out.println("No task found in this date range");
             }
-        } catch (NullPointerException e) {
-            System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
-        } catch
-        (IllegalArgumentException e) {
+        } catch (SQLDataException e) {
             System.out.println("Incorrect date format");
-        } catch (SQLException e) {
-            System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Incorrect date format");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
-    @Override
     public void filterByTitleOrDescription(String keyword) {
 
         int counter = 0;
         try {
-            String sql = "select taskId,title,description,dueDate from TASKS where title like ?" + "or description like ?";
-            sqlPrepare(sql);
-            preparedStatement.setObject(1, "%" + keyword.toLowerCase() + "%");
-            preparedStatement.setObject(2, "%" + keyword.toLowerCase() + "%");
-            resultSet = preparedStatement.executeQuery();
+            filterByTitlePreparedStatement.setObject(1, "%" + keyword.toLowerCase() + "%");
+            filterByTitlePreparedStatement.setObject(2, "%" + keyword.toLowerCase() + "%");
+            resultSet = filterByTitlePreparedStatement.executeQuery();
 
             while (resultSet.next()) {
                 counter++;
@@ -203,12 +176,11 @@ public class TaskRepository implements DBManager {
                 System.out.println("Due Date: " + duedate);
                 System.out.println("-------------------------------------------------");
             }
-            preparedStatement.close();
             if (counter < 1) {
                 System.out.println("No task found");
             }
         } catch (SQLException e) {
-            System.out.println("Database may be already in use, close all \nother connection please or check database driver!!!");
+            System.out.println(e.getMessage());
         }
     }
 }

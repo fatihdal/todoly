@@ -6,8 +6,10 @@ import java.sql.SQLException;
 public class App {
 
     public static void main(String[] args) {
-        TaskManager taskManager = new TaskManager();
+        TaskManager taskManager = null;
         try {
+            taskManager = new TaskManager();
+
             taskManager.handleInputs();
         } catch (SQLException exception) {
             exception.printStackTrace();
