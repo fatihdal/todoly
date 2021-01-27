@@ -43,7 +43,7 @@ public class TaskManager {
     }
 
     private void listAllTasks() {
-        taskRepository.listAll();
+        taskRepository.getAll();
     }
 
     private void showTaskDetails() {
@@ -66,7 +66,7 @@ public class TaskManager {
     private void filterTasks() {
         System.out.print("Last date yyyy-MM-dd (*): ");
         String lastDate = scn.nextLine();
-        taskRepository.listBetweenTwoDays(lastDate);
+        taskRepository.filter(lastDate);
     }
 
     private void filterTasksbyNameAndDescription() {

@@ -9,7 +9,6 @@ public class TaskRepository {
     private ResultSet resultSet;
     final DBConnection dbConnection = new DBConnection();
     protected Connection connection = dbConnection.getConnection();
-    final PreparedStatement createTablePreparedStatement;
     final PreparedStatement createTaskPrepareStatement;
     final PreparedStatement listAllTaskPrepareStatement;
     final PreparedStatement getDetailsPreparedStatement;
@@ -18,12 +17,7 @@ public class TaskRepository {
     final PreparedStatement filterByTitlePreparedStatement;
 
     public TaskRepository() throws SQLException {
-        createTablePreparedStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS tasks"
-                + "  (Id INT AUTO_INCREMENT primary key NOT NULL,"
-                + "   taskId UUID(36),"
-                + "   title VARCHAR(35),"
-                + "   description VARCHAR(250),"
-                + "   dueDate DATE)");
+
         createTable();
         createTaskPrepareStatement =
                 connection.prepareStatement("INSERT INTO TASKS " + "VALUES (?,?,?,?,?)");
@@ -42,7 +36,13 @@ public class TaskRepository {
 
     public void createTable() {
         try {
-            createTablePreparedStatement.executeUpdate();
+            PreparedStatement preparedStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS tasks"
+                    + "  (Id INT AUTO_INCREMENT primary key NOT NULL,"
+                    + "   taskId UUID(36),"
+                    + "   title VARCHAR(35),"
+                    + "   description VARCHAR(250),"
+                    + "   dueDate DATE)");
+            preparedStatement.executeUpdate();
         } catch (SQLException exception) {
             System.out.println("Check database connections, drivers!!!");
         }
@@ -63,7 +63,7 @@ public class TaskRepository {
         }
     }
 
-    public void listAll() {
+    public void getAll() {
         int counter = 0;
         try {
             resultSet = listAllTaskPrepareStatement.executeQuery();
@@ -129,7 +129,7 @@ public class TaskRepository {
         }
     }
 
-    public void listBetweenTwoDays(String lastDate) {
+    public void filter(String lastDate) {
         int counter = 0;
         try {
             Date date = Date.valueOf(lastDate);
