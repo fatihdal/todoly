@@ -9,6 +9,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,7 +21,7 @@ import java.util.regex.Pattern;
 public class TodolyTest {
 
     private ByteArrayOutputStream outContent;
-    private TaskRepository taskRepository = new TaskRepository();
+    private final Connection connection = new DBConnection().getConnection();
 
     public TodolyTest() throws SQLException {
     }
@@ -29,9 +31,17 @@ public class TodolyTest {
         outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
     }
+
     @After
     public void tearDown() {
-        taskRepository.clearTable();
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE tasks");
+            preparedStatement.execute();
+            connection.close();
+            preparedStatement.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

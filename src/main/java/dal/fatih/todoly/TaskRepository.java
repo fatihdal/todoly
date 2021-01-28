@@ -1,21 +1,22 @@
 package dal.fatih.todoly;
 
+
+import java.io.Closeable;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TaskRepository {
+public class TaskRepository implements Closeable {
 
-    private ResultSet resultSet;
-    final DBConnection dbConnection = new DBConnection();
-    protected Connection connection = dbConnection.getConnection();
-    final PreparedStatement createPrepareStatement;
-    final PreparedStatement listPrepareStatement;
-    final PreparedStatement getPreparedStatement;
-    final PreparedStatement deleteTaskByIdPreparedStatement;
-    final PreparedStatement filterPreparedStatement;
-    final PreparedStatement getByTitleOrDesPreparedStatement;
-    private List<Task> tasks;
+    private final DBConnection dbConnection = new DBConnection();
+    private final Connection connection = dbConnection.getConnection();
+    private final PreparedStatement createPrepareStatement;
+    private final PreparedStatement listPrepareStatement;
+    private final PreparedStatement getPreparedStatement;
+    private final PreparedStatement deleteByIdPreparedStatement;
+    private final PreparedStatement filterPreparedStatement;
+    private final PreparedStatement getByTitleOrDesPreparedStatement;
+
 
     public TaskRepository() throws SQLException {
 
@@ -26,24 +27,13 @@ public class TaskRepository {
                 connection.prepareStatement("select id,taskid,title,description,duedate from tasks");
         getPreparedStatement =
                 connection.prepareStatement("select taskid,title,description,duedate from tasks where taskid=? limit 1");
-        deleteTaskByIdPreparedStatement =
+        deleteByIdPreparedStatement =
                 connection.prepareStatement("delete from tasks where taskid=?");
         filterPreparedStatement =
                 connection.prepareStatement("select * from tasks where duedate between now() and ?");
         getByTitleOrDesPreparedStatement =
                 connection.prepareStatement("select taskid,title,description,duedate from tasks where title like ? "
                         + "or description like ?");
-    }
-
-    public void clearTable() {
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE tasks");
-            preparedStatement.execute();
-            connection.close();
-            preparedStatement.close();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
     }
 
     public void createTable() {
@@ -56,12 +46,12 @@ public class TaskRepository {
                     + "   duedate date)");
             preparedStatement.executeUpdate();
             preparedStatement.close();
-        } catch (SQLException exception) {
-            System.out.println("Check database connections, drivers!!!");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public void create(Task task) {
+    public boolean create(Task task) {
         try {
             createPrepareStatement.setString(1, null);
             createPrepareStatement.setString(2, task.getId().toString());
@@ -69,96 +59,107 @@ public class TaskRepository {
             createPrepareStatement.setString(4, task.getDescription());
             createPrepareStatement.setString(5, task.getDueDate().toString());
             createPrepareStatement.executeUpdate();
-
-            System.out.println("\n" + task.getId() + " Task added");
+            return true;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
     public List<Task> list() {
-        Task task;
-        tasks = new ArrayList<>();
+
+        List<Task> tasks = new ArrayList<>();
         try {
-            resultSet = listPrepareStatement.executeQuery();
+            ResultSet resultSet = listPrepareStatement.executeQuery();
             while (resultSet.next()) {
-                task = new Task();
+                Task task = new Task();
                 task.setId(resultSet.getObject(2, java.util.UUID.class));
                 task.setTitle(resultSet.getString(3));
                 tasks.add(task);
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
         return tasks;
     }
 
     public Task get(String taskIdInput) {
-        Task task = null;
+
         try {
             getPreparedStatement.setObject(1, taskIdInput);
-            resultSet = getPreparedStatement.executeQuery();
-
-            while (resultSet.next()) {
-                task = new Task();
+            ResultSet resultSet = getPreparedStatement.executeQuery();
+            if (resultSet.next()) {
+                Task task = new Task();
                 task.setId(resultSet.getObject("taskId", java.util.UUID.class));
                 task.setTitle(resultSet.getString("title"));
                 task.setDescription(resultSet.getString("description"));
                 task.setDueDate(resultSet.getObject("dueDate", java.sql.Date.class));
+                return task;
+            } else {
+                return null;
             }
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return task;
     }
 
-    public int delete(String taskIdInput) {
-        int count = 0;
-        try {
-            deleteTaskByIdPreparedStatement.setObject(1, taskIdInput);
-            count = deleteTaskByIdPreparedStatement.executeUpdate();
+    public boolean delete(String taskIdInput) {
 
+        try {
+            deleteByIdPreparedStatement.setObject(1, taskIdInput);
+            int deleted = deleteByIdPreparedStatement.executeUpdate();
+            if (deleted > 0) {
+                return true;
+            }
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return count;
+        return false;
     }
 
     public List<Task> filter(Date lastDate) {
-        Task task;
-        tasks = new ArrayList<>();
         try {
+            List<Task> tasks = new ArrayList<>();
             filterPreparedStatement.setObject(1, lastDate);
-            resultSet = filterPreparedStatement.executeQuery();
+            ResultSet resultSet = filterPreparedStatement.executeQuery();
             while (resultSet.next()) {
-                task = new Task();
+                Task task = new Task();
                 task.setTitle(resultSet.getString(3));
                 task.setDueDate(resultSet.getObject(5, java.sql.Date.class));
                 tasks.add(task);
             }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+            return tasks;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return tasks;
     }
 
     public List<Task> filterByTitleOrDescription(String keyword) {
-        Task task;
-        tasks = new ArrayList<>();
         try {
+            List<Task> tasks = new ArrayList<>();
             getByTitleOrDesPreparedStatement.setObject(1, "%" + keyword.toLowerCase() + "%");
             getByTitleOrDesPreparedStatement.setObject(2, "%" + keyword.toLowerCase() + "%");
-            resultSet = getByTitleOrDesPreparedStatement.executeQuery();
+            ResultSet resultSet = getByTitleOrDesPreparedStatement.executeQuery();
 
             while (resultSet.next()) {
-                task = new Task();
+                Task task = new Task();
                 task.setId(resultSet.getObject(1, java.util.UUID.class));
                 task.setTitle(resultSet.getString(2));
                 task.setDescription(resultSet.getString(3));
                 task.setDueDate(resultSet.getObject(4, java.sql.Date.class));
                 tasks.add(task);
             }
+            return tasks;
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
-        return tasks;
+    }
+
+    @Override
+    public void close() {
+        try {
+            connection.close();
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
     }
 }

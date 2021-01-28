@@ -11,7 +11,7 @@ public class App {
             taskManager = new TaskManager();
             taskManager.handleInputs();
         } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 }

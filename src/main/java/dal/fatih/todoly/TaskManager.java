@@ -1,6 +1,5 @@
 package dal.fatih.todoly;
 
-import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -11,8 +10,6 @@ import java.util.UUID;
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
     private TaskRepository taskRepository = new TaskRepository();
-    private Connection connection = taskRepository.connection;
-    private Task task;
     private List<Task> tasks;
 
     public TaskManager() throws SQLException {
@@ -39,7 +36,9 @@ public class TaskManager {
             System.out.println("The given date can not be older than now");
         } else {
             Task task = new Task(UUID.randomUUID(), title, description, dueDate);
-            taskRepository.create(task);
+            if (taskRepository.create(task)) {
+                System.out.println("\n" + task.getId() + " Task added");
+            }
         }
     }
 
@@ -59,11 +58,15 @@ public class TaskManager {
     private void showTaskDetails() {
         System.out.print("Task Id :");
         String taskIdInput = scn.nextLine();
-        task = taskRepository.get(taskIdInput);
-        if (task == null) {
+        try {
+            Task task = taskRepository.get(taskIdInput);
+            if (task == null) {
+                System.out.println("No task found");
+            } else {
+                System.out.println(task);
+            }
+        } catch (Exception e) {
             System.out.println("No task found");
-        } else {
-            System.out.println(task);
         }
     }
 
@@ -71,10 +74,13 @@ public class TaskManager {
 
         System.out.print("Task Id: ");
         String taskIdInput = scn.nextLine();
-
-        if (taskRepository.delete(taskIdInput) > 0) {
-            System.out.println("Task deleted");
-        } else {
+        try {
+            if (taskRepository.delete(taskIdInput)) {
+                System.out.println("Task deleted");
+            } else {
+                System.out.println("No task found");
+            }
+        } catch (Exception e) {
             System.out.println("No task found");
         }
     }
@@ -83,6 +89,10 @@ public class TaskManager {
         System.out.print("Last date yyyy-MM-dd (*): ");
         try {
             Date lastDate = Date.valueOf(scn.nextLine());
+            if (lastDate.before(Date.from(Instant.now()))) {
+                System.out.println("The given date can not be older than now");
+                return;
+            }
             tasks = taskRepository.filter(lastDate);
 
             if (!tasks.isEmpty()) {
@@ -172,8 +182,6 @@ public class TaskManager {
             }
         }
         scn.close();
-        if (connection != null) {
-            connection.close();
-        }
+        taskRepository.close();
     }
 }
