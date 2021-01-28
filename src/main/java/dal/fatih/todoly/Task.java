@@ -18,6 +18,10 @@ public class Task {
         this.dueDate = dueDate;
     }
 
+    public Task() {
+
+    }
+
     public UUID getId() {
         return id;
     }
@@ -30,11 +34,28 @@ public class Task {
         return description;
     }
 
-    public Date getDate() {
+    public Date getDueDate() {
         return dueDate;
     }
 
-    @Override
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setDueDate(Date dueDate) {
+        this.dueDate = dueDate;
+    }
+
+
     public String toString() {
         return "\nID : " + id +
                 "\nTITLE : " + title +

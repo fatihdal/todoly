@@ -1,48 +1,61 @@
 package dal.fatih.todoly;
 
 import java.sql.*;
-import java.util.UUID;
-import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TaskRepository {
 
     private ResultSet resultSet;
     final DBConnection dbConnection = new DBConnection();
     protected Connection connection = dbConnection.getConnection();
-    final PreparedStatement createTaskPrepareStatement;
-    final PreparedStatement listAllTaskPrepareStatement;
-    final PreparedStatement getDetailsPreparedStatement;
+    final PreparedStatement createPrepareStatement;
+    final PreparedStatement listPrepareStatement;
+    final PreparedStatement getPreparedStatement;
     final PreparedStatement deleteTaskByIdPreparedStatement;
-    final PreparedStatement listBetweenPreparedStatement;
-    final PreparedStatement filterByTitlePreparedStatement;
+    final PreparedStatement filterPreparedStatement;
+    final PreparedStatement getByTitleOrDesPreparedStatement;
+    private List<Task> tasks;
 
     public TaskRepository() throws SQLException {
 
         createTable();
-        createTaskPrepareStatement =
-                connection.prepareStatement("INSERT INTO TASKS " + "VALUES (?,?,?,?,?)");
-        listAllTaskPrepareStatement =
-                connection.prepareStatement("select ID,TASKID,TITLE,DESCRIPTION,DUEDATE from TASKS");
-        getDetailsPreparedStatement =
-                connection.prepareStatement("SELECT taskId,title,description,duedate FROM tasks WHERE taskId=? limit 1");
+        createPrepareStatement =
+                connection.prepareStatement("insert into tasks " + "values (?,?,?,?,?)");
+        listPrepareStatement =
+                connection.prepareStatement("select id,taskid,title,description,duedate from tasks");
+        getPreparedStatement =
+                connection.prepareStatement("select taskid,title,description,duedate from tasks where taskid=? limit 1");
         deleteTaskByIdPreparedStatement =
-                connection.prepareStatement("delete FROM tasks WHERE taskId=?");
-        listBetweenPreparedStatement =
-                connection.prepareStatement("select * from TASKS where DUEDATE BETWEEN now() and ?");
-        filterByTitlePreparedStatement =
-                connection.prepareStatement("select taskId,title,description,dueDate from TASKS where title like ? "
+                connection.prepareStatement("delete from tasks where taskid=?");
+        filterPreparedStatement =
+                connection.prepareStatement("select * from tasks where duedate between now() and ?");
+        getByTitleOrDesPreparedStatement =
+                connection.prepareStatement("select taskid,title,description,duedate from tasks where title like ? "
                         + "or description like ?");
+    }
+
+    public void clearTable() {
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE tasks");
+            preparedStatement.execute();
+            connection.close();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     public void createTable() {
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS tasks"
-                    + "  (Id INT AUTO_INCREMENT primary key NOT NULL,"
-                    + "   taskId UUID(36),"
-                    + "   title VARCHAR(35),"
-                    + "   description VARCHAR(250),"
-                    + "   dueDate DATE)");
+            PreparedStatement preparedStatement = connection.prepareStatement("create table if not exists tasks"
+                    + "  (id int auto_increment primary key not null,"
+                    + "   taskid uuid(36),"
+                    + "   title varchar(35),"
+                    + "   description varchar(250),"
+                    + "   duedate date)");
             preparedStatement.executeUpdate();
+            preparedStatement.close();
         } catch (SQLException exception) {
             System.out.println("Check database connections, drivers!!!");
         }
@@ -50,12 +63,12 @@ public class TaskRepository {
 
     public void create(Task task) {
         try {
-            createTaskPrepareStatement.setString(1, null);
-            createTaskPrepareStatement.setString(2, task.getId().toString());
-            createTaskPrepareStatement.setString(3, task.getTitle());
-            createTaskPrepareStatement.setString(4, task.getDescription());
-            createTaskPrepareStatement.setString(5, task.getDate().toString());
-            createTaskPrepareStatement.executeUpdate();
+            createPrepareStatement.setString(1, null);
+            createPrepareStatement.setString(2, task.getId().toString());
+            createPrepareStatement.setString(3, task.getTitle());
+            createPrepareStatement.setString(4, task.getDescription());
+            createPrepareStatement.setString(5, task.getDueDate().toString());
+            createPrepareStatement.executeUpdate();
 
             System.out.println("\n" + task.getId() + " Task added");
         } catch (Exception e) {
@@ -63,124 +76,89 @@ public class TaskRepository {
         }
     }
 
-    public void getAll() {
-        int counter = 0;
+    public List<Task> list() {
+        Task task;
+        tasks = new ArrayList<>();
         try {
-            resultSet = listAllTaskPrepareStatement.executeQuery();
+            resultSet = listPrepareStatement.executeQuery();
             while (resultSet.next()) {
-                counter++;
-                String taskId = resultSet.getString(2);
-                String title = resultSet.getString(3);
-                System.out.println("Id: " + taskId);
-                System.out.println("Title: " + title);
-                System.out.println("-------------------------------------------------");
-            }
-            if (counter < 1) {
-                System.out.println("------------------");
+                task = new Task();
+                task.setId(resultSet.getObject(2, java.util.UUID.class));
+                task.setTitle(resultSet.getString(3));
+                tasks.add(task);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        return tasks;
     }
 
-    public void getDetails(String taskIdInput) {
-        int counter = 0;
+    public Task get(String taskIdInput) {
+        Task task = null;
         try {
-            getDetailsPreparedStatement.setObject(1, taskIdInput);
-            resultSet = getDetailsPreparedStatement.executeQuery();
-            while (resultSet.next()) {
-                counter++;
-                UUID taskId = resultSet.getObject("taskId", java.util.UUID.class);
-                String title = resultSet.getString("title");
-                String description = resultSet.getString("description");
-                Date dueDate = resultSet.getObject("dueDate", java.sql.Date.class);
-                System.out.println("Task id : " + taskId);
-                System.out.println("Title : " + title);
-                System.out.println("Description : " + description);
-                System.out.println("Due date : " + dueDate);
-            }
-            if (counter < 1) {
-                System.out.println("No task found");
-            }
+            getPreparedStatement.setObject(1, taskIdInput);
+            resultSet = getPreparedStatement.executeQuery();
 
+            while (resultSet.next()) {
+                task = new Task();
+                task.setId(resultSet.getObject("taskId", java.util.UUID.class));
+                task.setTitle(resultSet.getString("title"));
+                task.setDescription(resultSet.getString("description"));
+                task.setDueDate(resultSet.getObject("dueDate", java.sql.Date.class));
+            }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
         }
+        return task;
     }
 
-    public void delete(String taskIdInput) {
+    public int delete(String taskIdInput) {
+        int count = 0;
         try {
             deleteTaskByIdPreparedStatement.setObject(1, taskIdInput);
-            int rows = deleteTaskByIdPreparedStatement.executeUpdate();
+            count = deleteTaskByIdPreparedStatement.executeUpdate();
 
-            if (rows > 0) {
-                System.out.println("Task deleted");
-            } else {
-                System.out.println("No task found");
-            }
-        } catch (NullPointerException e) {
-            System.out.println("null pon");
-        } catch
-        (SQLDataException e) {
-            System.out.println("No task found");
         } catch (Exception e) {
-            System.out.println(e.getMessage().substring(0, 45));
-            System.out.println(e.getStackTrace());
         }
+        return count;
     }
 
-    public void filter(String lastDate) {
-        int counter = 0;
+    public List<Task> filter(Date lastDate) {
+        Task task;
+        tasks = new ArrayList<>();
         try {
-            Date date = Date.valueOf(lastDate);
-            listBetweenPreparedStatement.setObject(1, date);
-            resultSet = listBetweenPreparedStatement.executeQuery();
+            filterPreparedStatement.setObject(1, lastDate);
+            resultSet = filterPreparedStatement.executeQuery();
             while (resultSet.next()) {
-                counter++;
-                String title = resultSet.getString(3);
-                Date duedate = resultSet.getDate(5);
-                System.out.println("Title: " + title);
-                System.out.println("Due Date: " + duedate);
-                System.out.println("-------------------------------------------------");
+                task = new Task();
+                task.setTitle(resultSet.getString(3));
+                task.setDueDate(resultSet.getObject(5, java.sql.Date.class));
+                tasks.add(task);
             }
-            if (counter < 1) {
-                System.out.println("No task found in this date range");
-            }
-        } catch (SQLDataException e) {
-            System.out.println("Incorrect date format");
-        } catch (IllegalArgumentException e) {
-            System.out.println("Incorrect date format");
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        return tasks;
     }
 
-    public void filterByTitleOrDescription(String keyword) {
-
-        int counter = 0;
+    public List<Task> filterByTitleOrDescription(String keyword) {
+        Task task;
+        tasks = new ArrayList<>();
         try {
-            filterByTitlePreparedStatement.setObject(1, "%" + keyword.toLowerCase() + "%");
-            filterByTitlePreparedStatement.setObject(2, "%" + keyword.toLowerCase() + "%");
-            resultSet = filterByTitlePreparedStatement.executeQuery();
+            getByTitleOrDesPreparedStatement.setObject(1, "%" + keyword.toLowerCase() + "%");
+            getByTitleOrDesPreparedStatement.setObject(2, "%" + keyword.toLowerCase() + "%");
+            resultSet = getByTitleOrDesPreparedStatement.executeQuery();
 
             while (resultSet.next()) {
-                counter++;
-                String taskId = resultSet.getString(1);
-                String title = resultSet.getString(2);
-                String description = resultSet.getString(3);
-                String duedate = resultSet.getString(4);
-
-                System.out.println("Task ıd: " + taskId);
-                System.out.println("Title: " + title);
-                System.out.println("Description: " + description);
-                System.out.println("Due Date: " + duedate);
-                System.out.println("-------------------------------------------------");
-            }
-            if (counter < 1) {
-                System.out.println("No task found");
+                task = new Task();
+                task.setId(resultSet.getObject(1, java.util.UUID.class));
+                task.setTitle(resultSet.getString(2));
+                task.setDescription(resultSet.getString(3));
+                task.setDueDate(resultSet.getObject(4, java.sql.Date.class));
+                tasks.add(task);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        return tasks;
     }
 }

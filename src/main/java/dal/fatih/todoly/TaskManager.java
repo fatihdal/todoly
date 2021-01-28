@@ -4,13 +4,16 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
-    TaskRepository taskRepository = new TaskRepository();
+    private TaskRepository taskRepository = new TaskRepository();
     private Connection connection = taskRepository.connection;
+    private Task task;
+    private List<Task> tasks;
 
     public TaskManager() throws SQLException {
     }
@@ -32,10 +35,8 @@ public class TaskManager {
         }
         if (title.isEmpty()) {
             System.out.println("Fill required fields");
-
         } else if (dueDate.before(Date.from(Instant.now()))) {
             System.out.println("The given date can not be older than now");
-
         } else {
             Task task = new Task(UUID.randomUUID(), title, description, dueDate);
             taskRepository.create(task);
@@ -43,30 +44,62 @@ public class TaskManager {
     }
 
     private void listAllTasks() {
-        taskRepository.getAll();
+        tasks = taskRepository.list();
+        if (!tasks.isEmpty()) {
+            for (Task task : tasks) {
+                System.out.println("Task id: " + task.getId());
+                System.out.println("Title: " + task.getTitle());
+                System.out.println("--------------------------------------");
+            }
+        } else {
+            System.out.println("No task found");
+        }
     }
 
     private void showTaskDetails() {
-        System.out.print("Task Id (min first three characters) :");
+        System.out.print("Task Id :");
         String taskIdInput = scn.nextLine();
-        if (taskIdInput.length() < 3) {
-            System.out.println("Please enter min first three characters!!!");
-            return;
+        task = taskRepository.get(taskIdInput);
+        if (task == null) {
+            System.out.println("No task found");
+        } else {
+            System.out.println(task);
         }
-        taskRepository.getDetails(taskIdInput);
     }
 
     private void deleteTask() {
 
         System.out.print("Task Id: ");
         String taskIdInput = scn.nextLine();
-        taskRepository.delete(taskIdInput);
+
+        if (taskRepository.delete(taskIdInput) > 0) {
+            System.out.println("Task deleted");
+        } else {
+            System.out.println("No task found");
+        }
     }
 
     private void filterTasks() {
         System.out.print("Last date yyyy-MM-dd (*): ");
-        String lastDate = scn.nextLine();
-        taskRepository.filter(lastDate);
+        try {
+            Date lastDate = Date.valueOf(scn.nextLine());
+            tasks = taskRepository.filter(lastDate);
+
+            if (!tasks.isEmpty()) {
+                for (Task task : tasks) {
+                    System.out.println("Task id: " + task.getTitle());
+                    System.out.println("Due date: " + task.getDueDate());
+                    System.out.println("--------------------------------------");
+                }
+            } else {
+                System.out.println("No task found in this date range");
+            }
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("Incorrect date format");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void filterTasksbyNameAndDescription() {
@@ -75,8 +108,18 @@ public class TaskManager {
         if (keyword.length() < 4) {
             System.out.println("PLease enter the word to search!");
         } else {
-
-            taskRepository.filterByTitleOrDescription(keyword);
+            tasks = taskRepository.filterByTitleOrDescription(keyword);
+            if (!tasks.isEmpty()) {
+                for (Task task : tasks) {
+                    System.out.println("Task ıd: " + task.getId());
+                    System.out.println("Title: " + task.getTitle());
+                    System.out.println("Description: " + task.getDescription());
+                    System.out.println("Due Date: " + task.getDueDate());
+                    System.out.println("-------------------------------------------------");
+                }
+            } else {
+                System.out.println("No task found");
+            }
         }
     }
 
@@ -132,6 +175,5 @@ public class TaskManager {
         if (connection != null) {
             connection.close();
         }
-        System.out.println(connection.isClosed());
     }
 }

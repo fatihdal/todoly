@@ -9,8 +9,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,27 +19,19 @@ import java.util.regex.Pattern;
 public class TodolyTest {
 
     private ByteArrayOutputStream outContent;
-    private DBConnection dbconnection = new DBConnection();
-    private Connection connection;
-    private PreparedStatement preparedStatement;
+    private TaskRepository taskRepository = new TaskRepository();
+
+    public TodolyTest() throws SQLException {
+    }
 
     @Before
     public void setUp() {
         outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
     }
-
     @After
     public void tearDown() {
-        try {
-            connection = dbconnection.getConnection();
-            preparedStatement = connection.prepareStatement("TRUNCATE TABLE tasks");
-            preparedStatement.execute();
-            connection.close();
-            preparedStatement.close();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
+        taskRepository.clearTable();
     }
 
     @Test
@@ -101,13 +91,6 @@ public class TodolyTest {
         provideInput(Arrays.asList("3", "46856845672662", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("No task found"));
-    }
-
-    @Test
-    public void shouldNotAllowLessThanTheTopThreeCharacters() {
-        provideInput(Arrays.asList("3", "", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Please enter min first three characters!!!"));
     }
 
     @Test
@@ -207,7 +190,9 @@ public class TodolyTest {
         provideInput(Arrays.asList("5", "2027-05-05", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("title-of-the-task-to-be-filter"));
+        Assert.assertTrue(outContent.toString().contains("2026-05-05"));
         Assert.assertFalse(outContent.toString().contains("title-of-the-task-to-be-filter-2"));
+        Assert.assertFalse(outContent.toString().contains("2030-05-05"));
     }
 
     @Test

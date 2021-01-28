@@ -9,10 +9,9 @@ public class App {
         TaskManager taskManager = null;
         try {
             taskManager = new TaskManager();
-
             taskManager.handleInputs();
-        } catch (SQLException exception) {
-            exception.printStackTrace();
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 }
