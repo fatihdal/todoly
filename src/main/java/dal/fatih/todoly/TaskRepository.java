@@ -107,13 +107,11 @@ public class TaskRepository implements Closeable {
         try {
             deleteByIdPreparedStatement.setObject(1, taskIdInput);
             int deleted = deleteByIdPreparedStatement.executeUpdate();
-            if (deleted > 0) {
-                return true;
-            }
+            return deleted > 0;
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return false;
     }
 
     public List<Task> filter(Date lastDate) {
