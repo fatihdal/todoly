@@ -11,7 +11,6 @@ public class Task {
     private Date dueDate;
 
     public Task(UUID id, String title, String description, Date dueDate) {
-
         this.id = id;
         this.title = title;
         this.description = description;
@@ -19,7 +18,6 @@ public class Task {
     }
 
     public Task() {
-
     }
 
     public UUID getId() {
