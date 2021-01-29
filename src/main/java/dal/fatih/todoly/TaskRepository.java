@@ -13,7 +13,7 @@ public class TaskRepository implements Closeable {
     private final PreparedStatement createPrepareStatement;
     private final PreparedStatement listPrepareStatement;
     private final PreparedStatement getPreparedStatement;
-    private final PreparedStatement deleteByIdPreparedStatement;
+    private final PreparedStatement deletePreparedStatement;
     private final PreparedStatement filterPreparedStatement;
     private final PreparedStatement getByTitleOrDesPreparedStatement;
 
@@ -27,7 +27,7 @@ public class TaskRepository implements Closeable {
                 connection.prepareStatement("select id,taskid,title,description,duedate from tasks");
         getPreparedStatement =
                 connection.prepareStatement("select taskid,title,description,duedate from tasks where taskid=? limit 1");
-        deleteByIdPreparedStatement =
+        deletePreparedStatement =
                 connection.prepareStatement("delete from tasks where taskid=?");
         filterPreparedStatement =
                 connection.prepareStatement("select * from tasks where duedate between now() and ?");
@@ -105,8 +105,8 @@ public class TaskRepository implements Closeable {
     public boolean delete(String taskIdInput) {
 
         try {
-            deleteByIdPreparedStatement.setObject(1, taskIdInput);
-            int deleted = deleteByIdPreparedStatement.executeUpdate();
+            deletePreparedStatement.setObject(1, taskIdInput);
+            int deleted = deletePreparedStatement.executeUpdate();
             return deleted > 0;
 
         } catch (Exception e) {
@@ -156,8 +156,13 @@ public class TaskRepository implements Closeable {
     public void close() {
         try {
             connection.close();
+            createPrepareStatement.close();
+            getPreparedStatement.close();
+            deletePreparedStatement.close();
+            filterPreparedStatement.close();
+            getByTitleOrDesPreparedStatement.close();
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            throw new RuntimeException();
         }
     }
 }
