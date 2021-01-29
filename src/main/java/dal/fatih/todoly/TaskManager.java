@@ -71,7 +71,6 @@ public class TaskManager {
     }
 
     private void deleteTask() {
-
         System.out.print("Task Id: ");
         String taskIdInput = scn.nextLine();
         try {
@@ -134,9 +133,7 @@ public class TaskManager {
     }
 
     public void handleInputs() throws SQLException {
-
         int loopCounter = 0;
-
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
         String transactions = ("1- Create new task\n" +

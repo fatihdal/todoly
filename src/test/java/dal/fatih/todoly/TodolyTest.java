@@ -10,7 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,10 +35,10 @@ public class TodolyTest {
     @After
     public void tearDown() {
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE tasks");
-            preparedStatement.execute();
+            Statement statement = connection.createStatement();
+            statement.executeUpdate("TRUNCATE TABLE tasks");
             connection.close();
-            preparedStatement.close();
+            statement.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

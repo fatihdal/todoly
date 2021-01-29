@@ -19,7 +19,6 @@ public class TaskRepository implements Closeable {
 
 
     public TaskRepository() throws SQLException {
-
         createTable();
         createPrepareStatement =
                 connection.prepareStatement("insert into tasks " + "values (?,?,?,?,?)");
@@ -38,14 +37,14 @@ public class TaskRepository implements Closeable {
 
     public void createTable() {
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("create table if not exists tasks"
+            Statement statement = connection.createStatement();
+            statement.executeUpdate("create table if not exists tasks"
                     + "  (id int auto_increment primary key not null,"
                     + "   taskid uuid(36),"
                     + "   title varchar(35),"
                     + "   description varchar(250),"
                     + "   duedate date)");
-            preparedStatement.executeUpdate();
-            preparedStatement.close();
+            statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -66,7 +65,6 @@ public class TaskRepository implements Closeable {
     }
 
     public List<Task> list() {
-
         List<Task> tasks = new ArrayList<>();
         try {
             ResultSet resultSet = listPrepareStatement.executeQuery();
@@ -103,7 +101,6 @@ public class TaskRepository implements Closeable {
     }
 
     public boolean delete(String taskIdInput) {
-
         try {
             deletePreparedStatement.setObject(1, taskIdInput);
             int deleted = deletePreparedStatement.executeUpdate();
