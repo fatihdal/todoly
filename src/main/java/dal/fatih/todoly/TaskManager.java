@@ -1,155 +1,137 @@
 package dal.fatih.todoly;
 
-import java.io.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.List;
+import java.util.Scanner;
+import java.util.UUID;
 
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
-    private Map<String, Task> tasks = new HashMap<String, Task>();
-    private final DateFormat dueDateParser = new SimpleDateFormat("dd/MM/yyyy");
-    private final File file = new File("./output/task.bin");
-    public ObjectInputStream inputTask;
-    public ObjectOutputStream outputTask;
+    private TaskRepository taskRepository = new TaskRepository();
 
-    private void loadTasksFromFile() {
-        try {
-            inputTask = new ObjectInputStream(new FileInputStream(file));
-            tasks = (HashMap) inputTask.readObject();
-            inputTask.close();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+    public TaskManager() throws SQLException {
     }
 
-    private final void writeTaskFile() {
-        try {
-            file.getParentFile().mkdirs();
-            outputTask = new ObjectOutputStream(new FileOutputStream(file));
-            outputTask.writeObject(tasks);
-            outputTask.close();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
-    private Task handleCreateTask() {
-
+    private void handleCreateTask() {
+        Date dueDate = null;
         System.out.println("(*)  Can't be empty");
         System.out.print("Title of the task (*) : ");
         String title = scn.nextLine();
         System.out.print("Description(Optional): ");
         String description = scn.nextLine();
-        System.out.print("Due Date dd/MM/yyyy (*): ");
+        System.out.print("Due Date yyyy-MM-dd (*): ");
         String dueDateInput = scn.nextLine();
-
         try {
-            Date dueDate = dueDateParser.parse(dueDateInput);
-            if (title.isEmpty()) {
-                System.out.println("Fill required fields");
-
-            } else if (dueDate.before(new Date())) {
-                System.out.println("The given date can not be older than now");
-
-            } else {
-
-                UUID uniqId = UUID.randomUUID();
-                Task task = new Task(uniqId, title, description, dueDate);
-                tasks.put(uniqId.toString(), task);
-                System.out.println();
-                System.out.println(task.getId() + " Task added");
-                writeTaskFile();
-                return task;
-            }
-        } catch (Exception e) {
+            dueDate = Date.valueOf(dueDateInput);
+        } catch (IllegalArgumentException e) {
             System.out.println("Incorrect date format");
+            return;
         }
-        return null;
+        if (title.isEmpty()) {
+            System.out.println("Fill required fields");
+        } else if (dueDate.before(Date.from(Instant.now()))) {
+            System.out.println("The given date can not be older than now");
+        } else {
+            Task task = new Task(UUID.randomUUID(), title, description, dueDate);
+            if (taskRepository.create(task)) {
+                System.out.println("\n" + task.getId() + " Task added");
+            }
+        }
     }
 
     private void listAllTasks() {
-
-        if (tasks.isEmpty()) {
-            System.out.println("Task list is empty");
+        List <Task>tasks = taskRepository.list();
+        if (!tasks.isEmpty()) {
+            for (Task task : tasks) {
+                System.out.println("Task id: " + task.getId());
+                System.out.println("Title: " + task.getTitle());
+                System.out.println("--------------------------------------");
+            }
         } else {
-            tasks.entrySet().forEach(stringTaskEntry -> {
-                System.out.println("Title : " + stringTaskEntry.getValue().getTitle() +
-                        "\n" + "ID :" + stringTaskEntry.getValue().getId());
-                System.out.println("----------------------------------");
-            });
+            System.out.println("No task found");
         }
     }
 
     private void showTaskDetails() {
-
         System.out.print("Task Id :");
-        String taskId = scn.nextLine();
-        Task task = tasks.get(taskId);
-        if (task != null) {
-            System.out.println(task);
-            System.out.println("----------------------------------");
-        } else {
-            System.out.println("Task not found");
+        String taskIdInput = scn.nextLine();
+        try {
+            Task task = taskRepository.get(taskIdInput);
+            if (task == null) {
+                System.out.println("No task found");
+            } else {
+                System.out.println(task);
+            }
+        } catch (Exception e) {
+            System.out.println("No task found");
         }
     }
 
     private void deleteTask() {
-
-        System.out.print("Task Id :");
-        String taskId = scn.nextLine();
-        Task task = tasks.get(taskId);
-        if (task != null) {
-            tasks.remove(taskId);
-            System.out.println(task.getTitle() + " titled task deleted");
-            writeTaskFile();
-        } else {
-            System.out.println("Task not found");
+        System.out.print("Task Id: ");
+        String taskIdInput = scn.nextLine();
+        try {
+            if (taskRepository.delete(taskIdInput)) {
+                System.out.println("Task deleted");
+            } else {
+                System.out.println("No task found");
+            }
+        } catch (Exception e) {
+            System.out.println("No task found");
         }
     }
 
-    private void filterTask() {
-
+    private void filterTasks() {
+        System.out.print("Last date yyyy-MM-dd (*): ");
         try {
-            List<Task> foundTask = new ArrayList<>();
-            System.out.println("Last Date");
-            String lastDateInput = scn.nextLine();
-            Date lastDate = dueDateParser.parse(lastDateInput);
+            Date lastDate = Date.valueOf(scn.nextLine());
+            if (lastDate.before(Date.from(Instant.now()))) {
+                System.out.println("The given date can not be older than now");
+                return;
+            }
+           List<Task> tasks = taskRepository.filter(lastDate);
 
-            for (Task task : tasks.values()) {
-                if (task.getDate().before(lastDate)) {
-                    foundTask.add(task);
+            if (!tasks.isEmpty()) {
+                for (Task task : tasks) {
+                    System.out.println("Task id: " + task.getTitle());
+                    System.out.println("Due date: " + task.getDueDate());
+                    System.out.println("--------------------------------------");
                 }
-            }
-            if (foundTask.isEmpty()) {
-                System.out.println("No task found in this date range");
             } else {
-                System.out.println(foundTask);
+                System.out.println("No task found in this date range");
             }
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             System.out.println("Incorrect date format");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
     private void filterTasksbyNameAndDescription() {
-        List<Task> foundTasks = new ArrayList<>();
-        System.out.println("Word to search");
-        String searchingWord = scn.nextLine();
-
-        for (Task task : tasks.values()) {
-            if (task.getTitle().toLowerCase().contains(searchingWord.toLowerCase()) || task.getDescription().toLowerCase().contains(searchingWord.toLowerCase())) {
-                foundTasks.add(task);
-            }
-        }
-        if (foundTasks.isEmpty()) {
-            System.out.println("No tasks found");
+        System.out.print("Word to search(min four char) : ");
+        String keyword = scn.nextLine();
+        if (keyword.length() < 4) {
+            System.out.println("PLease enter the word to search!");
         } else {
-            System.out.println(foundTasks);
+           List<Task> tasks = taskRepository.filterByTitleOrDescription(keyword);
+            if (!tasks.isEmpty()) {
+                for (Task task : tasks) {
+                    System.out.println("Task ıd: " + task.getId());
+                    System.out.println("Title: " + task.getTitle());
+                    System.out.println("Description: " + task.getDescription());
+                    System.out.println("Due Date: " + task.getDueDate());
+                    System.out.println("-------------------------------------------------");
+                }
+            } else {
+                System.out.println("No task found");
+            }
         }
     }
 
-    public void handleInputs() {
-        loadTasksFromFile();
+    public void handleInputs() throws SQLException {
+        int loopCounter = 0;
         System.out.println("Welcome to todoly");
         System.out.println("------------------------------------");
         String transactions = ("1- Create new task\n" +
@@ -161,13 +143,14 @@ public class TaskManager {
                 "Q- Quit from Todoly");
         System.out.println("Transactions : \n" + transactions);
         System.out.println("Please select the action you want to do");
-        int loopCounter = 0;
+
         while (true) {
 
             if (loopCounter >= 1) {
-                System.out.println("To see the actions menu (t) ");
+                System.out.println("To see the actions menu (T) ");
             }
             loopCounter++;
+
             System.out.print("Choice: ");
             String transaction = scn.nextLine();
 
@@ -186,13 +169,14 @@ public class TaskManager {
             } else if (transaction.equals("4")) {
                 deleteTask();
             } else if (transaction.equals("5")) {
-                filterTask();
+                filterTasks();
             } else if (transaction.equals("6")) {
                 filterTasksbyNameAndDescription();
             } else {
-                System.out.println("invalid input");
+                System.out.println("Invalid input");
             }
         }
         scn.close();
+        taskRepository.close();
     }
 }

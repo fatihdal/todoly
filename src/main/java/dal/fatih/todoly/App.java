@@ -1,10 +1,17 @@
 package dal.fatih.todoly;
 
 
+import java.sql.SQLException;
+
 public class App {
 
     public static void main(String[] args) {
-        TaskManager taskManager = new TaskManager();
-        taskManager.handleInputs();
+        TaskManager taskManager = null;
+        try {
+            taskManager = new TaskManager();
+            taskManager.handleInputs();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

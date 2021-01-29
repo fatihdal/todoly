@@ -1,10 +1,9 @@
 package dal.fatih.todoly;
 
-import java.io.Serializable;
-import java.util.Date;
+import java.sql.Date;
 import java.util.UUID;
 
-public class Task implements Serializable {
+public class Task {
 
     private UUID id;
     private String title;
@@ -12,14 +11,18 @@ public class Task implements Serializable {
     private Date dueDate;
 
     public Task(UUID id, String title, String description, Date dueDate) {
-
         this.id = id;
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
     }
 
-    public UUID getId() { return id; }
+    public Task() {
+    }
+
+    public UUID getId() {
+        return id;
+    }
 
     public String getTitle() {
         return title;
@@ -29,12 +32,28 @@ public class Task implements Serializable {
         return description;
     }
 
-    public Date getDate() {
+    public Date getDueDate() {
         return dueDate;
     }
 
 
-    @Override
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setDueDate(Date dueDate) {
+        this.dueDate = dueDate;
+    }
+
+
     public String toString() {
         return "\nID : " + id +
                 "\nTITLE : " + title +
