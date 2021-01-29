@@ -10,7 +10,6 @@ import java.util.UUID;
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
     private TaskRepository taskRepository = new TaskRepository();
-    private List<Task> tasks;
 
     public TaskManager() throws SQLException {
     }
@@ -43,7 +42,7 @@ public class TaskManager {
     }
 
     private void listAllTasks() {
-        tasks = taskRepository.list();
+        List <Task>tasks = taskRepository.list();
         if (!tasks.isEmpty()) {
             for (Task task : tasks) {
                 System.out.println("Task id: " + task.getId());
@@ -92,7 +91,7 @@ public class TaskManager {
                 System.out.println("The given date can not be older than now");
                 return;
             }
-            tasks = taskRepository.filter(lastDate);
+           List<Task> tasks = taskRepository.filter(lastDate);
 
             if (!tasks.isEmpty()) {
                 for (Task task : tasks) {
@@ -103,7 +102,6 @@ public class TaskManager {
             } else {
                 System.out.println("No task found in this date range");
             }
-
         } catch (IllegalArgumentException e) {
             System.out.println("Incorrect date format");
         } catch (Exception e) {
@@ -117,7 +115,7 @@ public class TaskManager {
         if (keyword.length() < 4) {
             System.out.println("PLease enter the word to search!");
         } else {
-            tasks = taskRepository.filterByTitleOrDescription(keyword);
+           List<Task> tasks = taskRepository.filterByTitleOrDescription(keyword);
             if (!tasks.isEmpty()) {
                 for (Task task : tasks) {
                     System.out.println("Task ıd: " + task.getId());
