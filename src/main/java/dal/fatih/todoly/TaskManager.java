@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
-    private TaskRepository taskRepository = new TaskRepository();
+    private JdbcTaskRepository jdbcTaskRepository = new JdbcTaskRepository();
 
     public TaskManager() throws SQLException {
     }
@@ -35,14 +35,14 @@ public class TaskManager {
             System.out.println("The given date can not be older than now");
         } else {
             Task task = new Task(UUID.randomUUID(), title, description, dueDate);
-            if (taskRepository.create(task)) {
+            if (jdbcTaskRepository.create(task)) {
                 System.out.println("\n" + task.getId() + " Task added");
             }
         }
     }
 
     private void listAllTasks() {
-        List <Task>tasks = taskRepository.list();
+        List <Task>tasks = jdbcTaskRepository.list();
         if (!tasks.isEmpty()) {
             for (Task task : tasks) {
                 System.out.println("Task id: " + task.getId());
@@ -58,7 +58,7 @@ public class TaskManager {
         System.out.print("Task Id :");
         String taskIdInput = scn.nextLine();
         try {
-            Task task = taskRepository.get(taskIdInput);
+            Task task = jdbcTaskRepository.get(taskIdInput);
             if (task == null) {
                 System.out.println("No task found");
             } else {
@@ -73,7 +73,7 @@ public class TaskManager {
         System.out.print("Task Id: ");
         String taskIdInput = scn.nextLine();
         try {
-            if (taskRepository.delete(taskIdInput)) {
+            if (jdbcTaskRepository.delete(taskIdInput)) {
                 System.out.println("Task deleted");
             } else {
                 System.out.println("No task found");
@@ -91,7 +91,7 @@ public class TaskManager {
                 System.out.println("The given date can not be older than now");
                 return;
             }
-           List<Task> tasks = taskRepository.filter(lastDate);
+           List<Task> tasks = jdbcTaskRepository.filter(lastDate);
 
             if (!tasks.isEmpty()) {
                 for (Task task : tasks) {
@@ -115,7 +115,7 @@ public class TaskManager {
         if (keyword.length() < 4) {
             System.out.println("PLease enter the word to search!");
         } else {
-           List<Task> tasks = taskRepository.filterByTitleOrDescription(keyword);
+           List<Task> tasks = jdbcTaskRepository.filterByTitleOrDescription(keyword);
             if (!tasks.isEmpty()) {
                 for (Task task : tasks) {
                     System.out.println("Task ıd: " + task.getId());
@@ -177,6 +177,6 @@ public class TaskManager {
             }
         }
         scn.close();
-        taskRepository.close();
+        jdbcTaskRepository.close();
     }
 }
