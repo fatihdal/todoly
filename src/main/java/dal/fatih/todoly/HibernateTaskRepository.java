@@ -1,18 +1,37 @@
 package dal.fatih.todoly;
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
 
 import java.sql.Date;
 import java.util.List;
 
 public class HibernateTaskRepository implements TaskRepository {
-    
+
+    Session session = new
+            Configuration().configure().buildSessionFactory().openSession();
+    Transaction transaction = session.getTransaction();
+
+    public HibernateTaskRepository() {
+
+    }
+
     @Override
     public void createTable() {
     }
 
     @Override
     public boolean create(Task task) {
-     return false;
+        transaction = session.getTransaction();
+        transaction.begin();
+        task.setTaskId(task.getTaskId());
+        task.setTitle(task.getTitle());
+        task.setDescription(task.getDescription());
+        task.setDueDate(task.getDueDate());
+        session.saveOrUpdate(task);
+        transaction.commit();
+        return true;
     }
 
     @Override

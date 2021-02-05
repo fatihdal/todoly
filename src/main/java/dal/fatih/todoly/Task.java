@@ -4,18 +4,18 @@ import javax.persistence.*;
 import java.sql.Date;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "Task")
 @Table(name = "Tasks")
 public class Task {
 
     @Id
-    @Column(name = "taskid",  nullable = false)
+    @Column(name = "taskid", length = 36 , unique = true, nullable = false)
     private UUID taskId;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "title", length = 35 ,nullable = false)
     private String title;
 
-    @Column(name = "description")
+    @Column(name = "description",length = 250)
     private String description;
 
     @Column(name = "duedate", nullable = false)
