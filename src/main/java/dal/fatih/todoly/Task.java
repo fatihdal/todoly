@@ -1,17 +1,28 @@
 package dal.fatih.todoly;
 
+import javax.persistence.*;
 import java.sql.Date;
 import java.util.UUID;
 
+@Entity
+@Table(name = "Tasks")
 public class Task {
 
-    private UUID id;
+    @Id
+    @Column(name = "taskid",  nullable = false)
+    private UUID taskId;
+
+    @Column(name = "title", nullable = false)
     private String title;
+
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "duedate", nullable = false)
     private Date dueDate;
 
-    public Task(UUID id, String title, String description, Date dueDate) {
-        this.id = id;
+    public Task(UUID taskId, String title, String description, Date dueDate) {
+        this.taskId = taskId;
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
@@ -20,8 +31,25 @@ public class Task {
     public Task() {
     }
 
-    public UUID getId() {
-        return id;
+    public void setTaskId(UUID taskId) {
+        this.taskId = taskId;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+
+    public void setDueDate(Date dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public UUID getTaskId() {
+        return taskId;
     }
 
     public String getTitle() {
@@ -37,25 +65,8 @@ public class Task {
     }
 
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setDueDate(Date dueDate) {
-        this.dueDate = dueDate;
-    }
-
-
     public String toString() {
-        return "\nID : " + id +
+        return "\nID : " + taskId +
                 "\nTITLE : " + title +
                 "\nDESCRIPTION : " + description +
                 "\nDUE DATE : " + dueDate;
