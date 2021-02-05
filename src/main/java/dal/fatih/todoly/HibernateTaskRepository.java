@@ -3,15 +3,17 @@ package dal.fatih.todoly;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
+
 
 import java.sql.Date;
 import java.util.List;
 
 public class HibernateTaskRepository implements TaskRepository {
 
-    Session session = new
+    Session createSession = new
             Configuration().configure().buildSessionFactory().openSession();
-    Transaction transaction = session.getTransaction();
+    Transaction transaction = createSession.getTransaction();
 
     public HibernateTaskRepository() {
 
@@ -23,20 +25,21 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public boolean create(Task task) {
-        transaction = session.getTransaction();
         transaction.begin();
         task.setTaskId(task.getTaskId());
         task.setTitle(task.getTitle());
         task.setDescription(task.getDescription());
         task.setDueDate(task.getDueDate());
-        session.saveOrUpdate(task);
+        createSession.saveOrUpdate(task);
         transaction.commit();
         return true;
     }
 
     @Override
     public List<Task> list() {
-        return null;
+    Query query = createSession.createQuery("from Task ");
+    List<Task> list = query.list();
+        return list;
     }
 
     @Override

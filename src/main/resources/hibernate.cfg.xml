@@ -12,8 +12,9 @@
         <property name="dialect">org.hibernate.dialect.H2Dialect</property>
         <property name="hibernate.hbm2ddl.auto">update</property>
         <mapping class="dal.fatih.todoly.Task"/>
-    </session-factory>
-</hibernate-configuration>
+         <mapping resource = "taskconfg.hbm.xml"/>
+     </session-factory>
+ </hibernate-configuration>
 
 
 

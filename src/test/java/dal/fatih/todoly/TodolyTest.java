@@ -43,7 +43,6 @@ public class TodolyTest {
             throw new RuntimeException(e);
         }
     }*/
-
     @Test
     public void shouldNotAllowWrongSelection() {
         provideInput(Arrays.asList("10", "q"));

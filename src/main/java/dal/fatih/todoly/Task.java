@@ -1,15 +1,23 @@
 package dal.fatih.todoly;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Date;
 import java.util.UUID;
 
 @Entity(name = "Task")
 @Table(name = "Tasks")
-public class Task {
+public class Task implements Serializable {
 
     @Id
-    @Column(name = "taskid", length = 36 , unique = true, nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id",nullable = false)
+    private int id;
+
+    @Type(type = "uuid-char")
+    @Column(name = "taskId", length = 36 , nullable = false)
     private UUID taskId;
 
     @Column(name = "title", length = 35 ,nullable = false)
@@ -64,6 +72,13 @@ public class Task {
         return dueDate;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String toString() {
         return "\nID : " + taskId +
