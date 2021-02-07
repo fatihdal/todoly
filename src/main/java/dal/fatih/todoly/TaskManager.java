@@ -145,7 +145,6 @@ public class TaskManager {
         System.out.println("Please select the action you want to do");
 
         while (true) {
-
             if (loopCounter >= 1) {
                 System.out.println("To see the actions menu (T) ");
             }

@@ -13,7 +13,8 @@ public class HibernateTaskRepository implements TaskRepository {
     private final TypedQuery<Task> getQuery = entityManager.createQuery("select a from Task a where a.taskId = ?1", Task.class);
     private final Query deleteQuery = entityManager.createQuery("delete from Task where taskId = ?1");
     private final Query filterQuery = entityManager.createNativeQuery("select * from Tasks where duedate  between now() and ?1", Task.class);
-    
+    private final Query getByTitleOrDesQuery = entityManager.createNativeQuery("select * from Tasks where title like ?1 or description like ?2", Task.class);
+
     public HibernateTaskRepository() {
     }
 
@@ -64,7 +65,9 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public List<Task> filterByTitleOrDescription(String keyword) {
-        return null;
+        getByTitleOrDesQuery.setParameter(1, "%" + keyword.toLowerCase() + "%");
+        getByTitleOrDesQuery.setParameter(2, "%" + keyword.toLowerCase() + "%");
+        return getByTitleOrDesQuery.getResultList();
     }
 
     @Override

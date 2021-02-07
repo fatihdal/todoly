@@ -32,7 +32,7 @@ public class TodolyTest {
         System.setOut(new PrintStream(outContent));
     }
 
-  /*  @After
+    @After
     public void tearDown() {
         try {
             Statement statement = connection.createStatement();
@@ -42,7 +42,7 @@ public class TodolyTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }*/
+    }
     @Test
     public void shouldNotAllowWrongSelection() {
         provideInput(Arrays.asList("10", "q"));
