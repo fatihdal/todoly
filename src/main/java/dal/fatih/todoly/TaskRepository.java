@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.util.List;
 
 public interface TaskRepository {
+
     void createTable();
 
     boolean create(Task task);

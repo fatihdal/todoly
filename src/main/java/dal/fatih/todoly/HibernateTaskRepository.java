@@ -1,22 +1,19 @@
 package dal.fatih.todoly;
 
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.query.Query;
 
-
+import javax.persistence.*;
 import java.sql.Date;
-import java.util.List;
+import java.util.*;
 
 public class HibernateTaskRepository implements TaskRepository {
 
-    Session createSession = new
-            Configuration().configure().buildSessionFactory().openSession();
-    Transaction transaction = createSession.getTransaction();
+    private final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("Tasks");
+    private final EntityManager entityManager = entityManagerFactory.createEntityManager();
+    private final TypedQuery<Task> listQuery = entityManager.createQuery("select a from Task a ", Task.class);
+    private final TypedQuery<Task> getQuery = entityManager.createQuery("select a from Task a where a.taskId = ?1", Task.class);
+    private final Query deleteQuery = entityManager.createQuery("delete from Task where taskId = ?1");
 
     public HibernateTaskRepository() {
-
     }
 
     @Override
@@ -25,48 +22,51 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public boolean create(Task task) {
-        transaction.begin();
-        task.setTaskId(task.getTaskId());
-        task.setTitle(task.getTitle());
-        task.setDescription(task.getDescription());
-        task.setDueDate(task.getDueDate());
-        createSession.saveOrUpdate(task);
-        transaction.commit();
+        entityManager.getTransaction().begin();
+        entityManager.persist(task);
+        entityManager.getTransaction().commit();
+
         return true;
     }
 
     @Override
     public List<Task> list() {
-    Query query = createSession.createQuery("from Task ");
-    List<Task> list = query.list();
-        return list;
+        return listQuery.getResultList();
     }
 
     @Override
-    public Task get(String t) {
-        return null;
+    public Task get(String taskId) {
+        Task task = getQuery.setParameter(1, UUID.fromString(taskId)).getSingleResult();
+        return task;
     }
 
     @Override
-    public boolean delete(String t) {
-        return false;
+    public boolean delete(String taskId) {
+        int rows = 0;
+        try {
+            entityManager.getTransaction().begin();
+            deleteQuery.setParameter(1, UUID.fromString(taskId));
+            rows = deleteQuery.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            entityManager.getTransaction().commit();
+            return rows > 0;
+        }
     }
 
     @Override
     public List<Task> filter(Date lastDate) {
-        return null;
+       return null;
     }
-
 
     @Override
     public List<Task> filterByTitleOrDescription(String keyword) {
-        return null;
+      return null;
     }
 
     @Override
     public void close() {
-
+        entityManagerFactory.close();
     }
-
-
 }

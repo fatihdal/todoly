@@ -32,7 +32,7 @@ public class TodolyTest {
         System.setOut(new PrintStream(outContent));
     }
 
-    /*@After
+  /*  @After
     public void tearDown() {
         try {
             Statement statement = connection.createStatement();

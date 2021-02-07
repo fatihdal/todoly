@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="dal.fatih.todoly.Task" table="Tasks">
+        <meta attribute="class-description"></meta>
+        <id name="id" column="id" type="integer" length="25">
+            <generator class="identity"/>
+        </id>
+        <property name="taskId" column="taskId" type="uuid-char" length="38" not-null="true"/>
+        <property name="title" column="title" type="string" length="35" not-null="true"/>
+        <property name="description" column="description" type="string" length="260"/>
+        <property name="dueDate" column="dueDate" type="date"/>
+    </class>
+</hibernate-mapping>

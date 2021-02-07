@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
-    private TaskRepository taskRepository = new HibernateTaskRepository();
+    private final TaskRepository taskRepository = new HibernateTaskRepository();
 
     public TaskManager() throws SQLException {
     }
@@ -79,7 +79,7 @@ public class TaskManager {
                 System.out.println("No task found");
             }
         } catch (Exception e) {
-            System.out.println("No task found");
+            System.out.println("No task found"+e);
         }
     }
 
