@@ -53,17 +53,19 @@ public class HibernateTaskRepository implements TaskRepository {
             throw new RuntimeException(e);
         } finally {
             entityManager.getTransaction().commit();
-            return rows > 0;
         }
+        return rows > 0;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Task> filter(Date lastDate) {
         filterQuery.setParameter(1, lastDate);
         return filterQuery.getResultList();
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Task> filterByTitleOrDescription(String keyword) {
         getByTitleOrDesQuery.setParameter(1, "%" + keyword.toLowerCase() + "%");
         getByTitleOrDesQuery.setParameter(2, "%" + keyword.toLowerCase() + "%");
