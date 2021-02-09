@@ -1,6 +1,5 @@
 package dal.fatih.todoly;
 
-import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -10,7 +9,7 @@ import java.util.UUID;
 
 @Entity(name = "Task")
 @Table(name = "Tasks")
-public class Task  {
+public class Task  implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
