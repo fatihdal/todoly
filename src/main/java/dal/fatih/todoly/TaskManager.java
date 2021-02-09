@@ -15,7 +15,7 @@ public class TaskManager {
     }
 
     private void handleCreateTask() {
-        Date dueDate = null;
+        Date dueDate;
         System.out.println("(*)  Can't be empty");
         System.out.print("Title of the task (*) : ");
         String title = scn.nextLine();
