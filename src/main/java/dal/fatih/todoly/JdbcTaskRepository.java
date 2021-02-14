@@ -22,29 +22,29 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
     public JdbcTaskRepository() throws SQLException {
         createTable();
         createPrepareStatement =
-                connection.prepareStatement("insert into tasks " + "values (?,?,?,?,?)");
+                connection.prepareStatement("insert into task " + "values (?,?,?,?,?)");
         listPrepareStatement =
-                connection.prepareStatement("select id,taskid,title,description,duedate from tasks");
+                connection.prepareStatement("select id,taskId,title,description,dueDate from task");
         getPreparedStatement =
-                connection.prepareStatement("select taskid,title,description,duedate from tasks where taskid=? limit 1");
+                connection.prepareStatement("select taskId,title,description,dueDate from task where taskId=? limit 1");
         deletePreparedStatement =
-                connection.prepareStatement("delete from tasks where taskid=?");
+                connection.prepareStatement("delete from task where taskId=?");
         filterPreparedStatement =
-                connection.prepareStatement("select * from tasks where duedate between now() and ?");
+                connection.prepareStatement("select * from task where dueDate between now() and ?");
         getByTitleOrDesPreparedStatement =
-                connection.prepareStatement("select taskid,title,description,duedate from tasks where title like ? "
+                connection.prepareStatement("select taskId,title,description,dueDate from task where title like ? "
                         + "or description like ?");
     }
 
     public void createTable() {
         try {
             Statement statement = connection.createStatement();
-            statement.executeUpdate("create table if not exists tasks"
+            statement.executeUpdate("create table if not exists task"
                     + "  (id int auto_increment primary key not null,"
-                    + "   taskid uuid(36),"
+                    + "   taskId uuid(36),"
                     + "   title varchar(35),"
                     + "   description varchar(250),"
-                    + "   duedate date)");
+                    + "   dueDate date)");
             statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -71,7 +71,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
             ResultSet resultSet = listPrepareStatement.executeQuery();
             while (resultSet.next()) {
                 Task task = new Task();
-                UUID taskId= UUID.fromString(resultSet.getString(2));
+                UUID taskId = UUID.fromString(resultSet.getString(2));
                 task.setTaskId(taskId);
                 task.setTitle(resultSet.getString(3));
                 tasks.add(task);
@@ -88,7 +88,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
             ResultSet resultSet = getPreparedStatement.executeQuery();
             if (resultSet.next()) {
                 Task task = new Task();
-                UUID taskId= UUID.fromString(resultSet.getString("taskid"));
+                UUID taskId = UUID.fromString(resultSet.getString("taskId"));
                 task.setTaskId(taskId);
                 task.setTitle(resultSet.getString("title"));
                 task.setDescription(resultSet.getString("description"));
