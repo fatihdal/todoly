@@ -1,10 +1,9 @@
 <persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.1"
              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
-    <!-- Define persistence unit -->
-    <persistence-unit name="Tasks">
+    <persistence-unit name="Todoly">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-       <!-- <class>dal.fatih.todoly.Task</class>-->
+        <class>dal.fatih.todoly.Task</class>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>

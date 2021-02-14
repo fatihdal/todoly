@@ -7,26 +7,22 @@ import java.io.Serializable;
 import java.sql.Date;
 import java.util.UUID;
 
-@Entity(name = "Task")
-@Table(name = "Tasks")
-public class Task  implements Serializable{
+@Entity
+public class Task implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @GeneratedValue
     private int id;
 
-    @Type(type = "uuid-char")
-    @Column(name = "taskid", length = 36, nullable = false)
+    @Column(nullable = false)
     private UUID taskId;
 
-    @Column(name = "title", length = 35, nullable = false)
+    @Column(nullable = false)
     private String title;
 
-    @Column(name = "description", length = 250)
     private String description;
 
-    @Column(name = "duedate", nullable = false)
+    @Column(nullable = false)
     private Date dueDate;
 
     public Task(UUID taskId, String title, String description, Date dueDate) {
