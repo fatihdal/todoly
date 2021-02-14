@@ -5,8 +5,6 @@ import java.util.List;
 
 public interface TaskRepository {
 
-    void createTable();
-
     boolean create(Task task);
 
     List<Task> list();

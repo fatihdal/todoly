@@ -7,19 +7,15 @@ import java.util.*;
 
 public class HibernateTaskRepository implements TaskRepository {
 
-    private final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("Tasks");
+    private final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("Todoly");
     private final EntityManager entityManager = entityManagerFactory.createEntityManager();
     private final TypedQuery<Task> listQuery = entityManager.createQuery("select a from Task a ", Task.class);
     private final TypedQuery<Task> getQuery = entityManager.createQuery("select a from Task a where a.taskId = ?1", Task.class);
     private final Query deleteQuery = entityManager.createQuery("delete from Task where taskId = ?1");
-    private final Query filterQuery = entityManager.createNativeQuery("select * from Tasks where duedate  between now() and ?1", Task.class);
-    private final Query getByTitleOrDesQuery = entityManager.createNativeQuery("select * from Tasks where title like ?1 or description like ?2", Task.class);
+    private final Query filterQuery = entityManager.createNativeQuery("select * from Task where dueDate  between now() and ?1", Task.class);
+    private final Query getByTitleOrDesQuery = entityManager.createNativeQuery("select * from Task where title like ?1 or description like ?2", Task.class);
 
     public HibernateTaskRepository() {
-    }
-
-    @Override
-    public void createTable() {
     }
 
     @Override
