@@ -36,7 +36,7 @@ public class TodolyTest {
     public void tearDown() {
         try {
             Statement statement = connection.createStatement();
-            statement.executeUpdate("TRUNCATE TABLE tasks");
+            statement.executeUpdate("TRUNCATE TABLE task");
             connection.close();
             statement.close();
         } catch (Exception e) {
