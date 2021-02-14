@@ -64,13 +64,6 @@ public class Task implements Serializable {
         return dueDate;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String toString() {
         return "\nID : " + taskId +
