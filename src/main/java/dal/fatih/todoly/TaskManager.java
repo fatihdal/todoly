@@ -109,7 +109,7 @@ public class TaskManager {
         }
     }
 
-    private void filterTasksbyNameAndDescription() {
+    private void filterTasksByNameAndDescription() {
         System.out.print("Word to search(min four char) : ");
         String keyword = scn.nextLine();
         if (keyword.length() < 4) {
@@ -170,7 +170,7 @@ public class TaskManager {
             } else if (transaction.equals("5")) {
                 filterTasks();
             } else if (transaction.equals("6")) {
-                filterTasksbyNameAndDescription();
+                filterTasksByNameAndDescription();
             } else {
                 System.out.println("Invalid input");
             }
