@@ -3,7 +3,6 @@ package dal.fatih.todoly;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
-import java.util.UUID;
 
 @Entity
 public class Task implements Serializable {
@@ -44,7 +43,6 @@ public class Task implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-
 
     public void setDueDate(Date dueDate) {
         this.dueDate = dueDate;

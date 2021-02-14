@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
-    private final TaskRepository taskRepository = new HibernateTaskRepository();
+    private final TaskRepository taskRepository = new JdbcTaskRepository();
 
     public TaskManager() throws SQLException {
     }

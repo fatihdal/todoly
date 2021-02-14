@@ -2,7 +2,6 @@ package dal.fatih.todoly;
 
 
 import java.io.Closeable;
-import java.io.InputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

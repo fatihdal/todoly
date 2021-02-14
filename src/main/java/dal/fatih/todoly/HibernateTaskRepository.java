@@ -34,8 +34,7 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public Task get(String taskId) {
-        Task task = getQuery.setParameter(1, taskId).getSingleResult();
-        return task;
+        return getQuery.setParameter(1, taskId).getSingleResult();
     }
 
     @Override

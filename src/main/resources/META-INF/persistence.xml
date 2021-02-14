@@ -11,13 +11,14 @@
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="true"/>
 
-            <property name="hibernate.connection.driver_class" value= "org.h2.Driver"/>
-            <property name="hibernate.connection.url" value="jdbc:h2:~/todoly_db"/>
-            <property name="hibernate.connection.username" value="sa"/>
-            <property name="hibernate.connection.password" value ="sa"/>
+            <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:h2:~/todoly_db"/>
+            <property name="javax.persistence.jdbc.user" value="sa"/>
+            <property name="javax.persistence.jdbc.password" value="sa"/>
 
-            <property name="hibernate.flushMode" value="FLUSH_AUTO" />
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="javax.persistence.schema-generation.database.action" value="update"/>
+            <property name="hibernate.flushMode" value="FLUSH_AUTO"/>
+
         </properties>
     </persistence-unit>
 </persistence>
