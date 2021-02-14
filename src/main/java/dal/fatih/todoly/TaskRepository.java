@@ -13,7 +13,7 @@ public interface TaskRepository {
 
     boolean delete(String taskId);
 
-    List<Task> filter(Date lastDate);
+    List<Task> filterByDueDate(Date lastDate);
 
     List<Task> filterByTitleOrDescription(String keyword);
 

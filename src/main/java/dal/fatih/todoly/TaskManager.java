@@ -42,7 +42,7 @@ public class TaskManager {
     }
 
     private void listAllTasks() {
-        List <Task>tasks = taskRepository.list();
+        List<Task> tasks = taskRepository.list();
         if (!tasks.isEmpty()) {
             for (Task task : tasks) {
                 System.out.println("Task id: " + task.getTaskId());
@@ -79,7 +79,7 @@ public class TaskManager {
                 System.out.println("No task found");
             }
         } catch (Exception e) {
-            System.out.println("No task found"+e);
+            System.out.println("No task found" + e);
         }
     }
 
@@ -91,7 +91,7 @@ public class TaskManager {
                 System.out.println("The given date can not be older than now");
                 return;
             }
-           List<Task> tasks = taskRepository.filter(lastDate);
+            List<Task> tasks = taskRepository.filterByDueDate(lastDate);
 
             if (!tasks.isEmpty()) {
                 for (Task task : tasks) {
@@ -115,7 +115,7 @@ public class TaskManager {
         if (keyword.length() < 4) {
             System.out.println("PLease enter the word to search!");
         } else {
-           List<Task> tasks = taskRepository.filterByTitleOrDescription(keyword);
+            List<Task> tasks = taskRepository.filterByTitleOrDescription(keyword);
             if (!tasks.isEmpty()) {
                 for (Task task : tasks) {
                     System.out.println("Task ıd: " + task.getTaskId());

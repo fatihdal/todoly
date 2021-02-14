@@ -55,7 +55,7 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Task> filter(Date lastDate) {
+    public List<Task> filterByDueDate(Date lastDate) {
         filterQuery.setParameter(1, lastDate);
         return filterQuery.getResultList();
     }

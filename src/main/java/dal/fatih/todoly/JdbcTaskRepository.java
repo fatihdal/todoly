@@ -113,7 +113,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
         }
     }
 
-    public List<Task> filter(Date lastDate) {
+    public List<Task> filterByDueDate(Date lastDate) {
         try {
             List<Task> tasks = new ArrayList<>();
             filterPreparedStatement.setObject(1, lastDate);
