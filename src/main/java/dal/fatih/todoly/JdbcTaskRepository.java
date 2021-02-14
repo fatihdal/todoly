@@ -2,6 +2,7 @@ package dal.fatih.todoly;
 
 
 import java.io.Closeable;
+import java.io.InputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
     public boolean create(Task task) {
         try {
             createPrepareStatement.setString(1, null);
-            createPrepareStatement.setString(2, task.getTaskId().toString());
+            createPrepareStatement.setString(2, task.getTaskId());
             createPrepareStatement.setString(3, task.getTitle());
             createPrepareStatement.setString(4, task.getDescription());
             createPrepareStatement.setString(5, task.getDueDate().toString());
@@ -72,7 +73,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
             while (resultSet.next()) {
                 Task task = new Task();
                 UUID taskId = UUID.fromString(resultSet.getString(2));
-                task.setTaskId(taskId);
+                task.setTaskId(taskId.toString());
                 task.setTitle(resultSet.getString(3));
                 tasks.add(task);
             }
@@ -89,7 +90,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
             if (resultSet.next()) {
                 Task task = new Task();
                 UUID taskId = UUID.fromString(resultSet.getString("taskId"));
-                task.setTaskId(taskId);
+                task.setTaskId(taskId.toString());
                 task.setTitle(resultSet.getString("title"));
                 task.setDescription(resultSet.getString("description"));
                 task.setDueDate(resultSet.getObject("dueDate", java.sql.Date.class));
@@ -140,7 +141,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
             while (resultSet.next()) {
                 Task task = new Task();
                 UUID taskId = UUID.fromString(resultSet.getString(1));
-                task.setTaskId(taskId);
+                task.setTaskId(taskId.toString());
                 task.setTitle(resultSet.getString(2));
                 task.setDescription(resultSet.getString(3));
                 task.setDueDate(resultSet.getObject(4, java.sql.Date.class));

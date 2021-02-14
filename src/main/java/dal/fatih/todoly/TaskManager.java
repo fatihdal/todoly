@@ -34,7 +34,7 @@ public class TaskManager {
         } else if (dueDate.before(Date.from(Instant.now()))) {
             System.out.println("The given date can not be older than now");
         } else {
-            Task task = new Task(UUID.randomUUID(), title, description, dueDate);
+            Task task = new Task(UUID.randomUUID().toString(), title, description, dueDate);
             if (taskRepository.create(task)) {
                 System.out.println("\n" + task.getTaskId() + " Task added");
             }
@@ -118,7 +118,7 @@ public class TaskManager {
             List<Task> tasks = taskRepository.filterByTitleOrDescription(keyword);
             if (!tasks.isEmpty()) {
                 for (Task task : tasks) {
-                    System.out.println("Task ıd: " + task.getTaskId());
+                    System.out.println("Task id: " + task.getTaskId());
                     System.out.println("Title: " + task.getTitle());
                     System.out.println("Description: " + task.getDescription());
                     System.out.println("Due Date: " + task.getDueDate());

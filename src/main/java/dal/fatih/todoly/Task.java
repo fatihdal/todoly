@@ -1,7 +1,5 @@
 package dal.fatih.todoly;
 
-import org.hibernate.annotations.Type;
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
@@ -15,7 +13,7 @@ public class Task implements Serializable {
     private int id;
 
     @Column(nullable = false)
-    private UUID taskId;
+    private String taskId;
 
     @Column(nullable = false)
     private String title;
@@ -25,7 +23,7 @@ public class Task implements Serializable {
     @Column(nullable = false)
     private Date dueDate;
 
-    public Task(UUID taskId, String title, String description, Date dueDate) {
+    public Task(String taskId, String title, String description, Date dueDate) {
         this.taskId = taskId;
         this.title = title;
         this.description = description;
@@ -35,7 +33,7 @@ public class Task implements Serializable {
     public Task() {
     }
 
-    public void setTaskId(UUID taskId) {
+    public void setTaskId(String taskId) {
         this.taskId = taskId;
     }
 
@@ -52,7 +50,7 @@ public class Task implements Serializable {
         this.dueDate = dueDate;
     }
 
-    public UUID getTaskId() {
+    public String getTaskId() {
         return taskId;
     }
 

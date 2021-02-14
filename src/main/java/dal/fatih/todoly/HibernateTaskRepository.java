@@ -34,7 +34,7 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public Task get(String taskId) {
-        Task task = getQuery.setParameter(1, UUID.fromString(taskId)).getSingleResult();
+        Task task = getQuery.setParameter(1, taskId).getSingleResult();
         return task;
     }
 
@@ -43,7 +43,7 @@ public class HibernateTaskRepository implements TaskRepository {
         int rows = 0;
         try {
             entityManager.getTransaction().begin();
-            deleteQuery.setParameter(1, UUID.fromString(taskId));
+            deleteQuery.setParameter(1, taskId);
             rows = deleteQuery.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException(e);
