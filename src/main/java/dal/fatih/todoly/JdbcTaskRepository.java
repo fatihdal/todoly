@@ -5,7 +5,6 @@ import java.io.Closeable;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class JdbcTaskRepository implements Closeable, TaskRepository {
 
@@ -24,15 +23,15 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
         createPrepareStatement =
                 connection.prepareStatement("insert into task " + "values (?,?,?,?,?)");
         listPrepareStatement =
-                connection.prepareStatement("select id,taskId,title,description,dueDate from task");
+                connection.prepareStatement("select * from task");
         getPreparedStatement =
-                connection.prepareStatement("select taskId,title,description,dueDate from task where taskId=? limit 1");
+                connection.prepareStatement("select * from task where taskId=? limit 1");
         deletePreparedStatement =
                 connection.prepareStatement("delete from task where taskId=?");
         filterPreparedStatement =
                 connection.prepareStatement("select * from task where dueDate between now() and ?");
         getByTitleOrDesPreparedStatement =
-                connection.prepareStatement("select taskId,title,description,dueDate from task where title like ? "
+                connection.prepareStatement("select * from task where title like ? "
                         + "or description like ?");
     }
 
@@ -40,30 +39,32 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
         try {
             Statement statement = connection.createStatement();
             statement.executeUpdate("create table if not exists task"
-                    + "  (id int auto_increment primary key not null,"
-                    + "   taskId uuid(36),"
-                    + "   title varchar(35),"
+                    + "  (id integer auto_increment primary key not null,"
                     + "   description varchar(250),"
-                    + "   dueDate date)");
+                    + "   dueDate date,"
+                    + "   taskId uuid(36),"
+                    + "   title varchar(35))");
             statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public boolean create(Task task) {
         try {
             createPrepareStatement.setString(1, null);
-            createPrepareStatement.setString(2, task.getTaskId());
-            createPrepareStatement.setString(3, task.getTitle());
-            createPrepareStatement.setString(4, task.getDescription());
-            createPrepareStatement.setString(5, task.getDueDate().toString());
+            createPrepareStatement.setString(4, task.getTaskId());
+            createPrepareStatement.setString(5, task.getTitle());
+            createPrepareStatement.setString(2, task.getDescription());
+            createPrepareStatement.setString(3, task.getDueDate().toString());
             createPrepareStatement.executeUpdate();
             return true;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public List<Task> list() {
         List<Task> tasks = new ArrayList<>();
@@ -71,9 +72,8 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
             ResultSet resultSet = listPrepareStatement.executeQuery();
             while (resultSet.next()) {
                 Task task = new Task();
-                UUID taskId = UUID.fromString(resultSet.getString(2));
-                task.setTaskId(taskId.toString());
-                task.setTitle(resultSet.getString(3));
+                task.setTaskId(resultSet.getString("taskId"));
+                task.setTitle(resultSet.getString("title"));
                 tasks.add(task);
             }
         } catch (Exception e) {
@@ -81,6 +81,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
         }
         return tasks;
     }
+
     @Override
     public Task get(String taskIdInput) {
         try {
@@ -88,8 +89,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
             ResultSet resultSet = getPreparedStatement.executeQuery();
             if (resultSet.next()) {
                 Task task = new Task();
-                UUID taskId = UUID.fromString(resultSet.getString("taskId"));
-                task.setTaskId(taskId.toString());
+                task.setTaskId(resultSet.getString("taskId"));
                 task.setTitle(resultSet.getString("title"));
                 task.setDescription(resultSet.getString("description"));
                 task.setDueDate(resultSet.getObject("dueDate", java.sql.Date.class));
@@ -101,6 +101,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public boolean delete(String taskIdInput) {
         try {
@@ -112,6 +113,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public List<Task> filterByDueDate(Date lastDate) {
         try {
@@ -120,8 +122,8 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
             ResultSet resultSet = filterPreparedStatement.executeQuery();
             while (resultSet.next()) {
                 Task task = new Task();
-                task.setTitle(resultSet.getString(3));
-                task.setDueDate(resultSet.getObject(5, java.sql.Date.class));
+                task.setTitle(resultSet.getString("title"));
+                task.setDueDate(resultSet.getObject("dueDate", java.sql.Date.class));
                 tasks.add(task);
             }
             return tasks;
@@ -129,6 +131,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public List<Task> filterByTitleOrDescription(String keyword) {
         try {
@@ -139,11 +142,10 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
 
             while (resultSet.next()) {
                 Task task = new Task();
-                UUID taskId = UUID.fromString(resultSet.getString(1));
-                task.setTaskId(taskId.toString());
-                task.setTitle(resultSet.getString(2));
-                task.setDescription(resultSet.getString(3));
-                task.setDueDate(resultSet.getObject(4, java.sql.Date.class));
+                task.setTaskId(resultSet.getString("taskId"));
+                task.setTitle(resultSet.getString("title"));
+                task.setDescription(resultSet.getString("description"));
+                task.setDueDate(resultSet.getObject("dueDate", java.sql.Date.class));
                 tasks.add(task);
             }
             return tasks;
