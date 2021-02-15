@@ -21,7 +21,7 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
     public JdbcTaskRepository() throws SQLException {
         createTable();
         createPrepareStatement =
-                connection.prepareStatement("insert into task " + "values (?,?,?,?,?)");
+                connection.prepareStatement("insert into task " + "values (?,?,?,?)");
         listPrepareStatement =
                 connection.prepareStatement("select * from task");
         getPreparedStatement =
@@ -39,10 +39,9 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
         try {
             Statement statement = connection.createStatement();
             statement.executeUpdate("create table if not exists task"
-                    + "  (id integer auto_increment primary key not null,"
-                    + "   description varchar(250),"
+                    + "   (taskId uuid(36) primary key not null ,"
+                    + "   description varchar(250), "
                     + "   dueDate date,"
-                    + "   taskId uuid(36),"
                     + "   title varchar(35))");
             statement.close();
         } catch (SQLException e) {
@@ -53,11 +52,10 @@ public class JdbcTaskRepository implements Closeable, TaskRepository {
     @Override
     public boolean create(Task task) {
         try {
-            createPrepareStatement.setString(1, null);
-            createPrepareStatement.setString(4, task.getTaskId());
-            createPrepareStatement.setString(5, task.getTitle());
+            createPrepareStatement.setString(1, task.getTaskId());
             createPrepareStatement.setString(2, task.getDescription());
             createPrepareStatement.setString(3, task.getDueDate().toString());
+            createPrepareStatement.setString(4, task.getTitle());
             createPrepareStatement.executeUpdate();
             return true;
         } catch (Exception e) {

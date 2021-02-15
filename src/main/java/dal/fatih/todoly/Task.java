@@ -8,9 +8,6 @@ import java.sql.Date;
 public class Task implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
     @Column(nullable = false)
     private String taskId;
 
