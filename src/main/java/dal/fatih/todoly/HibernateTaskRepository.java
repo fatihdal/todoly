@@ -6,32 +6,41 @@ import java.sql.Date;
 import java.util.*;
 
 public class HibernateTaskRepository implements TaskRepository {
-
-    private final EntityManagerFactory entityManagerFactory
+    
+    private final EntityManagerFactory emf
             = Persistence.createEntityManagerFactory("Todoly");
-    private final EntityManager entityManager
-            = entityManagerFactory.createEntityManager();
+    private final EntityManager em = emf.createEntityManager();
 
     @Override
     public boolean create(Task task) {
-        entityManager.getTransaction().begin();
-        entityManager.persist(task);
-        entityManager.getTransaction().commit();
+        EntityTransaction et = null;
+        try {
+            et = em.getTransaction();
+            et.begin();
+            em.persist(task);
+            et.commit();
 
-        return true;
+            return true;
+        } catch (Exception e) {
+            if (et != null) {
+                et.rollback();
+                return false;
+            }
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public List<Task> list() {
         final TypedQuery<Task> listQuery
-                = entityManager.createQuery("select a from Task a ", Task.class);
+                = em.createQuery("select a from Task a ", Task.class);
         return listQuery.getResultList();
     }
 
     @Override
     public Task get(String taskId) {
         final TypedQuery<Task> getQuery
-                = entityManager.createQuery("select a from Task a " +
+                = em.createQuery("select a from Task a " +
                 "where a.taskId ='" + taskId + "'", Task.class);
         return getQuery.getSingleResult();
     }
@@ -39,16 +48,16 @@ public class HibernateTaskRepository implements TaskRepository {
     @Override
     public boolean delete(String taskId) {
         final Query deleteQuery
-                = entityManager.createQuery("delete from Task " +
+                = em.createQuery("delete from Task " +
                 "where taskId ='" + taskId + "'");
         int rows;
         try {
-            entityManager.getTransaction().begin();
+            em.getTransaction().begin();
             rows = deleteQuery.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            entityManager.getTransaction().commit();
+            em.getTransaction().commit();
         }
         return rows > 0;
     }
@@ -57,7 +66,7 @@ public class HibernateTaskRepository implements TaskRepository {
     @SuppressWarnings("unchecked")
     public List<Task> filterByDueDate(Date lastDate) {
         final Query filterQuery
-                = entityManager.createNativeQuery("select * from Task where dueDate  " +
+                = em.createNativeQuery("select * from Task where dueDate  " +
                 "between now() and '" + lastDate + "'", Task.class);
         return filterQuery.getResultList();
     }
@@ -66,7 +75,7 @@ public class HibernateTaskRepository implements TaskRepository {
     @SuppressWarnings("unchecked")
     public List<Task> filterByTitleOrDescription(String keyword) {
         final Query getByTitleOrDesQuery
-                = entityManager.createNativeQuery("select * from Task " +
+                = em.createNativeQuery("select * from Task " +
                 "where title like '" + "%" + keyword.toLowerCase() + "%" + "'" +
                 "or description like '" + "%" + keyword.toLowerCase() + "%" + "' ", Task.class);
         return getByTitleOrDesQuery.getResultList();
@@ -74,6 +83,6 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public void close() {
-        entityManagerFactory.close();
+        emf.close();
     }
 }
