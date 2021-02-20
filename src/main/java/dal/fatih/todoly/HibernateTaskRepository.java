@@ -46,10 +46,9 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public Task get(String taskId) {
-        final TypedQuery<Task> getQuery
-                = em.createQuery("select a from Task a " +
-                "where a.taskId ='" + taskId + "'", Task.class);
-        return getQuery.getSingleResult();
+        cq.where(cb.equal(taskRoot.get("taskId"), taskId));
+
+        return em.createQuery(cq).getSingleResult();
     }
 
     @Override
