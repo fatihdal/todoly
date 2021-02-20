@@ -2,6 +2,9 @@ package dal.fatih.todoly;
 
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.sql.Date;
 import java.util.*;
 
@@ -10,6 +13,9 @@ public class HibernateTaskRepository implements TaskRepository {
     private final EntityManagerFactory emf
             = Persistence.createEntityManagerFactory("Todoly");
     private final EntityManager em = emf.createEntityManager();
+    private final CriteriaBuilder cb = em.getCriteriaBuilder();
+    private final CriteriaQuery<Task> cq = cb.createQuery(Task.class);
+    private final Root<Task> taskRoot = cq.from(Task.class);
 
     @Override
     public boolean create(Task task) {
@@ -32,9 +38,10 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public List<Task> list() {
-        final TypedQuery<Task> listQuery
-                = em.createQuery("select a from Task a ", Task.class);
-        return listQuery.getResultList();
+        TypedQuery<Task> query = em.createQuery(cq);
+        cq.select(taskRoot);
+
+        return query.getResultList();
     }
 
     @Override
