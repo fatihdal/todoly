@@ -6,6 +6,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.sql.Date;
+import java.time.*;
 import java.util.*;
 
 public class HibernateTaskRepository implements TaskRepository {
@@ -68,12 +69,11 @@ public class HibernateTaskRepository implements TaskRepository {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<Task> filterByDueDate(Date lastDate) {
-        final Query filterQuery
-                = em.createNativeQuery("select * from Task where dueDate  " +
-                "between now() and '" + lastDate + "'", Task.class);
-        return filterQuery.getResultList();
+        cq.where(cb.between(taskRoot.get("dueDate"),
+                java.util.Date.from(Instant.now()), lastDate));
+        cq.select(taskRoot);
+        return em.createQuery(cq).getResultList();
     }
 
     @Override
