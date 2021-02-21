@@ -5,16 +5,17 @@ import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.EntityType;
 import java.sql.Date;
 import java.time.*;
 import java.util.*;
 
 public class HibernateTaskRepository implements TaskRepository {
 
-    private final EntityManagerFactory emf
+    private final EntityManagerFactory entityManagerFactory
             = Persistence.createEntityManagerFactory("Todoly");
-    private final EntityManager em = emf.createEntityManager();
-    private final CriteriaBuilder cb = em.getCriteriaBuilder();
+    private final EntityManager entityManager = entityManagerFactory.createEntityManager();
+    private final CriteriaBuilder cb = entityManager.getCriteriaBuilder();
     private final CriteriaQuery<Task> cq = cb.createQuery(Task.class);
     private final Root<Task> taskRoot = cq.from(Task.class);
 
@@ -22,9 +23,9 @@ public class HibernateTaskRepository implements TaskRepository {
     public boolean create(Task task) {
         EntityTransaction et = null;
         try {
-            et = em.getTransaction();
+            et = entityManager.getTransaction();
             et.begin();
-            em.persist(task);
+            entityManager.persist(task);
             et.commit();
 
             return true;
@@ -39,7 +40,7 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public List<Task> list() {
-        TypedQuery<Task> query = em.createQuery(cq);
+        TypedQuery<Task> query = entityManager.createQuery(cq);
         cq.select(taskRoot);
 
         return query.getResultList();
@@ -49,18 +50,18 @@ public class HibernateTaskRepository implements TaskRepository {
     public Task get(String taskId) {
         cq.where(cb.equal(taskRoot.get("taskId"), taskId));
 
-        return em.createQuery(cq).getSingleResult();
+        return entityManager.createQuery(cq).getSingleResult();
     }
 
     @Override
     public boolean delete(String taskId) {
         try {
             cq.where(cb.equal(taskRoot.get("taskId"), taskId));
-            Task task = em.createQuery(cq).getSingleResult();
+            Task task = entityManager.createQuery(cq).getSingleResult();
 
-            em.getTransaction().begin();
-            em.remove(task);
-            em.getTransaction().commit();
+            entityManager.getTransaction().begin();
+            entityManager.remove(task);
+            entityManager.getTransaction().commit();
 
             return true;
         } catch (Exception e) {
@@ -73,21 +74,26 @@ public class HibernateTaskRepository implements TaskRepository {
         cq.where(cb.between(taskRoot.get("dueDate"),
                 java.util.Date.from(Instant.now()), lastDate));
         cq.select(taskRoot);
-        return em.createQuery(cq).getResultList();
+        return entityManager.createQuery(cq).getResultList();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<Task> filterByTitleOrDescription(String keyword) {
-        final Query getByTitleOrDesQuery
-                = em.createNativeQuery("select * from Task " +
-                "where title like '" + "%" + keyword.toLowerCase() + "%" + "'" +
-                "or description like '" + "%" + keyword.toLowerCase() + "%" + "' ", Task.class);
-        return getByTitleOrDesQuery.getResultList();
+        final EntityType<Task> type = entityManager.getMetamodel().entity(Task.class);
+        cq.where(cb.or(cb.like(cb.lower(taskRoot.get(type.getDeclaredSingularAttribute
+                        ("title", String.class))),
+                '%' + keyword.toLowerCase(Locale.ROOT) + '%')
+
+                , cb.like(cb.lower(taskRoot.get(type.getDeclaredSingularAttribute
+                                ("description", String.class))),
+                        '%' + keyword.toLowerCase(Locale.ROOT) + '%')));
+
+        cq.select(taskRoot);
+        return entityManager.createQuery(cq).getResultList();
     }
 
     @Override
     public void close() {
-        emf.close();
+        entityManagerFactory.close();
     }
 }
