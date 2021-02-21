@@ -70,16 +70,20 @@ public class TaskManager {
     }
 
     private void deleteTask() {
-        System.out.print("Task Id: ");
+        System.out.print("Task Id (36 char): ");
         String taskIdInput = scn.nextLine();
-        try {
-            if (taskRepository.delete(taskIdInput)) {
-                System.out.println("Task deleted");
-            } else {
+        if (taskIdInput.length() != 36) {
+            System.out.println("PLease enter the task id only!");
+        } else {
+            try {
+                if (taskRepository.delete(taskIdInput)) {
+                    System.out.println("Task deleted");
+                } else {
+                    System.out.println("No task found");
+                }
+            } catch (Exception e) {
                 System.out.println("No task found");
             }
-        } catch (Exception e) {
-            System.out.println("No task found" + e);
         }
     }
 

@@ -125,9 +125,23 @@ public class TodolyTest {
 
     @Test
     public void shouldFindNoTaskToDelete() {
-        provideInput(Arrays.asList("4", "", "q"));
+        provideInput(Arrays.asList("4", "e195e078-3dfc-4cab-bdbe-6edc82ad646d", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("No task found"));
+    }
+
+    @Test
+    public void shouldNotAllowMoreThan36Chars() {
+        provideInput(Arrays.asList("4", "e195e078-3dfc-4cab-bdbe-6edc82ad646d34534346", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("PLease enter the task id only!"));
+    }
+
+    @Test
+    public void shouldNotAllowLessThan36Chars() {
+        provideInput(Arrays.asList("4", "e195e078-3", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("PLease enter the task id only!"));
     }
 
     @Test

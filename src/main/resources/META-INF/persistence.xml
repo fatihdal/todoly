@@ -17,7 +17,7 @@
             <property name="javax.persistence.jdbc.password" value="sa"/>
 
             <property name="javax.persistence.schema-generation.database.action" value="update"/>
-            <property name="hibernate.flushMode" value="FLUSH_AUTO"/>
+            <!--<property name="hibernate.flushMode" value="FLUSH_AUTO"/>-->
 
         </properties>
     </persistence-unit>

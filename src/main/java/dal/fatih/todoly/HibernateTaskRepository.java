@@ -9,7 +9,7 @@ import java.sql.Date;
 import java.util.*;
 
 public class HibernateTaskRepository implements TaskRepository {
-    
+
     private final EntityManagerFactory emf
             = Persistence.createEntityManagerFactory("Todoly");
     private final EntityManager em = emf.createEntityManager();
@@ -53,19 +53,18 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public boolean delete(String taskId) {
-        final Query deleteQuery
-                = em.createQuery("delete from Task " +
-                "where taskId ='" + taskId + "'");
-        int rows;
         try {
+            cq.where(cb.equal(taskRoot.get("taskId"), taskId));
+            Task task = em.createQuery(cq).getSingleResult();
+
             em.getTransaction().begin();
-            rows = deleteQuery.executeUpdate();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
+            em.remove(task);
             em.getTransaction().commit();
+
+            return true;
+        } catch (Exception e) {
+            return false;
         }
-        return rows > 0;
     }
 
     @Override
