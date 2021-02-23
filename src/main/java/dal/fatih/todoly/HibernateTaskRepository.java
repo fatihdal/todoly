@@ -7,17 +7,25 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.EntityType;
 import java.sql.Date;
-import java.time.*;
-import java.util.*;
+import java.time.Instant;
+import java.util.List;
+import java.util.Locale;
 
 public class HibernateTaskRepository implements TaskRepository {
 
     private final EntityManagerFactory entityManagerFactory
             = Persistence.createEntityManagerFactory("Todoly");
-    private final EntityManager entityManager = entityManagerFactory.createEntityManager();
-    private final CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-    private final CriteriaQuery<Task> cq = cb.createQuery(Task.class);
-    private final Root<Task> taskRoot = cq.from(Task.class);
+    private EntityManager entityManager = entityManagerFactory.createEntityManager();
+    private CriteriaBuilder cb;
+    private CriteriaQuery<Task> cq;
+    private Root<Task> taskRoot;
+
+
+    public void getBaseQuery() {
+        cb = entityManager.getCriteriaBuilder();
+        cq = cb.createQuery(Task.class);
+        taskRoot = cq.from(Task.class);
+    }
 
     @Override
     public boolean create(Task task) {
@@ -40,6 +48,7 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public List<Task> list() {
+        getBaseQuery();
         TypedQuery<Task> query = entityManager.createQuery(cq);
         cq.select(taskRoot);
 
@@ -48,6 +57,7 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public Task get(String taskId) {
+        getBaseQuery();
         cq.where(cb.equal(taskRoot.get("taskId"), taskId));
 
         return entityManager.createQuery(cq).getSingleResult();
@@ -55,6 +65,7 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public boolean delete(String taskId) {
+        getBaseQuery();
         try {
             cq.where(cb.equal(taskRoot.get("taskId"), taskId));
             Task task = entityManager.createQuery(cq).getSingleResult();
@@ -71,6 +82,7 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public List<Task> filterByDueDate(Date lastDate) {
+        getBaseQuery();
         cq.where(cb.between(taskRoot.get("dueDate"),
                 java.util.Date.from(Instant.now()), lastDate));
         cq.select(taskRoot);
@@ -80,6 +92,7 @@ public class HibernateTaskRepository implements TaskRepository {
     @Override
     public List<Task> filterByTitleOrDescription(String keyword) {
         final EntityType<Task> type = entityManager.getMetamodel().entity(Task.class);
+        getBaseQuery();
         cq.where(cb.or(cb.like(cb.lower(taskRoot.get(type.getDeclaredSingularAttribute
                         ("title", String.class))),
                 '%' + keyword.toLowerCase(Locale.ROOT) + '%')
