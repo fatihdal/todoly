@@ -6,7 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JdbcTaskRepository implements Closeable, TaskRepository {
+public class JdbcTaskRepository implements TaskRepository {
 
     private final DBConnection dbConnection = new DBConnection();
     private final Connection connection = dbConnection.getConnection();

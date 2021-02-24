@@ -1,9 +1,10 @@
 package dal.fatih.todoly;
 
+import java.io.Closeable;
 import java.sql.Date;
 import java.util.List;
 
-public interface TaskRepository {
+public interface TaskRepository extends Closeable {
 
     boolean create(Task task);
 
