@@ -27,9 +27,8 @@ public class HibernateTaskRepository implements TaskRepository {
 
     @Override
     public boolean create(Task task) {
-        EntityTransaction et = null;
+        EntityTransaction et = entityManager.getTransaction();
         try {
-            et = entityManager.getTransaction();
             et.begin();
             entityManager.persist(task);
             et.commit();
