@@ -24,5 +24,6 @@ hs_err_pid*
 build
 # Ignore Gradle project-specific cache directory
 .gradle
-.project
-.settings
+/.settings/
+/.classpath
+/.project

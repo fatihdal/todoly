@@ -20,8 +20,8 @@ import java.util.regex.Pattern;
 
 public class TodolyTest {
 
-    private ByteArrayOutputStream outContent;
     private final Connection connection = new DBConnection().getConnection();
+    private ByteArrayOutputStream outContent;
 
     public TodolyTest() throws SQLException {
     }
