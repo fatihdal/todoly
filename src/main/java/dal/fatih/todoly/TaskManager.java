@@ -9,13 +9,13 @@ import java.util.UUID;
 
 public class TaskManager {
     private final Scanner scn = new Scanner(System.in);
-    private TaskRepository taskRepository = new TaskRepository();
+    private final TaskRepository taskRepository = new HibernateTaskRepository();
 
     public TaskManager() throws SQLException {
     }
 
     private void handleCreateTask() {
-        Date dueDate = null;
+        Date dueDate;
         System.out.println("(*)  Can't be empty");
         System.out.print("Title of the task (*) : ");
         String title = scn.nextLine();
@@ -34,18 +34,18 @@ public class TaskManager {
         } else if (dueDate.before(Date.from(Instant.now()))) {
             System.out.println("The given date can not be older than now");
         } else {
-            Task task = new Task(UUID.randomUUID(), title, description, dueDate);
+            Task task = new Task(UUID.randomUUID().toString(), title, description, dueDate);
             if (taskRepository.create(task)) {
-                System.out.println("\n" + task.getId() + " Task added");
+                System.out.println("\n" + task.getTaskId() + " Task added");
             }
         }
     }
 
     private void listAllTasks() {
-        List <Task>tasks = taskRepository.list();
+        List<Task> tasks = taskRepository.list();
         if (!tasks.isEmpty()) {
             for (Task task : tasks) {
-                System.out.println("Task id: " + task.getId());
+                System.out.println("Task id: " + task.getTaskId());
                 System.out.println("Title: " + task.getTitle());
                 System.out.println("--------------------------------------");
             }
@@ -70,16 +70,20 @@ public class TaskManager {
     }
 
     private void deleteTask() {
-        System.out.print("Task Id: ");
+        System.out.print("Task Id (36 char): ");
         String taskIdInput = scn.nextLine();
-        try {
-            if (taskRepository.delete(taskIdInput)) {
-                System.out.println("Task deleted");
-            } else {
+        if (taskIdInput.length() != 36) {
+            System.out.println("PLease enter the task id only!");
+        } else {
+            try {
+                if (taskRepository.delete(taskIdInput)) {
+                    System.out.println("Task deleted");
+                } else {
+                    System.out.println("No task found");
+                }
+            } catch (Exception e) {
                 System.out.println("No task found");
             }
-        } catch (Exception e) {
-            System.out.println("No task found");
         }
     }
 
@@ -91,7 +95,7 @@ public class TaskManager {
                 System.out.println("The given date can not be older than now");
                 return;
             }
-           List<Task> tasks = taskRepository.filter(lastDate);
+            List<Task> tasks = taskRepository.filterByDueDate(lastDate);
 
             if (!tasks.isEmpty()) {
                 for (Task task : tasks) {
@@ -109,16 +113,16 @@ public class TaskManager {
         }
     }
 
-    private void filterTasksbyNameAndDescription() {
+    private void filterTasksByNameAndDescription() {
         System.out.print("Word to search(min four char) : ");
         String keyword = scn.nextLine();
         if (keyword.length() < 4) {
             System.out.println("PLease enter the word to search!");
         } else {
-           List<Task> tasks = taskRepository.filterByTitleOrDescription(keyword);
+            List<Task> tasks = taskRepository.filterByTitleOrDescription(keyword);
             if (!tasks.isEmpty()) {
                 for (Task task : tasks) {
-                    System.out.println("Task ıd: " + task.getId());
+                    System.out.println("Task id: " + task.getTaskId());
                     System.out.println("Title: " + task.getTitle());
                     System.out.println("Description: " + task.getDescription());
                     System.out.println("Due Date: " + task.getDueDate());
@@ -145,7 +149,6 @@ public class TaskManager {
         System.out.println("Please select the action you want to do");
 
         while (true) {
-
             if (loopCounter >= 1) {
                 System.out.println("To see the actions menu (T) ");
             }
@@ -171,7 +174,7 @@ public class TaskManager {
             } else if (transaction.equals("5")) {
                 filterTasks();
             } else if (transaction.equals("6")) {
-                filterTasksbyNameAndDescription();
+                filterTasksByNameAndDescription();
             } else {
                 System.out.println("Invalid input");
             }

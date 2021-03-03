@@ -10,8 +10,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -20,8 +20,8 @@ import java.util.regex.Pattern;
 
 public class TodolyTest {
 
-    private ByteArrayOutputStream outContent;
     private final Connection connection = new DBConnection().getConnection();
+    private ByteArrayOutputStream outContent;
 
     public TodolyTest() throws SQLException {
     }
@@ -36,7 +36,7 @@ public class TodolyTest {
     public void tearDown() {
         try {
             Statement statement = connection.createStatement();
-            statement.executeUpdate("TRUNCATE TABLE tasks");
+            statement.executeUpdate("TRUNCATE TABLE task");
             connection.close();
             statement.close();
         } catch (Exception e) {
@@ -125,9 +125,23 @@ public class TodolyTest {
 
     @Test
     public void shouldFindNoTaskToDelete() {
-        provideInput(Arrays.asList("4", "", "q"));
+        provideInput(Arrays.asList("4", "e195e078-3dfc-4cab-bdbe-6edc82ad646d", "q"));
         App.main(new String[]{});
         Assert.assertTrue(outContent.toString().contains("No task found"));
+    }
+
+    @Test
+    public void shouldNotAllowMoreThan36Chars() {
+        provideInput(Arrays.asList("4", "e195e078-3dfc-4cab-bdbe-6edc82ad646d34534346", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("PLease enter the task id only!"));
+    }
+
+    @Test
+    public void shouldNotAllowLessThan36Chars() {
+        provideInput(Arrays.asList("4", "e195e078-3", "q"));
+        App.main(new String[]{});
+        Assert.assertTrue(outContent.toString().contains("PLease enter the task id only!"));
     }
 
     @Test

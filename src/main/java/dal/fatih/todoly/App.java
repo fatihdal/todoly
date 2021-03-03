@@ -6,7 +6,7 @@ import java.sql.SQLException;
 public class App {
 
     public static void main(String[] args) {
-        TaskManager taskManager = null;
+        TaskManager taskManager;
         try {
             taskManager = new TaskManager();
             taskManager.handleInputs();
