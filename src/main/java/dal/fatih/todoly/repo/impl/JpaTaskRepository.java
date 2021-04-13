@@ -1,5 +1,8 @@
-package dal.fatih.todoly;
+package dal.fatih.todoly.repo.impl;
 
+
+import dal.fatih.todoly.Task;
+import dal.fatih.todoly.repo.TaskRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -14,7 +17,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 
-public class HibernateTaskRepository implements TaskRepository {
+public class JpaTaskRepository implements TaskRepository {
 
     private final EntityManagerFactory entityManagerFactory
             = Persistence.createEntityManagerFactory("Todoly");

@@ -1,5 +1,9 @@
-package dal.fatih.todoly;
+package dal.fatih.todoly.repo.impl;
 
+
+import dal.fatih.todoly.DBConnection;
+import dal.fatih.todoly.Task;
+import dal.fatih.todoly.repo.TaskRepository;
 
 import java.sql.*;
 import java.time.LocalDateTime;

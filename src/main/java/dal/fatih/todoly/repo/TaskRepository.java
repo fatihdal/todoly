@@ -1,4 +1,6 @@
-package dal.fatih.todoly;
+package dal.fatih.todoly.repo;
+
+import dal.fatih.todoly.Task;
 
 import java.io.Closeable;
 import java.sql.Date;
