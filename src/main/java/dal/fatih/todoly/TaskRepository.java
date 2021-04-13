@@ -6,17 +6,15 @@ import java.util.List;
 
 public interface TaskRepository extends Closeable {
 
-    boolean create(Task task);
+    Task create(Task task);
 
     List<Task> list();
 
-    Task get(String taskId);
+    Task get(Long taskId);
 
     boolean delete(String taskId);
 
     List<Task> filterByDueDate(Date lastDate);
 
     List<Task> filterByTitleOrDescription(String keyword);
-
-    void close();
 }

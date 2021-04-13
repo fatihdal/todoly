@@ -26,18 +26,18 @@ public class HibernateTaskRepository implements TaskRepository {
     }
 
     @Override
-    public boolean create(Task task) {
+    public Task create(Task task) {
         EntityTransaction et = entityManager.getTransaction();
         try {
             et.begin();
             entityManager.persist(task);
             et.commit();
 
-            return true;
+            return task;
         } catch (Exception e) {
             if (et != null) {
                 et.rollback();
-                return false;
+                return null;
             }
             throw new RuntimeException(e);
         }
@@ -54,11 +54,11 @@ public class HibernateTaskRepository implements TaskRepository {
     }
 
     @Override
-    public Task get(String taskId) {
+    public Task get(Long id) {
         CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
-        cq.where(cb.equal(taskRoot.get("taskId"), taskId));
+        cq.where(cb.equal(taskRoot.get("id"), id));
 
         return entityManager.createQuery(cq).getSingleResult();
     }

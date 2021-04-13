@@ -1,17 +1,20 @@
 package dal.fatih.todoly;
 
+import org.apache.tomcat.jni.Local;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Entity
 public class Task implements Serializable {
 
     @Id
     @Column(nullable = false)
-    private String taskId;
+    private Long id;
 
     @Column(nullable = false)
     private String title;
@@ -19,10 +22,10 @@ public class Task implements Serializable {
     private String description;
 
     @Column(nullable = false)
-    private Date dueDate;
+    private LocalDateTime dueDate;
 
-    public Task(String taskId, String title, String description, Date dueDate) {
-        this.taskId = taskId;
+    public Task(Long id, String title, String description, LocalDateTime dueDate) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
@@ -31,12 +34,12 @@ public class Task implements Serializable {
     public Task() {
     }
 
-    public String getTaskId() {
-        return taskId;
+    public Long getId() {
+        return id;
     }
 
-    public void setTaskId(String taskId) {
-        this.taskId = taskId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -55,16 +58,16 @@ public class Task implements Serializable {
         this.description = description;
     }
 
-    public Date getDueDate() {
+    public LocalDateTime getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(Date dueDate) {
+    public void setDueDate(LocalDateTime dueDate) {
         this.dueDate = dueDate;
     }
 
     public String toString() {
-        return "\nID : " + taskId +
+        return "\nID : " + id +
                 "\nTITLE : " + title +
                 "\nDESCRIPTION : " + description +
                 "\nDUE DATE : " + dueDate;

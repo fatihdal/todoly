@@ -12,7 +12,7 @@ import java.util.List;
 public class TaskServiceImpl implements TaskService {
 
     @Override
-    public TaskDTO handleCreateTask(TaskDTO taskDto) {
+    public Task handleCreateTask(TaskDTO taskDto) {
         return null;
     }
 

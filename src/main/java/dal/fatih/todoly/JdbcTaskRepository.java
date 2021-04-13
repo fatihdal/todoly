@@ -2,6 +2,7 @@ package dal.fatih.todoly;
 
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,11 +25,11 @@ public class JdbcTaskRepository implements TaskRepository {
         listPrepareStatement =
                 connection.prepareStatement("select * from task");
         getPreparedStatement =
-                connection.prepareStatement("select * from task where taskId=? limit 1");
+                connection.prepareStatement("select * from task where id=? limit 1");
         deletePreparedStatement =
-                connection.prepareStatement("delete from task where taskId=?");
+                connection.prepareStatement("delete from task where id=?");
         filterPreparedStatement =
-                connection.prepareStatement("select * from task where dueDate between now() and ?");
+                connection.prepareStatement("select * from task where due_Date between now() and ?");
         getByTitleOrDesPreparedStatement =
                 connection.prepareStatement("select * from task where title like ? "
                         + "or description like ?");
@@ -38,7 +39,7 @@ public class JdbcTaskRepository implements TaskRepository {
         try {
             Statement statement = connection.createStatement();
             statement.executeUpdate("create table if not exists task"
-                    + "   (taskId uuid(36) primary key not null ,"
+                    + "   (id uuid(36) primary key not null ,"
                     + "   description varchar(250), "
                     + "   dueDate date,"
                     + "   title varchar(35))");
@@ -49,14 +50,14 @@ public class JdbcTaskRepository implements TaskRepository {
     }
 
     @Override
-    public boolean create(Task task) {
+    public Task create(Task task) {
         try {
-            createPrepareStatement.setString(1, task.getTaskId());
+            createPrepareStatement.setLong(1, task.getId());
             createPrepareStatement.setString(2, task.getDescription());
             createPrepareStatement.setString(3, task.getDueDate().toString());
             createPrepareStatement.setString(4, task.getTitle());
             createPrepareStatement.executeUpdate();
-            return true;
+            return task;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -69,7 +70,7 @@ public class JdbcTaskRepository implements TaskRepository {
             ResultSet resultSet = listPrepareStatement.executeQuery();
             while (resultSet.next()) {
                 Task task = new Task();
-                task.setTaskId(resultSet.getString("taskId"));
+                task.setId(resultSet.getLong("id"));
                 task.setTitle(resultSet.getString("title"));
                 tasks.add(task);
             }
@@ -80,16 +81,16 @@ public class JdbcTaskRepository implements TaskRepository {
     }
 
     @Override
-    public Task get(String taskIdInput) {
+    public Task get(Long idInput) {
         try {
-            getPreparedStatement.setString(1, taskIdInput);
+            getPreparedStatement.setLong(1, idInput);
             ResultSet resultSet = getPreparedStatement.executeQuery();
             if (resultSet.next()) {
                 Task task = new Task();
-                task.setTaskId(resultSet.getString("taskId"));
+                task.setId(resultSet.getLong("id"));
                 task.setTitle(resultSet.getString("title"));
                 task.setDescription(resultSet.getString("description"));
-                task.setDueDate(resultSet.getObject("dueDate", java.sql.Date.class));
+                task.setDueDate(resultSet.getObject("dueDate", LocalDateTime.class));
                 return task;
             } else {
                 return null;
@@ -100,9 +101,9 @@ public class JdbcTaskRepository implements TaskRepository {
     }
 
     @Override
-    public boolean delete(String taskIdInput) {
+    public boolean delete(String idInput) {
         try {
-            deletePreparedStatement.setObject(1, taskIdInput);
+            deletePreparedStatement.setObject(1, idInput);
             int deleted = deletePreparedStatement.executeUpdate();
             return deleted > 0;
 
@@ -120,7 +121,7 @@ public class JdbcTaskRepository implements TaskRepository {
             while (resultSet.next()) {
                 Task task = new Task();
                 task.setTitle(resultSet.getString("title"));
-                task.setDueDate(resultSet.getObject("dueDate", java.sql.Date.class));
+                task.setDueDate(resultSet.getObject("dueDate", LocalDateTime.class));
                 tasks.add(task);
             }
             return tasks;
@@ -139,10 +140,10 @@ public class JdbcTaskRepository implements TaskRepository {
 
             while (resultSet.next()) {
                 Task task = new Task();
-                task.setTaskId(resultSet.getString("taskId"));
+                task.setId(resultSet.getLong("id"));
                 task.setTitle(resultSet.getString("title"));
                 task.setDescription(resultSet.getString("description"));
-                task.setDueDate(resultSet.getObject("dueDate", java.sql.Date.class));
+                task.setDueDate(resultSet.getObject("dueDate", LocalDateTime.class));
                 tasks.add(task);
             }
             return tasks;
