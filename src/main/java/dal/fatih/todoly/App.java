@@ -1,17 +1,13 @@
 package dal.fatih.todoly;
 
 
-import java.sql.SQLException;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@SpringBootApplication
 public class App {
 
     public static void main(String[] args) {
-        TaskManager taskManager;
-        try {
-            taskManager = new TaskManager();
-            taskManager.handleInputs();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        SpringApplication.run(App.class, args);
     }
 }
