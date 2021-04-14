@@ -1,6 +1,6 @@
-FROM java:8
-COPY . /root/
-WORKDIR /root
-RUN rm -rf build
-RUN ./gradlew clean build
-CMD ["./gradlew","run"]
+FROM java:8-alpine
+WORKDIR /usr/app
+ARG DEPENDENCY=build
+COPY ${DEPENDENCY}/libs/*.jar /usr/app
+COPY ${DEPENDENCY}/resources/* /usr/app
+CMD  ["java","-jar","todoly-0.0.1-SNAPSHOT.jar"]
