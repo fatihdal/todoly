@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.ArrayList;
@@ -41,4 +42,14 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed", details);
         return new ResponseEntity(error, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    protected ResponseEntity<Object> handleMethodArgumentNotBad(MethodArgumentTypeMismatchException ex, WebRequest request) {
+        List<String> details = new ArrayList<>();
+        details.add(ex.getLocalizedMessage());
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST, "Failed to convert value of type of id ", details);
+        return new ResponseEntity(error, HttpStatus.BAD_REQUEST);
+    }
+
+
 }

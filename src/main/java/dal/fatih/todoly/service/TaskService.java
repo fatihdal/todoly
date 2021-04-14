@@ -1,7 +1,8 @@
 package dal.fatih.todoly.service;
 
-import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.dto.TaskDTO;
+import dal.fatih.todoly.exception.RecordNotFoundException;
+import dal.fatih.todoly.model.Task;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,7 +13,7 @@ public interface TaskService {
 
     List<TaskDTO> listAllTasks();
 
-    TaskDTO get(Long id);
+    TaskDTO get(Long id) throws RecordNotFoundException;
 
     boolean delete(Long id);
 

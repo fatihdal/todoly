@@ -17,6 +17,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation group: 'org.hibernate', name: 'hibernate-validator', version: '7.0.1.Final'
     compile 'javax.validation:validation-api:2.0.1.Final'
+    compile 'org.modelmapper:modelmapper:1.1.0'
     runtimeOnly 'com.h2database:h2'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
