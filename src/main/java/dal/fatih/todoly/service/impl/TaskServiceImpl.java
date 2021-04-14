@@ -1,19 +1,45 @@
 package dal.fatih.todoly.service.impl;
 
-import dal.fatih.todoly.Task;
+import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.dto.TaskDTO;
+import dal.fatih.todoly.repo.TaskRepository;
 import dal.fatih.todoly.service.TaskService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Transactional
 public class TaskServiceImpl implements TaskService {
 
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    TaskRepository taskRepository;
+
+    @Autowired
+    public void setTaskRepository(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
+    }
+
     @Override
-    public Task handleCreateTask(TaskDTO taskDto) {
-        return null;
+    public Task handleCreateTask(TaskDTO taskDTO) {
+        Task task = new Task();
+        task.setTitle(taskDTO.getTitle());
+        task.setDescription(taskDTO.getDescription());
+        task.setDueDate(taskDTO.getDueDate());
+
+        final Task taskDb = taskRepository.create(task);
+
+        taskDTO.setId(taskDb.getId());
+        logger.info(taskDTO.toString());
+
+        return taskDb;
     }
 
     @Override

@@ -1,12 +1,9 @@
-package dal.fatih.todoly;
+package dal.fatih.todoly.model;
 
-import org.apache.tomcat.jni.Local;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Date;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,6 +11,7 @@ public class Task implements Serializable {
 
     @Id
     @Column(nullable = false)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Column(nullable = false)
@@ -22,6 +20,7 @@ public class Task implements Serializable {
     private String description;
 
     @Column(nullable = false)
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss", shape = JsonFormat.Shape.STRING)
     private LocalDateTime dueDate;
 
     public Task(Long id, String title, String description, LocalDateTime dueDate) {

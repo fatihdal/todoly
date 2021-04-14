@@ -1,10 +1,10 @@
 package dal.fatih.todoly.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ public class TaskDTO {
     private Long id;
 
     @NotNull(message = "Title must not be empty")
-    @Size(min = 5, max = 120, message = "Title length must be between 5 and 120")
+    @Length(min = 5, max = 120, message = "Title length must be between 5 and 120")
     private String title;
 
     private String description;

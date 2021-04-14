@@ -2,7 +2,7 @@ package dal.fatih.todoly.repo.impl;
 
 
 import dal.fatih.todoly.DBConnection;
-import dal.fatih.todoly.Task;
+import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.repo.TaskRepository;
 
 import java.sql.*;
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JdbcTaskRepository implements TaskRepository {
+public class JdbcTaskRepositoryImpl implements TaskRepository {
 
     private final DBConnection dbConnection = new DBConnection();
     private final Connection connection = dbConnection.getConnection();
@@ -22,7 +22,7 @@ public class JdbcTaskRepository implements TaskRepository {
     private final PreparedStatement getByTitleOrDesPreparedStatement;
 
 
-    public JdbcTaskRepository() throws SQLException {
+    public JdbcTaskRepositoryImpl() throws SQLException {
         createTable();
         createPrepareStatement =
                 connection.prepareStatement("insert into task " + "values (?,?,?,?)");
@@ -153,20 +153,6 @@ public class JdbcTaskRepository implements TaskRepository {
             return tasks;
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void close() {
-        try {
-            connection.close();
-            createPrepareStatement.close();
-            getPreparedStatement.close();
-            deletePreparedStatement.close();
-            filterPreparedStatement.close();
-            getByTitleOrDesPreparedStatement.close();
-        } catch (SQLException exception) {
-            throw new RuntimeException();
         }
     }
 }

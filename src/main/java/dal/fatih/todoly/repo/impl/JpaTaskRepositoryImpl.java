@@ -1,13 +1,12 @@
 package dal.fatih.todoly.repo.impl;
 
 
-import dal.fatih.todoly.Task;
+import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.repo.TaskRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
+import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -17,12 +16,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 
-public class JpaTaskRepository implements TaskRepository {
+@Repository("taskRepository")
+public class JpaTaskRepositoryImpl implements TaskRepository {
 
-    private final EntityManagerFactory entityManagerFactory
-            = Persistence.createEntityManagerFactory("Todoly");
-    private final EntityManager entityManager = entityManagerFactory.createEntityManager();
-
+    @PersistenceContext
+    EntityManager entityManager;
 
     private CriteriaQuery<Task> getBaseQuery(CriteriaBuilder cb) {
         return cb.createQuery(Task.class);
@@ -30,25 +28,14 @@ public class JpaTaskRepository implements TaskRepository {
 
     @Override
     public Task create(Task task) {
-        EntityTransaction et = entityManager.getTransaction();
-        try {
-            et.begin();
-            entityManager.persist(task);
-            et.commit();
+        entityManager.persist(task);
 
-            return task;
-        } catch (Exception e) {
-            if (et != null) {
-                et.rollback();
-                return null;
-            }
-            throw new RuntimeException(e);
-        }
+        return task;
     }
 
     @Override
     public List<Task> list() {
-        CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
         cq.select(taskRoot);
@@ -58,7 +45,7 @@ public class JpaTaskRepository implements TaskRepository {
 
     @Override
     public Task get(Long id) {
-        CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
         cq.where(cb.equal(taskRoot.get("id"), id));
@@ -68,7 +55,7 @@ public class JpaTaskRepository implements TaskRepository {
 
     @Override
     public boolean delete(String taskId) {
-        CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
         try {
@@ -87,7 +74,7 @@ public class JpaTaskRepository implements TaskRepository {
 
     @Override
     public List<Task> filterByDueDate(Date lastDate) {
-        CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
         cq.where(cb.between(taskRoot.get("dueDate"),
@@ -98,7 +85,7 @@ public class JpaTaskRepository implements TaskRepository {
 
     @Override
     public List<Task> filterByTitleOrDescription(String keyword) {
-        CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
         EntityType<Task> type = entityManager.getMetamodel().entity(Task.class);
@@ -112,10 +99,5 @@ public class JpaTaskRepository implements TaskRepository {
 
         cq.select(taskRoot);
         return entityManager.createQuery(cq).getResultList();
-    }
-
-    @Override
-    public void close() {
-        entityManagerFactory.close();
     }
 }

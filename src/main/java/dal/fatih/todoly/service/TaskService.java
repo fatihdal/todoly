@@ -1,6 +1,6 @@
 package dal.fatih.todoly.service;
 
-import dal.fatih.todoly.Task;
+import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.dto.TaskDTO;
 
 import java.time.LocalDateTime;
