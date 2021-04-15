@@ -1,6 +1,5 @@
 package dal.fatih.todoly.repo.impl;
 
-
 import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.repo.TaskRepository;
 import org.slf4j.Logger;
@@ -31,7 +30,6 @@ public class JpaTaskRepositoryImpl implements TaskRepository {
     @Override
     public Task create(Task task) {
         entityManager.persist(task);
-        logger.info(task.toString());
 
         return task;
     }
@@ -59,7 +57,7 @@ public class JpaTaskRepositoryImpl implements TaskRepository {
     }
 
     @Override
-    public void delete(Long id) {
+    public Task delete(Long id) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
@@ -67,8 +65,9 @@ public class JpaTaskRepositoryImpl implements TaskRepository {
         cq.where(cb.equal(taskRoot.get("id"), id));
 
         Task task = entityManager.createQuery(cq).getSingleResult();
-
         entityManager.remove(task);
+
+        return task;
     }
 
     @Override
@@ -80,6 +79,7 @@ public class JpaTaskRepositoryImpl implements TaskRepository {
                 LocalDateTime.now(), lastDate));
 
         cq.select(taskRoot);
+
         return entityManager.createQuery(cq).getResultList();
     }
 
@@ -98,6 +98,7 @@ public class JpaTaskRepositoryImpl implements TaskRepository {
                         '%' + keyword.toLowerCase(Locale.ROOT) + '%')));
 
         cq.select(taskRoot);
+
         return entityManager.createQuery(cq).getResultList();
     }
 }

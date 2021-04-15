@@ -2,7 +2,6 @@ package dal.fatih.todoly.repo;
 
 import dal.fatih.todoly.model.Task;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,7 +13,7 @@ public interface TaskRepository {
 
     Task get(Long taskId);
 
-    void delete(Long taskId);
+    Task delete(Long taskId);
 
     List<Task> filterByDueDate(LocalDateTime lastDate);
 

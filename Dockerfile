@@ -1,4 +1,4 @@
-FROM java:8-alpine
+FROM openjdk:8-alpine
 WORKDIR /usr/app
 ARG DEPENDENCY=build
 COPY ${DEPENDENCY}/libs/*.jar /usr/app

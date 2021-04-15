@@ -37,7 +37,6 @@ public class TaskServiceImpl implements TaskService {
         task.setDueDate(taskDTO.getDueDate());
 
         final Task taskDb = taskRepository.create(task);
-
         taskDTO.setId(taskDb.getId());
         logger.info(taskDTO.toString());
 
@@ -49,28 +48,31 @@ public class TaskServiceImpl implements TaskService {
         final ModelMapper modelMapper = new ModelMapper();
         List<Task> allTasks = taskRepository.list();
         List<TaskDTO> taskDTOs = new ArrayList<>();
-        allTasks.forEach(task ->
-                taskDTOs.add(modelMapper.map(task, TaskDTO.class))
-        );
+        allTasks.forEach(task -> {
+            taskDTOs.add(modelMapper.map(task, TaskDTO.class));
+            logger.info(task.toString());
+        });
 
         return taskDTOs;
     }
 
     @Override
     public TaskDTO get(Long id) throws RecordNotFoundException {
-
         Task foundTask = taskRepository.get(id);
         TaskDTO taskDTO = new TaskDTO();
         taskDTO.setId(foundTask.getId());
         taskDTO.setTitle(foundTask.getTitle());
         taskDTO.setDescription(foundTask.getDescription());
         taskDTO.setDueDate(foundTask.getDueDate());
+        logger.info(taskDTO.toString());
+
         return taskDTO;
     }
 
     @Override
     public void delete(Long id) {
-        taskRepository.delete(id);
+
+        logger.info("Deleted task : " + taskRepository.delete(id));
     }
 
     @Override

@@ -105,7 +105,7 @@ public class JdbcTaskRepositoryImpl implements TaskRepository {
     }
 
     @Override
-    public void delete(Long idInput) {
+    public Task delete(Long idInput) {
         try {
             deletePreparedStatement.setObject(1, idInput);
             deletePreparedStatement.executeUpdate();
@@ -113,6 +113,7 @@ public class JdbcTaskRepositoryImpl implements TaskRepository {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return null;
     }
 
     @Override
