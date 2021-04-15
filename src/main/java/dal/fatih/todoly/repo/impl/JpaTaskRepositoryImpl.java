@@ -3,6 +3,8 @@ package dal.fatih.todoly.repo.impl;
 
 import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.repo.TaskRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -11,16 +13,16 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.EntityType;
-import java.sql.Date;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
 @Repository("taskRepository")
 public class JpaTaskRepositoryImpl implements TaskRepository {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @PersistenceContext
-    EntityManager entityManager;
+    private EntityManager entityManager;
 
     private CriteriaQuery<Task> getBaseQuery(CriteriaBuilder cb) {
         return cb.createQuery(Task.class);
@@ -29,6 +31,7 @@ public class JpaTaskRepositoryImpl implements TaskRepository {
     @Override
     public Task create(Task task) {
         entityManager.persist(task);
+        logger.info(task.toString());
 
         return task;
     }
@@ -38,6 +41,7 @@ public class JpaTaskRepositoryImpl implements TaskRepository {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
+
         cq.select(taskRoot);
 
         return entityManager.createQuery(cq).getResultList();
@@ -48,37 +52,33 @@ public class JpaTaskRepositoryImpl implements TaskRepository {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
+
         cq.where(cb.equal(taskRoot.get("id"), id));
 
         return entityManager.createQuery(cq).getSingleResult();
     }
 
     @Override
-    public boolean delete(String taskId) {
+    public void delete(Long id) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
-        try {
-            cq.where(cb.equal(taskRoot.get("taskId"), taskId));
-            Task task = entityManager.createQuery(cq).getSingleResult();
 
-            entityManager.getTransaction().begin();
-            entityManager.remove(task);
-            entityManager.getTransaction().commit();
+        cq.where(cb.equal(taskRoot.get("id"), id));
 
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        Task task = entityManager.createQuery(cq).getSingleResult();
+
+        entityManager.remove(task);
     }
 
     @Override
-    public List<Task> filterByDueDate(Date lastDate) {
+    public List<Task> filterByDueDate(LocalDateTime lastDate) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
         cq.where(cb.between(taskRoot.get("dueDate"),
-                java.util.Date.from(Instant.now()), lastDate));
+                LocalDateTime.now(), lastDate));
+
         cq.select(taskRoot);
         return entityManager.createQuery(cq).getResultList();
     }

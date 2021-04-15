@@ -105,11 +105,10 @@ public class JdbcTaskRepositoryImpl implements TaskRepository {
     }
 
     @Override
-    public boolean delete(String idInput) {
+    public void delete(Long idInput) {
         try {
             deletePreparedStatement.setObject(1, idInput);
-            int deleted = deletePreparedStatement.executeUpdate();
-            return deleted > 0;
+            deletePreparedStatement.executeUpdate();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -117,7 +116,7 @@ public class JdbcTaskRepositoryImpl implements TaskRepository {
     }
 
     @Override
-    public List<Task> filterByDueDate(Date lastDate) {
+    public List<Task> filterByDueDate(LocalDateTime lastDate) {
         try {
             List<Task> tasks = new ArrayList<>();
             filterPreparedStatement.setObject(1, lastDate);

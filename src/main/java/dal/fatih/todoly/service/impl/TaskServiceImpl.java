@@ -69,17 +69,17 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public boolean delete(Long id) {
-        return false;
+    public void delete(Long id) {
+        taskRepository.delete(id);
     }
 
     @Override
-    public List<Task> filterByDueDate(LocalDateTime dueDate) {
+    public List<TaskDTO> filterByDueDate(LocalDateTime dueDate) {
         return null;
     }
 
     @Override
-    public List<Task> filterByTitleOrDescription(String keyword) {
+    public List<TaskDTO> filterByTitleOrDescription(String keyword) {
         return null;
     }
 }

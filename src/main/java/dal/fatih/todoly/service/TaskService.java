@@ -15,9 +15,9 @@ public interface TaskService {
 
     TaskDTO get(Long id) throws RecordNotFoundException;
 
-    boolean delete(Long id);
+    void delete(Long id);
 
-    List<Task> filterByDueDate(LocalDateTime dueDate);
+    List<TaskDTO> filterByDueDate(LocalDateTime dueDate);
 
-    List<Task> filterByTitleOrDescription(String keyword);
+    List<TaskDTO> filterByTitleOrDescription(String keyword);
 }

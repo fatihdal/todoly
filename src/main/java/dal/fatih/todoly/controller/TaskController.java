@@ -45,4 +45,16 @@ public class TaskController {
             throw new RecordNotFoundException("id = " + id);
         }
     }
+
+    @RequestMapping(method = RequestMethod.DELETE, value = "/task/{id}")
+    public ResponseEntity<?> deleteTask(@PathVariable("id") Long id) {
+        try {
+            taskService.delete(id);
+            return ResponseEntity.ok().build();
+        } catch (EmptyResultDataAccessException ex) {
+            throw new RecordNotFoundException("id = " + id);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

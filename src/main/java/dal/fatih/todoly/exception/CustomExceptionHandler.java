@@ -50,6 +50,4 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST, "Failed to convert value of type of id ", details);
         return new ResponseEntity(error, HttpStatus.BAD_REQUEST);
     }
-
-
 }
