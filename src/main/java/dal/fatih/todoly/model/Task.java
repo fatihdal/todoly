@@ -66,9 +66,9 @@ public class Task implements Serializable {
     }
 
     public String toString() {
-        return "ID : " + id +
-                "TITLE : " + title +
-                "DESCRIPTION : " + description +
-                "DUE DATE : " + dueDate;
+        return " Task Id = " + id +
+                " Title = " + title +
+                " Description = " + description +
+                " Due Date = " + dueDate;
     }
 }

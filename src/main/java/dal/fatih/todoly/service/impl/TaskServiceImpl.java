@@ -82,6 +82,13 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<TaskDTO> filterByTitleOrDescription(String keyword) {
-        return null;
+        final ModelMapper modelMapper = new ModelMapper();
+        List<Task> allTasks = taskRepository.filterByTitleOrDescription(keyword);
+        List<TaskDTO> taskDTOs = new ArrayList<>();
+        allTasks.forEach(task -> {
+            taskDTOs.add(modelMapper.map(task, TaskDTO.class));
+            logger.info(task.toString());
+        });
+        return taskDTOs;
     }
 }

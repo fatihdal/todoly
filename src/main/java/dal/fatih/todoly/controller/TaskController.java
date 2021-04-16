@@ -13,6 +13,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/todoly")
@@ -56,5 +57,12 @@ public class TaskController {
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/filter")
+    public ResponseEntity<List<TaskDTO>> filterByTitleOrDescription(@RequestParam("keyword") String keyword) {
+        List<TaskDTO> tasks = taskService.filterByTitleOrDescription(keyword.toLowerCase(Locale.ROOT));
+
+        return ResponseEntity.ok().body(tasks);
     }
 }

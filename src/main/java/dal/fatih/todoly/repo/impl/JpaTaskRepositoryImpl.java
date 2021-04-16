@@ -91,11 +91,11 @@ public class JpaTaskRepositoryImpl implements TaskRepository {
         EntityType<Task> type = entityManager.getMetamodel().entity(Task.class);
         cq.where(cb.or(cb.like(cb.lower(taskRoot.get(type.getDeclaredSingularAttribute
                         ("title", String.class))),
-                '%' + keyword.toLowerCase(Locale.ROOT) + '%')
+                '%' + keyword.toLowerCase(Locale.ENGLISH) + '%')
 
                 , cb.like(cb.lower(taskRoot.get(type.getDeclaredSingularAttribute
                                 ("description", String.class))),
-                        '%' + keyword.toLowerCase(Locale.ROOT) + '%')));
+                        '%' + keyword.toLowerCase(Locale.ENGLISH) + '%')));
 
         cq.select(taskRoot);
 

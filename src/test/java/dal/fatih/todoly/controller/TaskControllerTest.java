@@ -20,6 +20,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,15 +42,14 @@ public class TaskControllerTest {
 
     @Test
     public void shouldCreateTask_201() throws URISyntaxException {
-        URI taskCreationUrl = new URI(createURLWithPort("/task"));
-
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Created-title-of-task", "Created-description-of-task"
                         , LocalDateTime.now().plusDays(10))
         );
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
-                .postForEntity(taskCreationUrl, request, String.class);
+                .postForEntity(taskCreateUrl, request, String.class);
         logger.warn(responseEntity.getBody());
 
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.CREATED));
@@ -57,15 +57,14 @@ public class TaskControllerTest {
 
     @Test
     public void shouldAllowEmptyDescription_201() throws URISyntaxException {
-        URI taskCreationUrl = new URI(createURLWithPort("/task"));
-
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Title-of-task", null
                         , LocalDateTime.now().plusDays(10))
         );
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
-                .postForEntity(taskCreationUrl, request, String.class);
+                .postForEntity(taskCreateUrl, request, String.class);
         logger.warn(responseEntity.getBody());
 
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.CREATED));
@@ -73,14 +72,14 @@ public class TaskControllerTest {
 
     @Test
     public void shouldNotAllowEmptyTitle_400() throws URISyntaxException {
-        URI taskCreationUrl = new URI(createURLWithPort("/task"));
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO(null, "Description-of-task"
                         , LocalDateTime.now().plusDays(10))
         );
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
-                .postForEntity(taskCreationUrl, request, String.class);
+                .postForEntity(taskCreateUrl, request, String.class);
 
         String actual = responseEntity.getBody();
         String expected = "Title must not be empty";
@@ -92,14 +91,14 @@ public class TaskControllerTest {
 
     @Test
     public void shouldNotAllowTitleLessThan5Characters_400() throws URISyntaxException {
-        URI taskCreationUrl = new URI(createURLWithPort("/task"));
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Titl", "Description-of-task"
                         , LocalDateTime.now().plusDays(10))
         );
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
-                .postForEntity(taskCreationUrl, request, String.class);
+                .postForEntity(taskCreateUrl, request, String.class);
 
         String actual = responseEntity.getBody();
         String expected = "Title length must be between 5 and 120";
@@ -111,15 +110,14 @@ public class TaskControllerTest {
 
     @Test
     public void shouldNotAllowEmptyDueDate_400() throws URISyntaxException {
-        URI taskCreationUrl = new URI(createURLWithPort("/task"));
-
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Title-of-task", "Description-of-task"
                         , null)
         );
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
-                .postForEntity(taskCreationUrl, request, String.class);
+                .postForEntity(taskCreateUrl, request, String.class);
 
         String actual = responseEntity.getBody();
         String expected = "Due Date must not be empty";
@@ -131,15 +129,14 @@ public class TaskControllerTest {
 
     @Test
     public void shouldNotAllowDueDateOlderThanNow_400() throws URISyntaxException {
-        URI taskCreationUrl = new URI(createURLWithPort("/task"));
-
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Title-of-task", "Description-of-task"
                         , LocalDateTime.now().plusMinutes(-1))
         );
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
-                .postForEntity(taskCreationUrl, request, String.class);
+                .postForEntity(taskCreateUrl, request, String.class);
 
         String actual = responseEntity.getBody();
         String expected = "Due date must be a future date";
@@ -151,15 +148,14 @@ public class TaskControllerTest {
 
     @Test
     public void shouldNotAllowDueDateToBeEqualToNow_400() throws URISyntaxException {
-        URI taskCreationUrl = new URI(createURLWithPort("/task"));
-
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Title-of-task", "Description-of-task"
                         , LocalDateTime.now())
         );
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
-                .postForEntity(taskCreationUrl, request, String.class);
+                .postForEntity(taskCreateUrl, request, String.class);
 
         String actual = responseEntity.getBody();
         String expected = "Due date must be a future date";
@@ -172,74 +168,65 @@ public class TaskControllerTest {
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldListAllTasks_200() throws URISyntaxException {
-        URI taskCreationUrl = new URI(createURLWithPort("/task"));
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
+        String title = "Listed-title-of-task", description = "Listed-description-of-task";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        for (int i = 1; i <= 2; i++) {
-            HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
-                    new TaskDTO("Title-of-task", "Description-of-task"
-                            , dueDate)
-            );
-            this.testRestTemplate.postForEntity(taskCreationUrl, request, String.class);
-        }
 
-        URI getAllUrl = new URI(createURLWithPort("/tasks"));
+        createTask(title, description, dueDate, null, null, null);
+
+        URI urlOfGetAll = new URI(createURLWithPort("/tasks"));
         ResponseEntity<String> responseEntity =
-                this.testRestTemplate.getForEntity(getAllUrl, String.class);
+                this.testRestTemplate.getForEntity(urlOfGetAll, String.class);
         logger.warn(responseEntity.getBody());
 
-        String expected = responseEntity.getBody();
-        String actual = "[{\"id\":1,\"title\":\"Title-of-task\"" +
-                ",\"description\":\"Description-of-task\",\"dueDate\":\"" + dueDate.format(formatter) + "\"}" +
-                ",{\"id\":2,\"title\":\"Title-of-task\",\"description\"" +
-                ":\"Description-of-task\",\"dueDate\":\"" + dueDate.format(formatter) + "\"}]";
+        String actual = responseEntity.getBody();
+        String expected = "[{\"id\":1,\"title\":\"Listed-title-of-task1\"" +
+                ",\"description\":\"Listed-description-of-task1\",\"dueDate\":\"" + dueDate.format(formatter) + "\"}" +
+                ",{\"id\":2,\"title\":\"Listed-title-of-task2\",\"description\"" +
+                ":\"Listed-description-of-task2\",\"dueDate\":\"" + dueDate.format(formatter) + "\"}" +
+                ",{\"id\":3,\"title\":\"Listed-title-of-task3\",\"description\"" +
+                ":\"Listed-description-of-task3\",\"dueDate\":\"" + dueDate.format(formatter) + "\"}]";
 
         assertThat(responseEntity.getStatusCode(), is(equalTo(HttpStatus.OK)));
-        assertThat(expected, is(containsString(actual)));
+        assertThat(expected, is(equalTo(actual)));
     }
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotFindTaskToList_200() throws URISyntaxException {
-        URI getAllUrl = new URI(createURLWithPort("/tasks"));
+        URI urlOfGetAll = new URI(createURLWithPort("/tasks"));
         ResponseEntity<String> responseEntity =
-                this.testRestTemplate.getForEntity(getAllUrl, String.class);
+                this.testRestTemplate.getForEntity(urlOfGetAll, String.class);
         logger.warn(responseEntity.getBody());
 
-        String expected = responseEntity.getBody();
-        String actual = "[]";
+        String actual = responseEntity.getBody();
+        String expected = "[]";
 
         assertThat(responseEntity.getStatusCode(), is(equalTo(HttpStatus.OK)));
-        assertThat(expected, is(containsString(actual)));
+        assertThat(actual, is(containsString(expected)));
     }
 
     @Test
     public void shouldGetTaskById_200() throws URISyntaxException {
-        URI taskCreationUrl = new URI(createURLWithPort("/task"));
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
+        String title = "Get-by-id-task-title", description = "Get-by-id-task-description";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        ResponseEntity<String> createdTaskResponse = null;
+
+        ResponseEntity<String> createdTaskResponse = createTask(title, description, dueDate
+                , null, null, null);
+
         long idOfTaskToGet = 0;
-        for (int i = 1; i <= 3; i++) {
-            HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
-                    new TaskDTO("Get-by-id-task-title" + i, "Get-by-id-task-description" + i
-                            , dueDate)
-            );
-            ResponseEntity<String> response = this.testRestTemplate
-                    .postForEntity(taskCreationUrl, request, String.class);
-            if (i == 2) createdTaskResponse = response;
-        }
         //REGEX
         String taskIdPattern = "(/task/)(\\d*)";
         idOfTaskToGet = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse.toString()));
 
-        URI getByIdUrl = new URI(createURLWithPort("/task/" + idOfTaskToGet + ""));
+        URI urlOfGetById = new URI(createURLWithPort("/task/" + idOfTaskToGet + ""));
         ResponseEntity<String> responseEntity =
-                this.testRestTemplate.getForEntity(getByIdUrl, String.class);
+                this.testRestTemplate.getForEntity(urlOfGetById, String.class);
         logger.warn(responseEntity.getBody());
 
-        String expected = responseEntity.getBody();
-        String actual = "{\"id\":" + idOfTaskToGet + ",\"title\":\"Get-by-id-task-title2\"" +
+        String actual = responseEntity.getBody();
+        String expected = "{\"id\":" + idOfTaskToGet + ",\"title\":\"Get-by-id-task-title2\"" +
                 ",\"description\":\"Get-by-id-task-description2\"" +
                 ",\"dueDate\":\"" + dueDate.format(formatter) + "\"}";
 
@@ -250,93 +237,210 @@ public class TaskControllerTest {
     @Test
     public void shouldNotFindTaskById_404() throws URISyntaxException {
         long unavailableTaskId = 446L;
-        URI getByIdUrl = new URI(createURLWithPort("/task/" + unavailableTaskId + ""));
+        URI urlOfGetById = new URI(createURLWithPort("/task/" + unavailableTaskId + ""));
         ResponseEntity<String> responseEntity =
-                this.testRestTemplate.getForEntity(getByIdUrl, String.class);
+                this.testRestTemplate.getForEntity(urlOfGetById, String.class);
         logger.warn(responseEntity.getBody());
 
-        String expected = responseEntity.getBody();
-        String actual = "Task not found with id = " + unavailableTaskId;
+        String actual = responseEntity.getBody();
+        String expected = "Task not found with id = " + unavailableTaskId;
 
         assertThat(responseEntity.getStatusCode(), is(equalTo(HttpStatus.NOT_FOUND)));
-        assertThat(expected, is(containsString(actual)));
+        assertThat(actual, is(containsString(expected)));
     }
 
     @Test
     public void shouldNotAllowValueOtherThanNumberWhenGetTaskById_400() throws URISyntaxException {
         String unsupportedCharacterId = "446L";
-        URI getByIdUrl = new URI(createURLWithPort("/task/" + unsupportedCharacterId + ""));
+        URI urlOfGetById = new URI(createURLWithPort("/task/" + unsupportedCharacterId));
         ResponseEntity<String> responseEntity =
-                this.testRestTemplate.getForEntity(getByIdUrl, String.class);
+                this.testRestTemplate.getForEntity(urlOfGetById, String.class);
         logger.warn(responseEntity.getBody());
 
-        String expected = responseEntity.getBody();
-        String actual = "Failed to convert value of type of id";
+        String actual = responseEntity.getBody();
+        String expected = "Failed to convert value of type of id";
 
         assertThat(responseEntity.getStatusCode(), is(equalTo(HttpStatus.BAD_REQUEST)));
-        assertThat(expected, is(containsString(actual)));
+        assertThat(actual, is(containsString(expected)));
     }
 
     @Test
     public void shouldDeleteTaskById_200() throws URISyntaxException {
-        URI taskCreationUrl = new URI(createURLWithPort("/task"));
+        String title = "Delete-by-id-task-title", description = "Delete-by-id-task-description";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        ResponseEntity<String> createdTaskResponse = null;
         long idOfTaskToDelete = 0;
+        ResponseEntity<String> createdTaskResponse = createTask(title, description, dueDate,
+                null, null, null);
 
-        for (int i = 1; i <= 3; i++) {
-            HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
-                    new TaskDTO("Delete-by-id-task-title" + i, "Delete-by-id-task-description" + i
-                            , dueDate)
-            );
-            ResponseEntity<String> response = this.testRestTemplate
-                    .postForEntity(taskCreationUrl, request, String.class);
-            if (i == 2) createdTaskResponse = response;
-        }
         //REGEX
         String taskIdPattern = "(/task/)(\\d*)";
         idOfTaskToDelete = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse.toString()));
 
-        URI deleteUrl = new URI(createURLWithPort("/task/" + idOfTaskToDelete + ""));
+        URI urlOfDelete = new URI(createURLWithPort("/task/" + idOfTaskToDelete + ""));
         ResponseEntity<String> deletedResponse = this.testRestTemplate.exchange(
-                deleteUrl, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
+                urlOfDelete, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
+        logger.warn(createdTaskResponse.toString());
 
-        String expected = createdTaskResponse.getBody();
-        String actual = "/todoly/task/" + idOfTaskToDelete;
+        String actual = createdTaskResponse.getBody();
+        String expected = "/todoly/task/" + idOfTaskToDelete;
 
-        assertThat(expected, is(containsString(actual)));
+        assertThat(actual, is(containsString(expected)));
         assertThat(deletedResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
     }
 
     @Test
     public void shouldFindNoTaskToDelete_404() throws URISyntaxException {
         long unavailableTaskId = 446L;
-        URI deleteUrl = new URI(createURLWithPort("/task/" + unavailableTaskId + ""));
+        URI urlOfDelete = new URI(createURLWithPort("/task/" + unavailableTaskId));
         ResponseEntity<String> deletedResponse = this.testRestTemplate.exchange(
-                deleteUrl, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
+                urlOfDelete, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
 
-        String expected = deletedResponse.getBody();
-        String actual = "Task not found with id = " + unavailableTaskId;
+        String actual = deletedResponse.getBody();
+        String expected = "Task not found with id = " + unavailableTaskId;
         logger.warn(expected);
 
         assertThat(deletedResponse.getStatusCode(), is(equalTo(HttpStatus.NOT_FOUND)));
-        assertThat(expected, is(containsString(actual)));
+        assertThat(actual, is(containsString(expected)));
     }
 
     @Test
     public void shouldNotAllowValueOtherThanNumberWhenDeleteTaskById_400() throws URISyntaxException {
         String unsupportedCharacterId = "446L";
-        URI deleteUrl = new URI(createURLWithPort("/task/" + unsupportedCharacterId + ""));
+        URI urlOfDelete = new URI(createURLWithPort("/task/" + unsupportedCharacterId));
         ResponseEntity<String> deletedResponse = this.testRestTemplate.exchange(
-                deleteUrl, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
+                urlOfDelete, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
 
-        String expected = deletedResponse.getBody();
-        String actual = "Failed to convert value of type of id";
+        String actual = deletedResponse.getBody();
+        String expected = "Failed to convert value of type of id";
         logger.warn(expected);
 
         assertThat(deletedResponse.getStatusCode(), is(equalTo(HttpStatus.BAD_REQUEST)));
-        assertThat(expected, is(containsString(actual)));
+        assertThat(actual, is(containsString(expected)));
+    }
+
+    @Test
+    public void shouldFilterTasksByTitle_200() throws URISyntaxException {
+        String title = "Filter-by-title", noFilterTitle = "No-fil-ter-by-title";
+        String description = "Description-of-task", noFilterDesc = "No-fil-ter-by-desc";
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
+        createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
+
+        URI urlOfFilterByTitle = new URI(createURLWithPort("/filter?keyword=Filt"));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
+
+        String actual = filterResponse.getBody();
+        logger.warn(filterResponse.getBody());
+
+        assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
+        assertThat(actual, is(containsString("Filter-by-title")));
+        assertThat(actual, not(containsString("No-fil-ter-by-title")));
+    }
+
+    @Test
+    public void shouldIgnoreCaseWhenFilteringTasksByTitle_200() throws URISyntaxException {
+        String title = "FiLTER-t-i-T-l-E-ignore-CASE", noFilterTitle = "No-fil-ter-by-title";
+        String description = "Description-of-task ", noFilterDesc = "No-fil-ter-by-desc";
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
+        createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
+
+        URI urlOfFilterByTitle = new URI(createURLWithPort("/filter?keyword=" + title.toLowerCase(Locale.ENGLISH)));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
+
+        String actual = filterResponse.getBody();
+        logger.warn(filterResponse.getBody());
+
+        assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
+        assertThat(actual, is(containsString(title)));
+        assertThat(actual, not(containsString("Not-fil-ter-by-title")));
+    }
+
+    @Test
+    public void shouldFilterTasksByDescription_200() throws URISyntaxException {
+        String title = "Title-of-Task", noFilterTitle = "No-fil-ter-by-title";
+        String description = "Filter-by-description", noFilterDesc = "No-fil-ter-by-desc";
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
+        createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
+
+        URI urlOfFilterByDesc = new URI(createURLWithPort("/filter?keyword=Filt"));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByDesc, String.class);
+
+        String actual = filterResponse.getBody();
+        logger.warn(filterResponse.getBody());
+
+        assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
+        assertThat(actual, is(containsString("Filter-by-description")));
+        assertThat(actual, not(containsString("Not-fil-ter-by-title")));
+    }
+
+    @Test
+    public void shouldIgnoreCaseWhenFilteringTasksByDescription_200() throws URISyntaxException {
+        String title = "Title-of-Task", noFilterTitle = "No-fil-ter-by-title";
+        String description = "FiLTER-d-e-scriPTioN-ignore-CASE", noFilterDesc = "No-fil-ter-by-desc";
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
+        createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
+
+        URI urlOfFilterByDesc = new URI(createURLWithPort("/filter?keyword=" + description.toLowerCase(Locale.ENGLISH)));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByDesc, String.class);
+
+        String actual = filterResponse.getBody();
+        logger.warn(filterResponse.getBody());
+
+        assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
+        assertThat(actual, is(containsString(description)));
+        assertThat(actual, not(containsString("No-fil-ter-by-desc")));
+    }
+
+    @Test
+    public void shouldFindNoTaskWhenFilterByTitleOrDescription_200() throws URISyntaxException {
+        URI urlOfFilterByTitle = new URI(createURLWithPort("/filter?keyword=Unavailable-title-or-description"));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
+
+        String actual = filterResponse.getBody();
+        String expected = "[]";
+
+        assertThat(expected, is(equalTo(actual)));
+    }
+
+    public ResponseEntity<String> createTask(String title1, String description1, LocalDateTime dueDate1,
+                                             String title2, String description2, LocalDateTime dueDate2) throws URISyntaxException {
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
+        ResponseEntity<String> responseEntity = null;
+        if (title2 == null && description2 == null && dueDate2 == null) {
+            for (int i = 1; i <= 3; i++) {
+                HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
+                        new TaskDTO(title1 + i, description1 + i
+                                , dueDate1)
+                );
+                ResponseEntity<String> res = this.testRestTemplate.postForEntity(taskCreateUrl, request, String.class);
+                if (i == 2) {
+                    responseEntity = res;
+                }
+            }
+            return responseEntity;
+        } else {
+            for (int i = 1; i <= 3; i++) {
+                HttpEntity<TaskDTO> request1 = new HttpEntity<TaskDTO>(
+                        new TaskDTO(title1 + i, description1 + i
+                                , dueDate1)
+                );
+                HttpEntity<TaskDTO> request2 = new HttpEntity<TaskDTO>(
+                        new TaskDTO(title2 + i, description2 + i
+                                , dueDate2)
+                );
+
+                ResponseEntity<String> res = this.testRestTemplate.postForEntity(taskCreateUrl, request1, String.class);
+                this.testRestTemplate.postForEntity(taskCreateUrl, request2, String.class);
+                if (i == 2) {
+                    responseEntity = res;
+                }
+            }
+        }
+        return responseEntity;
     }
 
     private String generateRegex(String inputPattern, String inputArgument) {
