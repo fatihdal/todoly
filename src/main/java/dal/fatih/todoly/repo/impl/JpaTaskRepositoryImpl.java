@@ -2,8 +2,6 @@ package dal.fatih.todoly.repo.impl;
 
 import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.repo.TaskRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -18,7 +16,6 @@ import java.util.Locale;
 
 @Repository("taskRepository")
 public class JpaTaskRepositoryImpl implements TaskRepository {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -71,12 +68,12 @@ public class JpaTaskRepositoryImpl implements TaskRepository {
     }
 
     @Override
-    public List<Task> filterByDueDate(LocalDateTime lastDate) {
+    public List<Task> filterByDueDate(LocalDateTime dueDate) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Task> cq = getBaseQuery(cb);
         Root<Task> taskRoot = cq.from(Task.class);
         cq.where(cb.between(taskRoot.get("dueDate"),
-                LocalDateTime.now(), lastDate));
+                LocalDateTime.now(), dueDate));
 
         cq.select(taskRoot);
 

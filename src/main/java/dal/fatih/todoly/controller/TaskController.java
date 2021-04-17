@@ -12,6 +12,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
@@ -59,7 +61,18 @@ public class TaskController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/filter")
+    @RequestMapping(method = RequestMethod.GET, value = "/tasks/findbyduedate")
+    public ResponseEntity<List<TaskDTO>> filterByDueDate(@RequestParam("duedate")
+                                                                 String dueDate) {
+
+        DateTimeFormatter dateTimeFormat = DateTimeFormatter.ISO_DATE_TIME;
+        LocalDateTime dateTime = dateTimeFormat.parse(dueDate, LocalDateTime::from);
+
+        List<TaskDTO> tasks = taskService.filterByDueDate(dateTime);
+        return ResponseEntity.ok().body(tasks);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "tasks/findbytitleordesc")
     public ResponseEntity<List<TaskDTO>> filterByTitleOrDescription(@RequestParam("keyword") String keyword) {
         List<TaskDTO> tasks = taskService.filterByTitleOrDescription(keyword.toLowerCase(Locale.ROOT));
 

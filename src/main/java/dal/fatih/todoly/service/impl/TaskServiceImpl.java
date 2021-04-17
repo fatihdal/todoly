@@ -22,12 +22,8 @@ public class TaskServiceImpl implements TaskService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private TaskRepository taskRepository;
-
     @Autowired
-    public void setTaskRepository(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
-    }
+    private TaskRepository taskRepository;
 
     @Override
     public Task handleCreateTask(TaskDTO taskDTO) {
@@ -77,7 +73,14 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<TaskDTO> filterByDueDate(LocalDateTime dueDate) {
-        return null;
+        final ModelMapper modelMapper = new ModelMapper();
+        List<Task> allTasks = taskRepository.filterByDueDate(dueDate);
+        List<TaskDTO> taskDTOs = new ArrayList<>();
+        allTasks.forEach(task -> {
+            taskDTOs.add(modelMapper.map(task, TaskDTO.class));
+            logger.info(task.toString());
+        });
+        return taskDTOs;
     }
 
     @Override
