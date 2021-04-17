@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
-@Repository("taskRepository")
+@Repository
 public class JpaTaskRepositoryImpl implements TaskRepository {
 
     @PersistenceContext

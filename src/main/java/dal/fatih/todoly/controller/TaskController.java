@@ -61,7 +61,7 @@ public class TaskController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/tasks/findbyduedate")
+    @RequestMapping(method = RequestMethod.GET, value = "/tasks/duedate")
     public ResponseEntity<List<TaskDTO>> filterByDueDate(@RequestParam("duedate")
                                                                  String dueDate) {
 
@@ -72,7 +72,7 @@ public class TaskController {
         return ResponseEntity.ok().body(tasks);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "tasks/findbytitleordesc")
+    @RequestMapping(method = RequestMethod.GET, value = "tasks/titleordesc")
     public ResponseEntity<List<TaskDTO>> filterByTitleOrDescription(@RequestParam("keyword") String keyword) {
         List<TaskDTO> tasks = taskService.filterByTitleOrDescription(keyword.toLowerCase(Locale.ROOT));
 

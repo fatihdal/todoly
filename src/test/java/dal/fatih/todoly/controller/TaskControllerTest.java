@@ -325,7 +325,7 @@ public class TaskControllerTest {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
         createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
 
-        URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/findbytitleordesc?keyword=Filt"));
+        URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/titleordesc?keyword=Filt"));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
 
@@ -344,7 +344,7 @@ public class TaskControllerTest {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
         createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
 
-        URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/findbytitleordesc?keyword=" + title.toLowerCase(Locale.ENGLISH)));
+        URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/titleordesc?keyword=" + title.toLowerCase(Locale.ENGLISH)));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
 
@@ -363,7 +363,7 @@ public class TaskControllerTest {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
         createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
 
-        URI urlOfFilterByDesc = new URI(createURLWithPort("/tasks/findbytitleordesc?keyword=Filt"));
+        URI urlOfFilterByDesc = new URI(createURLWithPort("/tasks/titleordesc?keyword=Filt"));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByDesc, String.class);
 
@@ -382,7 +382,7 @@ public class TaskControllerTest {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
         createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
 
-        URI urlOfFilterByDesc = new URI(createURLWithPort("/tasks/findbytitleordesc?keyword=" + description.toLowerCase(Locale.ENGLISH)));
+        URI urlOfFilterByDesc = new URI(createURLWithPort("/tasks/titleordesc?keyword=" + description.toLowerCase(Locale.ENGLISH)));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByDesc, String.class);
 
@@ -396,7 +396,7 @@ public class TaskControllerTest {
 
     @Test
     public void shouldFindNoTaskWhenFilterByTitleOrDescription_200() throws URISyntaxException {
-        URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/findbytitleordesc?keyword=Unavailable-title-or-description"));
+        URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/titleordesc?keyword=Unavailable-title-or-description"));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
 
@@ -417,7 +417,7 @@ public class TaskControllerTest {
         createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
         logger.warn(dueDate.format(formatter));
 
-        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/findbyduedate?duedate=" + dueDate.plusMinutes(4).format(formatter)));
+        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate=" + dueDate.plusMinutes(4).format(formatter)));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
 
@@ -433,7 +433,7 @@ public class TaskControllerTest {
     public void shouldFindNoTaskToFilterByDueDate_200() throws URISyntaxException {
         LocalDateTime dueDate = LocalDateTime.now().plusSeconds(1);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/findbyduedate?duedate=" + dueDate.plusMinutes(4).format(formatter)));
+        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate=" + dueDate.plusMinutes(4).format(formatter)));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
 
@@ -447,7 +447,7 @@ public class TaskControllerTest {
 
     @Test
     public void shouldNotAllowIncorrectDateFormatWhenFilterByDueDate_400() throws URISyntaxException {
-        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/findbyduedate?duedate=2090-05-05"));
+        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate=2090-05-05"));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
 
@@ -461,7 +461,7 @@ public class TaskControllerTest {
 
     @Test
     public void shouldNotAllowEmptyDueDateWhenFilterByDueDate_400() throws URISyntaxException {
-        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/findbyduedate?duedate="));
+        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate="));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
 
