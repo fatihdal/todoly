@@ -1,8 +1,5 @@
 package dal.fatih.todoly.dto;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
-
 public class CreateTaskResponse {
     Long id;
 

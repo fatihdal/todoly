@@ -1,4 +1,4 @@
-package dal.fatih.todoly;
+package dal.fatih.todoly.controller;
 
 import dal.fatih.todoly.dto.CreateTaskResponse;
 import dal.fatih.todoly.dto.TaskDTO;

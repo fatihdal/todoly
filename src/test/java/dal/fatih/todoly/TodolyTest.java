@@ -1,6 +1,7 @@
 package dal.fatih.todoly;
 
 import dal.fatih.todoly.dto.TaskDTO;
+import dal.fatih.todoly.repo.TaskRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -40,6 +41,9 @@ public class TodolyTest {
     @Autowired
     private TestRestTemplate testRestTemplate;
 
+    @Autowired
+    private TaskRepository taskRepository;
+
     @Test
     public void shouldCreateTask() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
@@ -52,6 +56,14 @@ public class TodolyTest {
                 .postForEntity(taskCreateUrl, request, String.class);
         logger.warn(responseEntity.getBody());
 
+        String response = responseEntity.getBody();
+        assert response != null;
+        long createdTaskId = Long.parseLong(response.substring(6, response.length() - 1));
+
+        String actual = taskRepository.get(createdTaskId).getTitle();
+        String expected = "Created-title-of-task";
+
+        assertThat(actual, is(equalTo(expected)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.CREATED));
     }
 
@@ -59,7 +71,7 @@ public class TodolyTest {
     public void shouldAllowEmptyDescription() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
-                new TaskDTO("Title-of-task", null
+                new TaskDTO("Title of task with empty description", null
                         , LocalDateTime.now().plusDays(10))
         );
 
@@ -67,10 +79,19 @@ public class TodolyTest {
                 .postForEntity(taskCreateUrl, request, String.class);
         logger.warn(responseEntity.getBody());
 
+        String response = responseEntity.getBody();
+        assert response != null;
+        long createdTaskId = Long.parseLong(response.substring(6, response.length() - 1));
+
+        String actual = taskRepository.get(createdTaskId).getTitle();
+        String expected = "Title of task with empty description";
+
+        assertThat(actual, is(equalTo(expected)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.CREATED));
     }
 
     @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowEmptyTitle() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
@@ -85,11 +106,13 @@ public class TodolyTest {
         String expected = "Title must not be empty";
         logger.warn(responseEntity.getBody());
 
+        assertThat(taskRepository.list().size(), is(equalTo(0)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
         assertThat(actual, is(containsString(expected)));
     }
 
     @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowTitleLessThan5Characters() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
@@ -104,11 +127,13 @@ public class TodolyTest {
         String expected = "Title length must be between 5 and 120";
         logger.warn(responseEntity.getBody());
 
+        assertThat(taskRepository.list().size(), is(equalTo(0)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
         assertThat(actual, is(containsString(expected)));
     }
 
     @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowEmptyDueDate() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
@@ -123,11 +148,13 @@ public class TodolyTest {
         String expected = "Due Date must not be empty";
         logger.warn(responseEntity.getBody());
 
+        assertThat(taskRepository.list().size(), is(equalTo(0)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
         assertThat(actual, is(containsString(expected)));
     }
 
     @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowDueDateOlderThanNow() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
@@ -142,11 +169,13 @@ public class TodolyTest {
         String expected = "Due date must be a future date";
         logger.warn(responseEntity.getBody());
 
+        assertThat(taskRepository.list().size(), is(equalTo(0)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
         assertThat(actual, is(containsString(expected)));
     }
 
     @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowDueDateToBeEqualToNow() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
@@ -161,6 +190,7 @@ public class TodolyTest {
         String expected = "Due date must be a future date";
         logger.warn(responseEntity.getBody());
 
+        assertThat(taskRepository.list().size(), is(equalTo(0)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
         assertThat(actual, is(containsString(expected)));
     }
