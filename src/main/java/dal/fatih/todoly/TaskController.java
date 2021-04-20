@@ -1,4 +1,4 @@
-package dal.fatih.todoly.controller;
+package dal.fatih.todoly;
 
 import dal.fatih.todoly.dto.TaskDTO;
 import dal.fatih.todoly.exception.RecordNotFoundException;

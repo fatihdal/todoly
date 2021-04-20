@@ -1,4 +1,4 @@
-package dal.fatih.todoly.controller;
+package dal.fatih.todoly;
 
 import dal.fatih.todoly.dto.TaskDTO;
 import org.junit.Test;
@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
         , properties = "spring.profiles.active=test")
-public class TaskControllerTest {
+public class TodolyTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
