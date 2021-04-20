@@ -26,7 +26,7 @@ public class TaskController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/task")
     public ResponseEntity<URI> create(@Valid @RequestBody TaskDTO taskDTO) {
-        taskService.handleCreateTask(taskDTO);
+        taskService.createTask(taskDTO);
         Long id = taskDTO.getId();
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest().path("/{id}")

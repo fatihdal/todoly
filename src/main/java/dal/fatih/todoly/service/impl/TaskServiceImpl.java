@@ -26,7 +26,7 @@ public class TaskServiceImpl implements TaskService {
     private TaskRepository taskRepository;
 
     @Override
-    public Task handleCreateTask(TaskDTO taskDTO) {
+    public Task createTask(TaskDTO taskDTO) {
         Task task = new Task();
         task.setTitle(taskDTO.getTitle());
         task.setDescription(taskDTO.getDescription());
