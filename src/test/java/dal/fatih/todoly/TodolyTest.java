@@ -41,7 +41,7 @@ public class TodolyTest {
     private TestRestTemplate testRestTemplate;
 
     @Test
-    public void shouldCreateTask_201() throws URISyntaxException {
+    public void shouldCreateTask() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Created-title-of-task", "Created-description-of-task"
@@ -56,7 +56,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldAllowEmptyDescription_201() throws URISyntaxException {
+    public void shouldAllowEmptyDescription() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Title-of-task", null
@@ -71,7 +71,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldNotAllowEmptyTitle_400() throws URISyntaxException {
+    public void shouldNotAllowEmptyTitle() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO(null, "Description-of-task"
@@ -90,7 +90,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldNotAllowTitleLessThan5Characters_400() throws URISyntaxException {
+    public void shouldNotAllowTitleLessThan5Characters() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Titl", "Description-of-task"
@@ -109,7 +109,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldNotAllowEmptyDueDate_400() throws URISyntaxException {
+    public void shouldNotAllowEmptyDueDate() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Title-of-task", "Description-of-task"
@@ -128,7 +128,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldNotAllowDueDateOlderThanNow_400() throws URISyntaxException {
+    public void shouldNotAllowDueDateOlderThanNow() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Title-of-task", "Description-of-task"
@@ -147,7 +147,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldNotAllowDueDateToBeEqualToNow_400() throws URISyntaxException {
+    public void shouldNotAllowDueDateToBeEqualToNow() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
                 new TaskDTO("Title-of-task", "Description-of-task"
@@ -167,7 +167,7 @@ public class TodolyTest {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-    public void shouldListAllTasks_200() throws URISyntaxException {
+    public void shouldListAllTasks() throws URISyntaxException {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
         String title = "Listed-title-of-task", description = "Listed-description-of-task";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -193,7 +193,7 @@ public class TodolyTest {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-    public void shouldNotFindTaskToList_200() throws URISyntaxException {
+    public void shouldNotFindTaskToList() throws URISyntaxException {
         URI urlOfGetAll = new URI(createURLWithPort("/tasks"));
         ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfGetAll, String.class);
@@ -207,7 +207,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldGetTaskById_200() throws URISyntaxException {
+    public void shouldGetTaskById() throws URISyntaxException {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
         String title = "Get-by-id-task-title", description = "Get-by-id-task-description";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -235,7 +235,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldNotFindTaskById_404() throws URISyntaxException {
+    public void shouldNotFindTaskById() throws URISyntaxException {
         long unavailableTaskId = 446L;
         URI urlOfGetById = new URI(createURLWithPort("/task/" + unavailableTaskId + ""));
         ResponseEntity<String> responseEntity =
@@ -250,7 +250,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldNotAllowValueOtherThanNumberWhenGetTaskById_400() throws URISyntaxException {
+    public void shouldNotAllowValueOtherThanNumberWhenGetTaskById() throws URISyntaxException {
         String unsupportedCharacterId = "446L";
         URI urlOfGetById = new URI(createURLWithPort("/task/" + unsupportedCharacterId));
         ResponseEntity<String> responseEntity =
@@ -265,7 +265,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldDeleteTaskById_200() throws URISyntaxException {
+    public void shouldDeleteTaskById() throws URISyntaxException {
         String title = "Delete-by-id-task-title", description = "Delete-by-id-task-description";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
         long idOfTaskToDelete = 0;
@@ -289,7 +289,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindNoTaskToDelete_404() throws URISyntaxException {
+    public void shouldFindNoTaskToDelete() throws URISyntaxException {
         long unavailableTaskId = 446L;
         URI urlOfDelete = new URI(createURLWithPort("/task/" + unavailableTaskId));
         ResponseEntity<String> deletedResponse = this.testRestTemplate.exchange(
@@ -304,7 +304,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldNotAllowValueOtherThanNumberWhenDeleteTaskById_400() throws URISyntaxException {
+    public void shouldNotAllowValueOtherThanNumberWhenDeleteTaskById() throws URISyntaxException {
         String unsupportedCharacterId = "446L";
         URI urlOfDelete = new URI(createURLWithPort("/task/" + unsupportedCharacterId));
         ResponseEntity<String> deletedResponse = this.testRestTemplate.exchange(
@@ -319,7 +319,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFilterTasksByTitle_200() throws URISyntaxException {
+    public void shouldFilterTasksByTitle() throws URISyntaxException {
         String title = "Filter-by-title", noFilterTitle = "No-fil-ter-by-title";
         String description = "Description-of-task", noFilterDesc = "No-fil-ter-by-desc";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
@@ -338,7 +338,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldIgnoreCaseWhenFilteringTasksByTitle_200() throws URISyntaxException {
+    public void shouldIgnoreCaseWhenFilteringTasksByTitle() throws URISyntaxException {
         String title = "FiLTER-t-i-T-l-E-ignore-CASE", noFilterTitle = "No-fil-ter-by-title";
         String description = "Description-of-task ", noFilterDesc = "No-fil-ter-by-desc";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
@@ -357,7 +357,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFilterTasksByDescription_200() throws URISyntaxException {
+    public void shouldFilterTasksByDescription() throws URISyntaxException {
         String title = "Title-of-Task", noFilterTitle = "No-fil-ter-by-title";
         String description = "Filter-by-description", noFilterDesc = "No-fil-ter-by-desc";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
@@ -376,7 +376,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldIgnoreCaseWhenFilteringTasksByDescription_200() throws URISyntaxException {
+    public void shouldIgnoreCaseWhenFilteringTasksByDescription() throws URISyntaxException {
         String title = "Title-of-Task", noFilterTitle = "No-fil-ter-by-title";
         String description = "FiLTER-d-e-scriPTioN-ignore-CASE", noFilterDesc = "No-fil-ter-by-desc";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
@@ -395,7 +395,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindNoTaskWhenFilterByTitleOrDescription_200() throws URISyntaxException {
+    public void shouldFindNoTaskWhenFilterByTitleOrDescription() throws URISyntaxException {
         URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/titleordesc?keyword=Unavailable-title-or-description"));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
@@ -408,7 +408,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFilterByDueDate_200() throws URISyntaxException {
+    public void shouldFilterByDueDate() throws URISyntaxException {
         String title = "Filter-by-due-date-title", noFilterTitle = "No-filter-by-title";
         String description = "Filter-by-due-date-description", noFilterDesc = "No-filter-by-description";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = dueDate.plusMinutes(5);
@@ -430,7 +430,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindNoTaskToFilterByDueDate_200() throws URISyntaxException {
+    public void shouldFindNoTaskToFilterByDueDate() throws URISyntaxException {
         LocalDateTime dueDate = LocalDateTime.now().plusSeconds(1);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate=" + dueDate.plusMinutes(4).format(formatter)));
@@ -446,7 +446,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldNotAllowIncorrectDateFormatWhenFilterByDueDate_400() throws URISyntaxException {
+    public void shouldNotAllowIncorrectDateFormatWhenFilterByDueDate() throws URISyntaxException {
         URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate=2090-05-05"));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
@@ -460,7 +460,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldNotAllowEmptyDueDateWhenFilterByDueDate_400() throws URISyntaxException {
+    public void shouldNotAllowEmptyDueDateWhenFilterByDueDate() throws URISyntaxException {
         URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate="));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
