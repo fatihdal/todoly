@@ -212,13 +212,13 @@ public class TodolyTest {
         String title = "Get-by-id-task-title", description = "Get-by-id-task-description";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
-        ResponseEntity<String> createdTaskResponse = createTask(title, description, dueDate
+        String createdTaskResponse = createTask(title, description, dueDate
                 , null, null, null);
 
         long idOfTaskToGet = 0;
         //REGEX
-        String taskIdPattern = "(/task/)(\\d*)";
-        idOfTaskToGet = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse.toString()));
+        String taskIdPattern = "(\\{\"id\":)(\\d*)";
+        idOfTaskToGet = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse));
 
         URI urlOfGetById = new URI(createURLWithPort("/task/" + idOfTaskToGet + ""));
         ResponseEntity<String> responseEntity =
@@ -269,20 +269,20 @@ public class TodolyTest {
         String title = "Delete-by-id-task-title", description = "Delete-by-id-task-description";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
         long idOfTaskToDelete = 0;
-        ResponseEntity<String> createdTaskResponse = createTask(title, description, dueDate,
+        String createdTaskResponse = createTask(title, description, dueDate,
                 null, null, null);
 
         //REGEX
-        String taskIdPattern = "(/task/)(\\d*)";
-        idOfTaskToDelete = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse.toString()));
+        String taskIdPattern = "(\\{\"id\":)(\\d*)";
+        idOfTaskToDelete = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse));
 
         URI urlOfDelete = new URI(createURLWithPort("/task/" + idOfTaskToDelete + ""));
         ResponseEntity<String> deletedResponse = this.testRestTemplate.exchange(
                 urlOfDelete, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
         logger.warn(createdTaskResponse.toString());
 
-        String actual = createdTaskResponse.getBody();
-        String expected = "/todoly/task/" + idOfTaskToDelete;
+        String actual = createdTaskResponse;
+        String expected = "{\"id\":" + idOfTaskToDelete + "}";
 
         assertThat(actual, is(containsString(expected)));
         assertThat(deletedResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
@@ -473,10 +473,10 @@ public class TodolyTest {
         assertThat(actual, is(containsString(expected)));
     }
 
-    public ResponseEntity<String> createTask(String title1, String description1, LocalDateTime dueDate1,
-                                             String title2, String description2, LocalDateTime dueDate2) throws URISyntaxException {
+    public String createTask(String title1, String description1, LocalDateTime dueDate1,
+                             String title2, String description2, LocalDateTime dueDate2) throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        ResponseEntity<String> responseEntity = null;
+        String responseEntity = null;
         if (title2 == null && description2 == null && dueDate2 == null) {
             for (int i = 1; i <= 3; i++) {
                 HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
@@ -485,7 +485,7 @@ public class TodolyTest {
                 );
                 ResponseEntity<String> res = this.testRestTemplate.postForEntity(taskCreateUrl, request, String.class);
                 if (i == 2) {
-                    responseEntity = res;
+                    responseEntity = res.getBody();
                 }
             }
             return responseEntity;
@@ -503,7 +503,7 @@ public class TodolyTest {
                 ResponseEntity<String> res = this.testRestTemplate.postForEntity(taskCreateUrl, request1, String.class);
                 this.testRestTemplate.postForEntity(taskCreateUrl, request2, String.class);
                 if (i == 2) {
-                    responseEntity = res;
+                    responseEntity = res.getBody();
                 }
             }
         }

@@ -1,5 +1,6 @@
 package dal.fatih.todoly;
 
+import dal.fatih.todoly.dto.CreateTaskResponse;
 import dal.fatih.todoly.dto.TaskDTO;
 import dal.fatih.todoly.exception.RecordNotFoundException;
 import dal.fatih.todoly.service.TaskService;
@@ -8,10 +9,8 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -25,13 +24,11 @@ public class TaskController {
     private TaskService taskService;
 
     @RequestMapping(method = RequestMethod.POST, value = "/task")
-    public ResponseEntity<URI> create(@Valid @RequestBody TaskDTO taskDTO) {
-        taskService.createTask(taskDTO);
-        Long id = taskDTO.getId();
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest().path("/{id}")
-                .buildAndExpand(id).toUri();
-        return new ResponseEntity<URI>(location, HttpStatus.CREATED);
+    public ResponseEntity<CreateTaskResponse> create(
+            @Valid @RequestBody TaskDTO taskDTO) {
+
+        return new ResponseEntity<CreateTaskResponse>(new CreateTaskResponse(taskService.
+                createTask(taskDTO).getId()), HttpStatus.CREATED);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/tasks")
