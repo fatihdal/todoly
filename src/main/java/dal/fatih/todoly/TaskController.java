@@ -14,7 +14,6 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 
 @RestController
 @RequestMapping("/todoly")
@@ -71,7 +70,7 @@ public class TaskController {
 
     @RequestMapping(method = RequestMethod.GET, value = "tasks/titleordesc")
     public ResponseEntity<List<TaskDTO>> filterByTitleOrDescription(@RequestParam("keyword") String keyword) {
-        List<TaskDTO> tasks = taskService.filterByTitleOrDescription(keyword.toLowerCase(Locale.ROOT));
+        List<TaskDTO> tasks = taskService.filterByTitleOrDescription(keyword);
 
         return ResponseEntity.ok().body(tasks);
     }

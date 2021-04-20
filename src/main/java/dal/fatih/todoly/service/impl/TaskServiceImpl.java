@@ -15,6 +15,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @Transactional
@@ -86,7 +87,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<TaskDTO> filterByTitleOrDescription(String keyword) {
         final ModelMapper modelMapper = new ModelMapper();
-        List<Task> allTasks = taskRepository.filterByTitleOrDescription(keyword);
+        List<Task> allTasks = taskRepository.filterByTitleOrDescription(keyword.toLowerCase(Locale.ENGLISH));
         List<TaskDTO> taskDTOs = new ArrayList<>();
         allTasks.forEach(task -> {
             taskDTOs.add(modelMapper.map(task, TaskDTO.class));
