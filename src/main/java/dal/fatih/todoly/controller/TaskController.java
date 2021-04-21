@@ -22,12 +22,16 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
+    @Autowired
+    private CreateTaskResponse createTaskResponse;
+
     @RequestMapping(method = RequestMethod.POST, value = "/task")
     public ResponseEntity<CreateTaskResponse> create(
             @Valid @RequestBody TaskDTO taskDTO) {
 
-        return new ResponseEntity<CreateTaskResponse>(new CreateTaskResponse(taskService.
-                createTask(taskDTO).getId()), HttpStatus.CREATED);
+        createTaskResponse.setId(taskService.createTask(taskDTO).getId());
+
+        return new ResponseEntity<CreateTaskResponse>(createTaskResponse, HttpStatus.CREATED);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/tasks")
