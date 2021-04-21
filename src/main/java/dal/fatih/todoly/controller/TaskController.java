@@ -53,7 +53,7 @@ public class TaskController {
     public ResponseEntity<?> deleteTask(@PathVariable("id") Long id) {
         try {
             taskService.delete(id);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("Deleted task with id : "+id);
         } catch (EmptyResultDataAccessException ex) {
             throw new RecordNotFoundException("id = " + id);
         } catch (Exception ex) {
