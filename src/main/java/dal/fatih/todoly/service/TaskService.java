@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface TaskService {
 
-    Task createTask(TaskDTO taskDTO);
+    Task create(TaskDTO taskDTO);
 
     List<TaskDTO> listAllTasks();
 
