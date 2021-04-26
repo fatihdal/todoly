@@ -11,7 +11,7 @@ public interface TaskService {
 
     Task create(TaskDTO taskDTO);
 
-    List<TaskDTO> listAllTasks();
+    List<TaskDTO> listAll();
 
     TaskDTO get(Long id) throws RecordNotFoundException;
 

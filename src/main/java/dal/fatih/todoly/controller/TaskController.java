@@ -36,7 +36,7 @@ public class TaskController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/tasks")
     public ResponseEntity<List<TaskDTO>> getAllTasks() {
-        List<TaskDTO> tasks = taskService.listAllTasks();
+        List<TaskDTO> tasks = taskService.listAll();
         return ResponseEntity.ok(tasks);
     }
 
