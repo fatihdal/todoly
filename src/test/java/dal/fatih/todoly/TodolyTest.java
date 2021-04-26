@@ -33,8 +33,6 @@ import static org.hamcrest.Matchers.*;
         , properties = "spring.profiles.active=test")
 public class TodolyTest {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @LocalServerPort
     private int randomServerPort;
 
@@ -54,7 +52,6 @@ public class TodolyTest {
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
                 .postForEntity(taskCreateUrl, request, String.class);
-        logger.warn(responseEntity.getBody());
 
         String response = responseEntity.getBody();
         assert response != null;
@@ -77,7 +74,6 @@ public class TodolyTest {
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
                 .postForEntity(taskCreateUrl, request, String.class);
-        logger.warn(responseEntity.getBody());
 
         String response = responseEntity.getBody();
         assert response != null;
@@ -104,7 +100,6 @@ public class TodolyTest {
 
         String actual = responseEntity.getBody();
         String expected = "Title must not be empty";
-        logger.warn(responseEntity.getBody());
 
         assertThat(taskRepository.list().size(), is(equalTo(0)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
@@ -125,7 +120,6 @@ public class TodolyTest {
 
         String actual = responseEntity.getBody();
         String expected = "Title length must be between 5 and 120";
-        logger.warn(responseEntity.getBody());
 
         assertThat(taskRepository.list().size(), is(equalTo(0)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
@@ -146,7 +140,6 @@ public class TodolyTest {
 
         String actual = responseEntity.getBody();
         String expected = "Due Date must not be empty";
-        logger.warn(responseEntity.getBody());
 
         assertThat(taskRepository.list().size(), is(equalTo(0)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
@@ -167,7 +160,6 @@ public class TodolyTest {
 
         String actual = responseEntity.getBody();
         String expected = "Due date must be a future date";
-        logger.warn(responseEntity.getBody());
 
         assertThat(taskRepository.list().size(), is(equalTo(0)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
@@ -188,7 +180,6 @@ public class TodolyTest {
 
         String actual = responseEntity.getBody();
         String expected = "Due date must be a future date";
-        logger.warn(responseEntity.getBody());
 
         assertThat(taskRepository.list().size(), is(equalTo(0)));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
@@ -207,7 +198,6 @@ public class TodolyTest {
         URI urlOfGetAll = new URI(createURLWithPort("/tasks"));
         ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfGetAll, String.class);
-        logger.warn(responseEntity.getBody());
 
         String actual = responseEntity.getBody();
         String expected = "[{\"id\":1,\"title\":\"Listed-title-of-task1\"" +
@@ -227,7 +217,6 @@ public class TodolyTest {
         URI urlOfGetAll = new URI(createURLWithPort("/tasks"));
         ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfGetAll, String.class);
-        logger.warn(responseEntity.getBody());
 
         String actual = responseEntity.getBody();
         String expected = "[]";
@@ -253,7 +242,6 @@ public class TodolyTest {
         URI urlOfGetById = new URI(createURLWithPort("/task/" + idOfTaskToGet + ""));
         ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfGetById, String.class);
-        logger.warn(responseEntity.getBody());
 
         String actual = responseEntity.getBody();
         String expected = "{\"id\":" + idOfTaskToGet + ",\"title\":\"Get-by-id-task-title2\"" +
@@ -270,7 +258,6 @@ public class TodolyTest {
         URI urlOfGetById = new URI(createURLWithPort("/task/" + unavailableTaskId + ""));
         ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfGetById, String.class);
-        logger.warn(responseEntity.getBody());
 
         String actual = responseEntity.getBody();
         String expected = "Task not found with id = " + unavailableTaskId;
@@ -285,7 +272,6 @@ public class TodolyTest {
         URI urlOfGetById = new URI(createURLWithPort("/task/" + unsupportedCharacterId));
         ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfGetById, String.class);
-        logger.warn(responseEntity.getBody());
 
         String actual = responseEntity.getBody();
         String expected = "Failed to convert value of type of id";
@@ -309,7 +295,6 @@ public class TodolyTest {
         URI urlOfDelete = new URI(createURLWithPort("/task/" + idOfTaskToDelete + ""));
         ResponseEntity<String> deletedResponse = this.testRestTemplate.exchange(
                 urlOfDelete, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
-        logger.warn(createdTaskResponse.toString());
 
         String actual = createdTaskResponse;
         String expected = "{\"id\":" + idOfTaskToDelete + "}";
@@ -327,7 +312,6 @@ public class TodolyTest {
 
         String actual = deletedResponse.getBody();
         String expected = "Task not found with id = " + unavailableTaskId;
-        logger.warn(expected);
 
         assertThat(deletedResponse.getStatusCode(), is(equalTo(HttpStatus.NOT_FOUND)));
         assertThat(actual, is(containsString(expected)));
@@ -342,7 +326,6 @@ public class TodolyTest {
 
         String actual = deletedResponse.getBody();
         String expected = "Failed to convert value of type of id";
-        logger.warn(expected);
 
         assertThat(deletedResponse.getStatusCode(), is(equalTo(HttpStatus.BAD_REQUEST)));
         assertThat(actual, is(containsString(expected)));
@@ -360,7 +343,6 @@ public class TodolyTest {
                 this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
 
         String actual = filterResponse.getBody();
-        logger.warn(filterResponse.getBody());
 
         assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
         assertThat(actual, is(containsString("Filter-by-title")));
@@ -379,7 +361,6 @@ public class TodolyTest {
                 this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
 
         String actual = filterResponse.getBody();
-        logger.warn(filterResponse.getBody());
 
         assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
         assertThat(actual, is(containsString(title)));
@@ -398,7 +379,6 @@ public class TodolyTest {
                 this.testRestTemplate.getForEntity(urlOfFilterByDesc, String.class);
 
         String actual = filterResponse.getBody();
-        logger.warn(filterResponse.getBody());
 
         assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
         assertThat(actual, is(containsString("Filter-by-description")));
@@ -417,7 +397,6 @@ public class TodolyTest {
                 this.testRestTemplate.getForEntity(urlOfFilterByDesc, String.class);
 
         String actual = filterResponse.getBody();
-        logger.warn(filterResponse.getBody());
 
         assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
         assertThat(actual, is(containsString(description)));
@@ -445,14 +424,12 @@ public class TodolyTest {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
         createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
-        logger.warn(dueDate.format(formatter));
 
         URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate=" + dueDate.plusMinutes(4).format(formatter)));
         ResponseEntity<String> filterResponse =
                 this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
 
         String actual = filterResponse.getBody();
-        logger.warn(filterResponse.getBody());
 
         assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
         assertThat(actual, is(containsString(description)));
@@ -469,7 +446,6 @@ public class TodolyTest {
 
         String actual = filterResponse.getBody();
         String expected = "[]";
-        logger.warn(filterResponse.getBody());
 
         assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
         assertThat(expected, is(equalTo(actual)));
@@ -483,7 +459,6 @@ public class TodolyTest {
 
         String actual = filterResponse.getBody();
         String expected = "Check date format";
-        logger.warn(filterResponse.getBody());
 
         assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.BAD_REQUEST)));
         assertThat(actual, is(containsString(expected)));
@@ -497,7 +472,6 @@ public class TodolyTest {
 
         String actual = filterResponse.getBody();
         String expected = "Check date format";
-        logger.warn(filterResponse.getBody());
 
         assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.BAD_REQUEST)));
         assertThat(actual, is(containsString(expected)));
