@@ -29,7 +29,7 @@ public class TaskController {
     public ResponseEntity<CreateTaskResponse> create(
             @Valid @RequestBody TaskDTO taskDTO) {
 
-        createTaskResponse.setId(taskService.createTask(taskDTO).getId());
+        createTaskResponse.setId(taskService.create(taskDTO).getId());
 
         return new ResponseEntity<CreateTaskResponse>(createTaskResponse, HttpStatus.CREATED);
     }
