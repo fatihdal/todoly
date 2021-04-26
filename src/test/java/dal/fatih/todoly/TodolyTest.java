@@ -1,9 +1,12 @@
 package dal.fatih.todoly;
 
 import dal.fatih.todoly.dto.TaskDTO;
+import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.repo.TaskRepository;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -29,7 +32,10 @@ import static org.hamcrest.Matchers.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
         , properties = "spring.profiles.active=test")
+@FixMethodOrder(MethodSorters.JVM)
 public class TodolyTest {
+
+    private final DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     @LocalServerPort
     private int randomServerPort;
@@ -43,44 +49,52 @@ public class TodolyTest {
     @Test
     public void shouldCreateTask() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
-                new TaskDTO("Created-title-of-task", "Created-description-of-task"
-                        , LocalDateTime.now().plusDays(10))
-        );
+        LocalDateTime dueDate = LocalDateTime.parse(LocalDateTime.now().plusDays(10).format(dateTimeFormat));
+        TaskDTO taskDto = new TaskDTO("Created-title-of-task", "Created-description-of-task"
+                , dueDate);
+
+        HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(taskDto);
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
                 .postForEntity(taskCreateUrl, request, String.class);
 
         String response = responseEntity.getBody();
-        assertThat(response, is(notNullValue()));
-        long createdTaskId = Long.parseLong(response.substring(6, response.length() - 1));
 
-        String actual = taskRepository.get(createdTaskId).getTitle();
-        String expected = "Created-title-of-task";
+        //REGEX
+        String taskIdPattern = "(\\{\"id\":)(\\d*)";
+        long createdTaskId = Long.parseLong(generateRegex(taskIdPattern, response));
 
-        assertThat(actual, is(equalTo(expected)));
+        Task actual = taskRepository.get(createdTaskId);
+
+        assertThat(actual, is(notNullValue()));
+        assertThat(actual.getTitle(), equalTo(taskDto.getTitle()));
+        assertThat(actual.getDescription(), equalTo(taskDto.getDescription()));
+        assertThat(actual.getDueDate(), equalTo(taskDto.getDueDate()));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.CREATED));
     }
 
     @Test
     public void shouldAllowEmptyDescription() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
-                new TaskDTO("Title of task with empty description", null
-                        , LocalDateTime.now().plusDays(10))
-        );
+        LocalDateTime dueDate = LocalDateTime.parse(LocalDateTime.now().plusDays(10).format(dateTimeFormat));
+        TaskDTO taskDto = new TaskDTO("Title of task with empty description", null
+                , dueDate);
+        HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(taskDto);
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
                 .postForEntity(taskCreateUrl, request, String.class);
 
         String response = responseEntity.getBody();
-        assertThat(response, is(notNullValue()));
-        long createdTaskId = Long.parseLong(response.substring(6, response.length() - 1));
+        //REGEX
+        String taskIdPattern = "(\\{\"id\":)(\\d*)";
+        long createdTaskId = Long.parseLong(generateRegex(taskIdPattern, response));
 
-        String actual = taskRepository.get(createdTaskId).getTitle();
-        String expected = "Title of task with empty description";
+        Task actual = taskRepository.get(createdTaskId);
 
-        assertThat(actual, is(equalTo(expected)));
+        assertThat(actual, is(notNullValue()));
+        assertThat(actual.getTitle(), equalTo(taskDto.getTitle()));
+        assertThat(actual.getDescription(), equalTo(taskDto.getDescription()));
+        assertThat(actual.getDueDate(), equalTo(taskDto.getDueDate()));
         assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.CREATED));
     }
 
@@ -228,14 +242,12 @@ public class TodolyTest {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
         String title = "Get-by-id-task-title", description = "Get-by-id-task-description";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-
         String createdTaskResponse = createTask(title, description, dueDate
                 , null, null, null);
 
-        long idOfTaskToGet = 0;
         //REGEX
         String taskIdPattern = "(\\{\"id\":)(\\d*)";
-        idOfTaskToGet = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse));
+        long idOfTaskToGet = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse));
 
         URI urlOfGetById = new URI(createURLWithPort("/task/" + idOfTaskToGet + ""));
         ResponseEntity<String> responseEntity =
@@ -282,22 +294,20 @@ public class TodolyTest {
     public void shouldDeleteTaskById() throws URISyntaxException {
         String title = "Delete-by-id-task-title", description = "Delete-by-id-task-description";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
-        long idOfTaskToDelete = 0;
         String createdTaskResponse = createTask(title, description, dueDate,
                 null, null, null);
 
         //REGEX
         String taskIdPattern = "(\\{\"id\":)(\\d*)";
-        idOfTaskToDelete = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse));
+        long idOfTaskToDelete = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse));
 
         URI urlOfDelete = new URI(createURLWithPort("/task/" + idOfTaskToDelete + ""));
         ResponseEntity<String> deletedResponse = this.testRestTemplate.exchange(
                 urlOfDelete, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
 
-        String actual = createdTaskResponse;
         String expected = "{\"id\":" + idOfTaskToDelete + "}";
 
-        assertThat(actual, is(containsString(expected)));
+        assertThat(createdTaskResponse, is(containsString(expected)));
         assertThat(deletedResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
     }
 

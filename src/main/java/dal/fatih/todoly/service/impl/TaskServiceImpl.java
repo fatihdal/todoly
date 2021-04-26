@@ -8,7 +8,6 @@ import dal.fatih.todoly.service.TaskService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -23,8 +22,11 @@ public class TaskServiceImpl implements TaskService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
+
+    public TaskServiceImpl(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
+    }
 
     @Override
     public Task create(TaskDTO taskDTO) {
@@ -35,7 +37,8 @@ public class TaskServiceImpl implements TaskService {
 
         final Task taskDb = taskRepository.create(task);
         taskDTO.setId(taskDb.getId());
-        logger.info("\'" + taskDTO.toString() + "\'" + " is created");
+
+        logger.info("'" + taskDTO + "' is created");
 
         return taskDb;
     }
@@ -45,9 +48,8 @@ public class TaskServiceImpl implements TaskService {
         final ModelMapper modelMapper = new ModelMapper();
         List<Task> allTasks = taskRepository.list();
         List<TaskDTO> taskDTOs = new ArrayList<>();
-        allTasks.forEach(task -> {
-            taskDTOs.add(modelMapper.map(task, TaskDTO.class));
-        });
+        allTasks.forEach(task -> taskDTOs.add(modelMapper.map(task, TaskDTO.class)));
+
         logger.info("All tasks are listed");
 
         return taskDTOs;
@@ -61,7 +63,8 @@ public class TaskServiceImpl implements TaskService {
         taskDTO.setTitle(foundTask.getTitle());
         taskDTO.setDescription(foundTask.getDescription());
         taskDTO.setDueDate(foundTask.getDueDate());
-        logger.info("Fetched task : " + "\'" + taskDTO.toString() + "\'");
+
+        logger.info("Fetched task : '" + taskDTO + "'");
 
         return taskDTO;
     }
@@ -69,7 +72,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void delete(Long id) {
 
-        logger.info("\'" + taskRepository.delete(id) + "\'" + " is deleted");
+        logger.info("Deleted task : '" + taskRepository.delete(id) + "'");
     }
 
     @Override
@@ -77,11 +80,9 @@ public class TaskServiceImpl implements TaskService {
         final ModelMapper modelMapper = new ModelMapper();
         List<Task> filteredTasks = taskRepository.filterByDueDate(dueDate);
         List<TaskDTO> taskDTOs = new ArrayList<>();
-        filteredTasks.forEach(task -> {
-            taskDTOs.add(modelMapper.map(task, TaskDTO.class));
-        });
+        filteredTasks.forEach(task -> taskDTOs.add(modelMapper.map(task, TaskDTO.class)));
 
-        logger.info("Tasks that are filtered by due date : " + filteredTasks.size());
+        logger.info("Tasks that are filtered by due date : '" + filteredTasks.size() + "'");
 
         return taskDTOs;
     }
@@ -91,10 +92,9 @@ public class TaskServiceImpl implements TaskService {
         final ModelMapper modelMapper = new ModelMapper();
         List<Task> filteredTasks = taskRepository.filterByTitleOrDescription(keyword.toLowerCase(Locale.ENGLISH));
         List<TaskDTO> taskDTOs = new ArrayList<>();
-        filteredTasks.forEach(task -> {
-            taskDTOs.add(modelMapper.map(task, TaskDTO.class));
-        });
-        logger.info("Tasks that are filtered by title or descriptions : " + filteredTasks.size());
+        filteredTasks.forEach(task -> taskDTOs.add(modelMapper.map(task, TaskDTO.class)));
+
+        logger.info("Tasks that are filtered by title or descriptions : '" + filteredTasks.size() + "'");
 
         return taskDTOs;
     }
