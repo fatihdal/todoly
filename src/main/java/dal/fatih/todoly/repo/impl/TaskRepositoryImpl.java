@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Repository
-public class JpaTaskRepositoryImpl implements TaskRepository {
+public class TaskRepositoryImpl implements TaskRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
