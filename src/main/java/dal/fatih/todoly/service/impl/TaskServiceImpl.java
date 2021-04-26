@@ -41,7 +41,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskDTO> listAllTasks() {
+    public List<TaskDTO> listAll() {
         final ModelMapper modelMapper = new ModelMapper();
         List<Task> allTasks = taskRepository.list();
         List<TaskDTO> taskDTOs = new ArrayList<>();
