@@ -35,7 +35,7 @@ public class TaskServiceImpl implements TaskService {
 
         final Task taskDb = taskRepository.create(task);
         taskDTO.setId(taskDb.getId());
-        logger.info(taskDTO.toString());
+        logger.info("\'" + taskDTO.toString() + "\'" + " is created");
 
         return taskDb;
     }
@@ -47,8 +47,8 @@ public class TaskServiceImpl implements TaskService {
         List<TaskDTO> taskDTOs = new ArrayList<>();
         allTasks.forEach(task -> {
             taskDTOs.add(modelMapper.map(task, TaskDTO.class));
-            logger.info(task.toString());
         });
+        logger.info("All tasks are listed");
 
         return taskDTOs;
     }
@@ -61,7 +61,7 @@ public class TaskServiceImpl implements TaskService {
         taskDTO.setTitle(foundTask.getTitle());
         taskDTO.setDescription(foundTask.getDescription());
         taskDTO.setDueDate(foundTask.getDueDate());
-        logger.info(taskDTO.toString());
+        logger.info("Fetched task : " + "\'" + taskDTO.toString() + "\'");
 
         return taskDTO;
     }
@@ -69,30 +69,33 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void delete(Long id) {
 
-        logger.info("Deleted task : " + taskRepository.delete(id));
+        logger.info("\'" + taskRepository.delete(id) + "\'" + " is deleted");
     }
 
     @Override
     public List<TaskDTO> filterByDueDate(LocalDateTime dueDate) {
         final ModelMapper modelMapper = new ModelMapper();
-        List<Task> allTasks = taskRepository.filterByDueDate(dueDate);
+        List<Task> filteredTasks = taskRepository.filterByDueDate(dueDate);
         List<TaskDTO> taskDTOs = new ArrayList<>();
-        allTasks.forEach(task -> {
+        filteredTasks.forEach(task -> {
             taskDTOs.add(modelMapper.map(task, TaskDTO.class));
-            logger.info(task.toString());
         });
+
+        logger.info("Tasks that are filtered by due date : " + filteredTasks.size());
+
         return taskDTOs;
     }
 
     @Override
     public List<TaskDTO> filterByTitleOrDescription(String keyword) {
         final ModelMapper modelMapper = new ModelMapper();
-        List<Task> allTasks = taskRepository.filterByTitleOrDescription(keyword.toLowerCase(Locale.ENGLISH));
+        List<Task> filteredTasks = taskRepository.filterByTitleOrDescription(keyword.toLowerCase(Locale.ENGLISH));
         List<TaskDTO> taskDTOs = new ArrayList<>();
-        allTasks.forEach(task -> {
+        filteredTasks.forEach(task -> {
             taskDTOs.add(modelMapper.map(task, TaskDTO.class));
-            logger.info(task.toString());
         });
+        logger.info("Tasks that are filtered by title or descriptions : " + filteredTasks.size());
+
         return taskDTOs;
     }
 }
