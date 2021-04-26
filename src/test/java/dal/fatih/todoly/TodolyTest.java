@@ -4,8 +4,6 @@ import dal.fatih.todoly.dto.TaskDTO;
 import dal.fatih.todoly.repo.TaskRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -54,7 +52,7 @@ public class TodolyTest {
                 .postForEntity(taskCreateUrl, request, String.class);
 
         String response = responseEntity.getBody();
-        assert response != null;
+        assertThat(response, is(notNullValue()));
         long createdTaskId = Long.parseLong(response.substring(6, response.length() - 1));
 
         String actual = taskRepository.get(createdTaskId).getTitle();
@@ -76,7 +74,7 @@ public class TodolyTest {
                 .postForEntity(taskCreateUrl, request, String.class);
 
         String response = responseEntity.getBody();
-        assert response != null;
+        assertThat(response, is(notNullValue()));
         long createdTaskId = Long.parseLong(response.substring(6, response.length() - 1));
 
         String actual = taskRepository.get(createdTaskId).getTitle();
