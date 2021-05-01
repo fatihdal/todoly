@@ -267,8 +267,8 @@ public class TodolyTest {
 
         Map<String, String> expected = new HashMap<>();
         expected.put("id", String.valueOf(idOfTaskToGet));
-        expected.put("title", title + idOfTaskToGet);
-        expected.put("description", description + idOfTaskToGet);
+        expected.put("title", title + "2");
+        expected.put("description", description + "2");
         expected.put("dueDate", dueDate.format(formatter));
 
         assertThat(responseEntity.getStatusCode(), is(equalTo(HttpStatus.OK)));
