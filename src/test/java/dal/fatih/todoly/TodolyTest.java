@@ -27,8 +27,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -108,7 +106,7 @@ public class TodolyTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowEmptyTitle() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
+        HttpEntity<TaskDTO> request = new HttpEntity<>(
                 new TaskDTO(null, "Description-of-task"
                         , LocalDateTime.now().plusDays(10))
         );
@@ -128,7 +126,7 @@ public class TodolyTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowTitleLessThan5Characters() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
+        HttpEntity<TaskDTO> request = new HttpEntity<>(
                 new TaskDTO("Titl", "Description-of-task"
                         , LocalDateTime.now().plusDays(10))
         );
@@ -148,7 +146,7 @@ public class TodolyTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowEmptyDueDate() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
+        HttpEntity<TaskDTO> request = new HttpEntity<>(
                 new TaskDTO("Title-of-task", "Description-of-task"
                         , null)
         );
@@ -168,7 +166,7 @@ public class TodolyTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowDueDateOlderThanNow() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
+        HttpEntity<TaskDTO> request = new HttpEntity<>(
                 new TaskDTO("Title-of-task", "Description-of-task"
                         , LocalDateTime.now().plusMinutes(-1))
         );
@@ -188,7 +186,7 @@ public class TodolyTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowDueDateToBeEqualToNow() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
+        HttpEntity<TaskDTO> request = new HttpEntity<>(
                 new TaskDTO("Title-of-task", "Description-of-task"
                         , LocalDateTime.now())
         );
@@ -244,18 +242,19 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldGetTaskById() throws URISyntaxException {
+    public void shouldGetTaskById() throws URISyntaxException, JsonProcessingException {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
         String title = "Get-by-id-task-title", description = "Get-by-id-task-description";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         String createdTaskResponse = createTask(title, description, dueDate
                 , null, null, null);
 
-        //REGEX
-        String taskIdPattern = "(\\{\"id\":)(\\d*)";
-        long idOfTaskToGet = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse));
+        Map<String, Long> createResponseMap = jsonMapper.readValue(createdTaskResponse, new TypeReference<Map<String, Long>>() {
+        });
+        long idOfTaskToGet = createResponseMap.get("id");
 
-        URI urlOfGetById = new URI(createURLWithPort("/task/" + idOfTaskToGet + ""));
+        URI urlOfGetById = new URI(createURLWithPort("/task/" + idOfTaskToGet));
+
         ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfGetById, String.class);
 
@@ -297,15 +296,15 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldDeleteTaskById() throws URISyntaxException {
+    public void shouldDeleteTaskById() throws URISyntaxException, JsonProcessingException {
         String title = "Delete-by-id-task-title", description = "Delete-by-id-task-description";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
         String createdTaskResponse = createTask(title, description, dueDate,
                 null, null, null);
 
-        //REGEX
-        String taskIdPattern = "(\\{\"id\":)(\\d*)";
-        long idOfTaskToDelete = Long.parseLong(generateRegex(taskIdPattern, createdTaskResponse));
+        Map<String, Long> map = jsonMapper.readValue(createdTaskResponse, new TypeReference<Map<String, Long>>() {
+        });
+        long idOfTaskToDelete = map.get("id");
 
         URI urlOfDelete = new URI(createURLWithPort("/task/" + idOfTaskToDelete + ""));
         ResponseEntity<String> deletedResponse = this.testRestTemplate.exchange(
@@ -526,13 +525,6 @@ public class TodolyTest {
             }
         }
         return responseEntity;
-    }
-
-    private String generateRegex(String inputPattern, String inputArgument) {
-        Pattern regex = Pattern.compile(inputPattern);
-        Matcher matcher = regex.matcher(inputArgument);
-        assertThat(matcher.find(), is(true));
-        return matcher.group(2);
     }
 
     private String createURLWithPort(String uri) {
