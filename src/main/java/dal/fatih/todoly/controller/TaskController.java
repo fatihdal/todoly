@@ -26,8 +26,7 @@ public class TaskController {
     private CreateTaskResponse createTaskResponse;
 
     @RequestMapping(method = RequestMethod.POST, value = "/task")
-    public ResponseEntity<CreateTaskResponse> create(
-            @Valid @RequestBody TaskDTO taskDTO) {
+    public ResponseEntity<CreateTaskResponse> create(@Valid @RequestBody TaskDTO taskDTO) {
 
         createTaskResponse.setId(taskService.create(taskDTO).getId());
 
