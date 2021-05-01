@@ -1,5 +1,8 @@
 package dal.fatih.todoly;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dal.fatih.todoly.dto.TaskDTO;
 import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.repo.TaskRepository;
@@ -23,6 +26,7 @@ import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +40,7 @@ import static org.hamcrest.Matchers.*;
 public class TodolyTest {
 
     private final DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    private final ObjectMapper jsonMapper = new ObjectMapper();
 
     @LocalServerPort
     private int randomServerPort;
@@ -47,22 +52,22 @@ public class TodolyTest {
     private TaskRepository taskRepository;
 
     @Test
-    public void shouldCreateTask() throws URISyntaxException {
+    public void shouldCreateTask() throws URISyntaxException, JsonProcessingException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         LocalDateTime dueDate = LocalDateTime.parse(LocalDateTime.now().plusDays(10).format(dateTimeFormat));
         TaskDTO taskDto = new TaskDTO("Created-title-of-task", "Created-description-of-task"
                 , dueDate);
 
-        HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(taskDto);
+        HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
                 .postForEntity(taskCreateUrl, request, String.class);
 
         String response = responseEntity.getBody();
 
-        //REGEX
-        String taskIdPattern = "(\\{\"id\":)(\\d*)";
-        long createdTaskId = Long.parseLong(generateRegex(taskIdPattern, response));
+        Map<String, Long> map = jsonMapper.readValue(response, new TypeReference<Map<String, Long>>() {
+        });
+        long createdTaskId = map.get("id");
 
         Task actual = taskRepository.get(createdTaskId);
 
@@ -74,20 +79,21 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldAllowEmptyDescription() throws URISyntaxException {
+    public void shouldAllowEmptyDescription() throws URISyntaxException, JsonProcessingException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         LocalDateTime dueDate = LocalDateTime.parse(LocalDateTime.now().plusDays(10).format(dateTimeFormat));
         TaskDTO taskDto = new TaskDTO("Title of task with empty description", null
                 , dueDate);
-        HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(taskDto);
+        HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
                 .postForEntity(taskCreateUrl, request, String.class);
 
         String response = responseEntity.getBody();
-        //REGEX
-        String taskIdPattern = "(\\{\"id\":)(\\d*)";
-        long createdTaskId = Long.parseLong(generateRegex(taskIdPattern, response));
+
+        Map<String, Long> map = jsonMapper.readValue(response, new TypeReference<Map<String, Long>>() {
+        });
+        long createdTaskId = map.get("id");
 
         Task actual = taskRepository.get(createdTaskId);
 
