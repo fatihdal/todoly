@@ -3,6 +3,7 @@ package dal.fatih.todoly;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import dal.fatih.todoly.dto.TaskDTO;
 import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.repo.TaskRepository;
@@ -25,8 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -38,7 +38,8 @@ import static org.hamcrest.Matchers.*;
 public class TodolyTest {
 
     private final DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-    private final ObjectMapper jsonMapper = new ObjectMapper();
+    private final ObjectMapper jsonMapper = new ObjectMapper().findAndRegisterModules()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @LocalServerPort
     private int randomServerPort;
@@ -229,16 +230,17 @@ public class TodolyTest {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-    public void shouldNotFindTaskToList() throws URISyntaxException {
+    public void shouldNotFindTaskToList() throws URISyntaxException, JsonProcessingException {
         URI urlOfGetAll = new URI(createURLWithPort("/tasks"));
         ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfGetAll, String.class);
 
-        String actual = responseEntity.getBody();
-        String expected = "[]";
+        String response = responseEntity.getBody();
+
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(response, TaskDTO[].class));
 
         assertThat(responseEntity.getStatusCode(), is(equalTo(HttpStatus.OK)));
-        assertThat(actual, is(containsString(expected)));
+        assertThat(actual, is(hasSize(0)));
     }
 
     @Test
@@ -258,10 +260,16 @@ public class TodolyTest {
         ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfGetById, String.class);
 
-        String actual = responseEntity.getBody();
-        String expected = "{\"id\":" + idOfTaskToGet + ",\"title\":\"Get-by-id-task-title2\"" +
-                ",\"description\":\"Get-by-id-task-description2\"" +
-                ",\"dueDate\":\"" + dueDate.format(formatter) + "\"}";
+        String response = responseEntity.getBody();
+
+        Map<String, String> actual = jsonMapper.readValue(response, new TypeReference<Map<String, String>>() {
+        });
+
+        Map<String, String> expected = new HashMap<>();
+        expected.put("id", String.valueOf(idOfTaskToGet));
+        expected.put("title", title + idOfTaskToGet);
+        expected.put("description", description + idOfTaskToGet);
+        expected.put("dueDate", dueDate.format(formatter));
 
         assertThat(responseEntity.getStatusCode(), is(equalTo(HttpStatus.OK)));
         assertThat(expected, is(equalTo(actual)));
@@ -496,7 +504,7 @@ public class TodolyTest {
         String responseEntity = null;
         if (title2 == null && description2 == null && dueDate2 == null) {
             for (int i = 1; i <= 3; i++) {
-                HttpEntity<TaskDTO> request = new HttpEntity<TaskDTO>(
+                HttpEntity<TaskDTO> request = new HttpEntity<>(
                         new TaskDTO(title1 + i, description1 + i
                                 , dueDate1)
                 );
@@ -508,11 +516,11 @@ public class TodolyTest {
             return responseEntity;
         } else {
             for (int i = 1; i <= 3; i++) {
-                HttpEntity<TaskDTO> request1 = new HttpEntity<TaskDTO>(
+                HttpEntity<TaskDTO> request1 = new HttpEntity<>(
                         new TaskDTO(title1 + i, description1 + i
                                 , dueDate1)
                 );
-                HttpEntity<TaskDTO> request2 = new HttpEntity<TaskDTO>(
+                HttpEntity<TaskDTO> request2 = new HttpEntity<>(
                         new TaskDTO(title2 + i, description2 + i
                                 , dueDate2)
                 );
