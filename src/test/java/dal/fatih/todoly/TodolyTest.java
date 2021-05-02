@@ -320,7 +320,7 @@ public class TodolyTest {
 
         String expected = "{\"id\":" + idOfTaskToDelete + "}";
 
-        assertThat(createdTaskResponse, is(containsString(expected)));
+        assertThat(createdTaskResponse, is(equalTo(expected)));
         assertThat(deletedResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
     }
 
@@ -425,16 +425,17 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindNoTaskWhenFilterByTitleOrDescription() throws URISyntaxException {
+    public void shouldFindNoTaskWhenFilterByTitleOrDescription() throws URISyntaxException, JsonProcessingException {
         URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/titleordesc?keyword=Unavailable-title-or-description"));
-        ResponseEntity<String> filterResponse =
+        ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
 
-        String actual = filterResponse.getBody();
-        String expected = "[]";
+        String response = responseEntity.getBody();
 
-        assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
-        assertThat(expected, is(equalTo(actual)));
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(response, TaskDTO[].class));
+
+        assertThat(responseEntity.getStatusCode(), is(equalTo(HttpStatus.OK)));
+        assertThat(actual, is(hasSize(0)));
     }
 
     @Test
@@ -458,18 +459,19 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldFindNoTaskToFilterByDueDate() throws URISyntaxException {
+    public void shouldFindNoTaskToFilterByDueDate() throws URISyntaxException, JsonProcessingException {
         LocalDateTime dueDate = LocalDateTime.now().plusSeconds(1);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate=" + dueDate.plusMinutes(4).format(formatter)));
-        ResponseEntity<String> filterResponse =
+        ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
 
-        String actual = filterResponse.getBody();
-        String expected = "[]";
+        String response = responseEntity.getBody();
 
-        assertThat(filterResponse.getStatusCode(), is(equalTo(HttpStatus.OK)));
-        assertThat(expected, is(equalTo(actual)));
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(response, TaskDTO[].class));
+
+        assertThat(responseEntity.getStatusCode(), is(equalTo(HttpStatus.OK)));
+        assertThat(actual, is(hasSize(0)));
     }
 
     @Test
