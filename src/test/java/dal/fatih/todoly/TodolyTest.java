@@ -7,10 +7,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import dal.fatih.todoly.dto.TaskDTO;
 import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.repo.TaskRepository;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -33,8 +31,8 @@ import static org.hamcrest.Matchers.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-        , properties = "spring.profiles.active=test")
-@FixMethodOrder(MethodSorters.JVM)
+        , properties = {"spring.profiles.active=test"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class TodolyTest {
 
     private final DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -54,8 +52,7 @@ public class TodolyTest {
     public void shouldCreateTask() throws URISyntaxException, JsonProcessingException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         LocalDateTime dueDate = LocalDateTime.parse(LocalDateTime.now().plusDays(10).format(dateTimeFormat));
-        TaskDTO taskDto = new TaskDTO("Created-title-of-task", "Created-description-of-task"
-                , dueDate);
+        TaskDTO taskDto = new TaskDTO("Created-title-of-task", "Created-description-of-task", dueDate);
 
         HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
 
@@ -64,9 +61,9 @@ public class TodolyTest {
 
         String response = responseEntity.getBody();
 
-        Map<String, Long> map = jsonMapper.readValue(response, new TypeReference<Map<String, Long>>() {
+        Map<String, Long> responseMap = jsonMapper.readValue(response, new TypeReference<Map<String, Long>>() {
         });
-        long createdTaskId = map.get("id");
+        long createdTaskId = responseMap.get("id");
 
         Task actual = taskRepository.get(createdTaskId);
 
@@ -81,8 +78,7 @@ public class TodolyTest {
     public void shouldAllowEmptyDescription() throws URISyntaxException, JsonProcessingException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         LocalDateTime dueDate = LocalDateTime.parse(LocalDateTime.now().plusDays(10).format(dateTimeFormat));
-        TaskDTO taskDto = new TaskDTO("Title of task with empty description", null
-                , dueDate);
+        TaskDTO taskDto = new TaskDTO("Title of task with empty description", null, dueDate);
         HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
@@ -90,9 +86,9 @@ public class TodolyTest {
 
         String response = responseEntity.getBody();
 
-        Map<String, Long> map = jsonMapper.readValue(response, new TypeReference<Map<String, Long>>() {
+        Map<String, Long> responseMap = jsonMapper.readValue(response, new TypeReference<Map<String, Long>>() {
         });
-        long createdTaskId = map.get("id");
+        long createdTaskId = responseMap.get("id");
 
         Task actual = taskRepository.get(createdTaskId);
 
@@ -104,11 +100,9 @@ public class TodolyTest {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowEmptyTitle() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        TaskDTO taskDto = new TaskDTO(null, "Description-of-task"
-                , LocalDateTime.now().plusDays(10));
+        TaskDTO taskDto = new TaskDTO(null, "Description-of-task", LocalDateTime.now().plusDays(10));
         HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
@@ -123,11 +117,9 @@ public class TodolyTest {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowTitleLessThan5Characters() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        TaskDTO taskDto = new TaskDTO("Titl", "Description-of-task"
-                , LocalDateTime.now().plusDays(10));
+        TaskDTO taskDto = new TaskDTO("Titl", "Description-of-task", LocalDateTime.now().plusDays(10));
         HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
@@ -142,11 +134,9 @@ public class TodolyTest {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowEmptyDueDate() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        TaskDTO taskDto = new TaskDTO("Title-of-task", "Description-of-task"
-                , null);
+        TaskDTO taskDto = new TaskDTO("Title-of-task", "Description-of-task", null);
         HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
@@ -161,11 +151,9 @@ public class TodolyTest {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowDueDateOlderThanNow() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        TaskDTO taskDto = new TaskDTO("Title-of-task", "Description-of-task"
-                , LocalDateTime.now().plusMinutes(-1));
+        TaskDTO taskDto = new TaskDTO("Title-of-task", "Description-of-task", LocalDateTime.now().plusMinutes(-1));
         HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
@@ -180,11 +168,9 @@ public class TodolyTest {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotAllowDueDateToBeEqualToNow() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        TaskDTO taskDto = new TaskDTO("Title-of-task", "Description-of-task"
-                , LocalDateTime.now());
+        TaskDTO taskDto = new TaskDTO("Title-of-task", "Description-of-task", LocalDateTime.now());
         HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
 
         ResponseEntity<String> responseEntity = this.testRestTemplate
@@ -199,7 +185,6 @@ public class TodolyTest {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldListAllTasks() throws URISyntaxException, JsonProcessingException {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
         String title = "Listed-title-of-task", description = "Listed-description-of-task";
@@ -231,7 +216,6 @@ public class TodolyTest {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldNotFindTaskToList() throws URISyntaxException, JsonProcessingException {
         URI urlOfGetAll = new URI(createURLWithPort("/tasks"));
         ResponseEntity<String> responseEntity =
@@ -314,9 +298,9 @@ public class TodolyTest {
         String createdTaskResponse = createTask(title, description, dueDate,
                 null, null, null);
 
-        Map<String, Long> map = jsonMapper.readValue(createdTaskResponse, new TypeReference<Map<String, Long>>() {
+        Map<String, Long> responseMap = jsonMapper.readValue(createdTaskResponse, new TypeReference<Map<String, Long>>() {
         });
-        long idOfTaskToDelete = map.get("id");
+        long idOfTaskToDelete = responseMap.get("id");
 
         URI urlOfDelete = new URI(createURLWithPort("/task/" + idOfTaskToDelete + ""));
         ResponseEntity<String> deletedResponse = this.testRestTemplate.exchange(
