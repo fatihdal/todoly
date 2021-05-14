@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import dal.fatih.todoly.dto.TaskDTO;
 import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.repo.TaskRepository;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -185,13 +186,15 @@ public class TodolyTest {
     }
 
     @Test
+   // @Ignore
     public void shouldListAllTasks() throws URISyntaxException, JsonProcessingException {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
         String title = "Listed-title-of-task", description = "Listed-description-of-task";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        //Created three tasks
-        createTask(title, description, dueDate, null, null, null);
 
+        for (int i = 1; i <= 3; i++) {
+            createTask(title + i, description + i, dueDate);
+        }
         URI urlOfGetAll = new URI(createURLWithPort("/tasks"));
         ResponseEntity<String> responseEntity =
                 this.testRestTemplate.getForEntity(urlOfGetAll, String.class);
@@ -234,9 +237,12 @@ public class TodolyTest {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
         String title = "Get-by-id-task-title", description = "Get-by-id-task-description";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        //Created three tasks
-        String createdTaskResponse = createTask(title, description, dueDate
-                , null, null, null);
+
+        String createdTaskResponse = "";
+        for (int i = 1; i <= 3; i++) {
+            createdTaskResponse = createTask(title + i, description + i, dueDate);
+        }
+
 
         Map<String, Long> createResponseMap = jsonMapper.readValue(createdTaskResponse, new TypeReference<Map<String, Long>>() {
         });
@@ -254,12 +260,12 @@ public class TodolyTest {
 
         Map<String, String> expected = new HashMap<>();
         expected.put("id", String.valueOf(idOfTaskToGet));
-        expected.put("title", title + "2");
-        expected.put("description", description + "2");
+        expected.put("title", title + "3");
+        expected.put("description", description + "3");
         expected.put("dueDate", dueDate.format(formatter));
 
         assertThat(responseEntity.getStatusCode(), is(equalTo(HttpStatus.OK)));
-        assertThat(expected, is(equalTo(actual)));
+        assertThat(actual, is(equalTo(expected)));
     }
 
     @Test
@@ -295,8 +301,10 @@ public class TodolyTest {
         String title = "Delete-by-id-task-title", description = "Delete-by-id-task-description";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
         //Created three tasks
-        String createdTaskResponse = createTask(title, description, dueDate,
-                null, null, null);
+        String createdTaskResponse = "";
+        for (int i = 1; i <= 3; i++) {
+            createdTaskResponse = createTask(title, description, dueDate);
+        }
 
         Map<String, Long> responseMap = jsonMapper.readValue(createdTaskResponse, new TypeReference<Map<String, Long>>() {
         });
@@ -346,7 +354,11 @@ public class TodolyTest {
         String description = "Description-of-task", noFilterDesc = "No-fil-ter-by-desc";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
         //Created six tasks
-        createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
+
+        for (int i = 1; i <= 3; i++) {
+            createTask(title, description, dueDate);
+            createTask(noFilterTitle, noFilterDesc, noFilterDueDate);
+        }
 
         URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/titleordesc?keyword=Filt"));
         ResponseEntity<String> filterResponse =
@@ -364,8 +376,11 @@ public class TodolyTest {
         String title = "FiLTER-t-i-T-l-E-ignore-CASE", noFilterTitle = "No-fil-ter-by-title";
         String description = "Description-of-task ", noFilterDesc = "No-fil-ter-by-desc";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
-        //Created six tasks
-        createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
+
+        for (int i = 1; i <= 3; i++) {
+            createTask(title, description, dueDate);
+            createTask(noFilterTitle, noFilterDesc, noFilterDueDate);
+        }
 
         URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/titleordesc?keyword=" + title.toLowerCase(Locale.ENGLISH)));
         ResponseEntity<String> filterResponse =
@@ -384,7 +399,10 @@ public class TodolyTest {
         String description = "Filter-by-description", noFilterDesc = "No-fil-ter-by-desc";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
         //Created six tasks
-        createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
+        for (int i = 1; i <= 3; i++) {
+            createTask(title, description, dueDate);
+            createTask(noFilterTitle, noFilterDesc, noFilterDueDate);
+        }
 
         URI urlOfFilterByDesc = new URI(createURLWithPort("/tasks/titleordesc?keyword=Filt"));
         ResponseEntity<String> filterResponse =
@@ -403,7 +421,10 @@ public class TodolyTest {
         String description = "FiLTER-d-e-scriPTioN-ignore-CASE", noFilterDesc = "No-fil-ter-by-desc";
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
         //Created six tasks
-        createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
+        for (int i = 1; i <= 3; i++) {
+            createTask(title, description, dueDate);
+            createTask(noFilterTitle, noFilterDesc, noFilterDueDate);
+        }
 
         URI urlOfFilterByDesc = new URI(createURLWithPort("/tasks/titleordesc?keyword=" + description.toLowerCase(Locale.ENGLISH)));
         ResponseEntity<String> filterResponse =
@@ -437,7 +458,10 @@ public class TodolyTest {
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = dueDate.plusMinutes(5);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         //Created six tasks
-        createTask(title, description, dueDate, noFilterTitle, noFilterDesc, noFilterDueDate);
+        for (int i = 1; i <= 3; i++) {
+            createTask(title, description, dueDate);
+            createTask(noFilterTitle, noFilterDesc, noFilterDueDate);
+        }
 
         URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate=" + dueDate.plusMinutes(4).format(formatter)));
         ResponseEntity<String> filterResponse =
@@ -492,41 +516,13 @@ public class TodolyTest {
         assertThat(actual, is(containsString(expected)));
     }
 
-    public String createTask(String title1, String description1, LocalDateTime dueDate1,
-                             String title2, String description2, LocalDateTime dueDate2) throws URISyntaxException {
+    public String createTask(String title, String description, LocalDateTime dueDate) throws URISyntaxException {
+        TaskDTO taskDto = new TaskDTO(title, description, dueDate);
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
-        String responseEntity = null;
-        if (title2 == null && description2 == null && dueDate2 == null) {
-            for (int i = 1; i <= 3; i++) {
-                HttpEntity<TaskDTO> request = new HttpEntity<>(
-                        new TaskDTO(title1 + i, description1 + i
-                                , dueDate1)
-                );
-                ResponseEntity<String> res = this.testRestTemplate.postForEntity(taskCreateUrl, request, String.class);
-                if (i == 2) {
-                    responseEntity = res.getBody();
-                }
-            }
-            return responseEntity;
-        } else {
-            for (int i = 1; i <= 3; i++) {
-                HttpEntity<TaskDTO> request1 = new HttpEntity<>(
-                        new TaskDTO(title1 + i, description1 + i
-                                , dueDate1)
-                );
-                HttpEntity<TaskDTO> request2 = new HttpEntity<>(
-                        new TaskDTO(title2 + i, description2 + i
-                                , dueDate2)
-                );
+        HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
+        ResponseEntity<String> responseEntity = this.testRestTemplate.postForEntity(taskCreateUrl, request, String.class);
 
-                ResponseEntity<String> res = this.testRestTemplate.postForEntity(taskCreateUrl, request1, String.class);
-                this.testRestTemplate.postForEntity(taskCreateUrl, request2, String.class);
-                if (i == 2) {
-                    responseEntity = res.getBody();
-                }
-            }
-        }
-        return responseEntity;
+        return responseEntity.getBody();
     }
 
     private String createURLWithPort(String uri) {
