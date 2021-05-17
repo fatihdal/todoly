@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import dal.fatih.todoly.dto.TaskDTO;
 import dal.fatih.todoly.model.Task;
 import dal.fatih.todoly.repo.TaskRepository;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,25 +53,21 @@ public class TodolyTest {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         LocalDateTime dueDate = LocalDateTime.parse(LocalDateTime.now().plusDays(10).format(dateTimeFormat));
         TaskDTO taskDto = new TaskDTO("Created-title-of-task", "Created-description-of-task", dueDate);
-
         HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
 
-        ResponseEntity<String> responseEntity = this.testRestTemplate
-                .postForEntity(taskCreateUrl, request, String.class);
+        ResponseEntity<TaskDTO> responseEntity = this.testRestTemplate
+                .postForEntity(taskCreateUrl, request, TaskDTO.class);
 
-        String response = responseEntity.getBody();
+        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.CREATED));
 
-        Map<String, Long> responseMap = jsonMapper.readValue(response, new TypeReference<Map<String, Long>>() {
-        });
-        long createdTaskId = responseMap.get("id");
-
+        Long createdTaskId = Objects.requireNonNull(responseEntity.getBody()).getId();
         Task actual = taskRepository.get(createdTaskId);
 
         assertThat(actual, is(notNullValue()));
-        assertThat(actual.getTitle(), equalTo(taskDto.getTitle()));
-        assertThat(actual.getDescription(), equalTo(taskDto.getDescription()));
+        assertThat(actual.getId(), is(1L));
+        assertThat(actual.getTitle(), is("Created-title-of-task"));
+        assertThat(actual.getDescription(), is("Created-description-of-task"));
         assertThat(actual.getDueDate(), equalTo(taskDto.getDueDate()));
-        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.CREATED));
     }
 
     @Test
@@ -82,22 +77,19 @@ public class TodolyTest {
         TaskDTO taskDto = new TaskDTO("Title of task with empty description", null, dueDate);
         HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
 
-        ResponseEntity<String> responseEntity = this.testRestTemplate
-                .postForEntity(taskCreateUrl, request, String.class);
+        ResponseEntity<TaskDTO> responseEntity = this.testRestTemplate
+                .postForEntity(taskCreateUrl, request, TaskDTO.class);
 
-        String response = responseEntity.getBody();
+        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.CREATED));
 
-        Map<String, Long> responseMap = jsonMapper.readValue(response, new TypeReference<Map<String, Long>>() {
-        });
-        long createdTaskId = responseMap.get("id");
-
+        Long createdTaskId = Objects.requireNonNull(responseEntity.getBody()).getId();
         Task actual = taskRepository.get(createdTaskId);
 
         assertThat(actual, is(notNullValue()));
-        assertThat(actual.getTitle(), equalTo(taskDto.getTitle()));
-        assertThat(actual.getDescription(), equalTo(taskDto.getDescription()));
+        assertThat(actual.getId(), is(1L));
+        assertThat(actual.getTitle(), is("Title of task with empty description"));
+        assertThat(actual.getDescription(), is(nullValue()));
         assertThat(actual.getDueDate(), equalTo(taskDto.getDueDate()));
-        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.CREATED));
     }
 
     @Test
@@ -109,11 +101,12 @@ public class TodolyTest {
         ResponseEntity<String> responseEntity = this.testRestTemplate
                 .postForEntity(taskCreateUrl, request, String.class);
 
+        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+
         String actual = responseEntity.getBody();
         String expected = "Title must not be empty";
 
-        assertThat(taskRepository.list().size(), is(equalTo(0)));
-        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+        assertThat(taskRepository.list(), hasSize(0));
         assertThat(actual, is(containsString(expected)));
     }
 
@@ -126,11 +119,12 @@ public class TodolyTest {
         ResponseEntity<String> responseEntity = this.testRestTemplate
                 .postForEntity(taskCreateUrl, request, String.class);
 
+        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+
         String actual = responseEntity.getBody();
         String expected = "Title length must be between 5 and 120";
 
-        assertThat(taskRepository.list().size(), is(equalTo(0)));
-        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+        assertThat(taskRepository.list(), hasSize(0));
         assertThat(actual, is(containsString(expected)));
     }
 
@@ -143,11 +137,12 @@ public class TodolyTest {
         ResponseEntity<String> responseEntity = this.testRestTemplate
                 .postForEntity(taskCreateUrl, request, String.class);
 
+        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+
         String actual = responseEntity.getBody();
         String expected = "Due Date must not be empty";
 
-        assertThat(taskRepository.list().size(), is(equalTo(0)));
-        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+        assertThat(taskRepository.list(), hasSize(0));
         assertThat(actual, is(containsString(expected)));
     }
 
@@ -160,11 +155,12 @@ public class TodolyTest {
         ResponseEntity<String> responseEntity = this.testRestTemplate
                 .postForEntity(taskCreateUrl, request, String.class);
 
+        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+
         String actual = responseEntity.getBody();
         String expected = "Due date must be a future date";
 
-        assertThat(taskRepository.list().size(), is(equalTo(0)));
-        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+        assertThat(taskRepository.list(), hasSize(0));
         assertThat(actual, is(containsString(expected)));
     }
 
@@ -177,11 +173,12 @@ public class TodolyTest {
         ResponseEntity<String> responseEntity = this.testRestTemplate
                 .postForEntity(taskCreateUrl, request, String.class);
 
+        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+
         String actual = responseEntity.getBody();
         String expected = "Due date must be a future date";
 
-        assertThat(taskRepository.list().size(), is(equalTo(0)));
-        assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+        assertThat(taskRepository.list(), hasSize(0));
         assertThat(actual, is(containsString(expected)));
     }
 
