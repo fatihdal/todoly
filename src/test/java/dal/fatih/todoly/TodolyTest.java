@@ -51,7 +51,7 @@ public class TodolyTest {
     private TaskRepository taskRepository;
 
     @Test
-    public void shouldCreateTask() throws URISyntaxException, JsonProcessingException {
+    public void shouldCreateTask() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         LocalDateTime dueDate = LocalDateTime.parse(LocalDateTime.now().plusDays(10).format(dateTimeFormat));
         TaskDTO taskDto = new TaskDTO("Created-title-of-task", "Created-description-of-task", dueDate);
@@ -74,7 +74,7 @@ public class TodolyTest {
     }
 
     @Test
-    public void shouldAllowEmptyDescription() throws URISyntaxException, JsonProcessingException {
+    public void shouldAllowEmptyDescription() throws URISyntaxException {
         URI taskCreateUrl = new URI(createURLWithPort("/task"));
         LocalDateTime dueDate = LocalDateTime.parse(LocalDateTime.now().plusDays(10).format(dateTimeFormat));
         TaskDTO taskDto = new TaskDTO("Title of task with empty description", null, dueDate);
