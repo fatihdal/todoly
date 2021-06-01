@@ -1,252 +1,577 @@
 package dal.fatih.todoly;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import dal.fatih.todoly.dto.TaskDTO;
+import dal.fatih.todoly.model.Task;
+import dal.fatih.todoly.repo.TaskRepository;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Locale;
+import java.util.Objects;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+        , properties = {"spring.profiles.active=test"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class TodolyTest {
 
-    private final Connection connection = new DBConnection().getConnection();
-    private ByteArrayOutputStream outContent;
+    private final DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    private final ObjectMapper jsonMapper = new ObjectMapper().findAndRegisterModules()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-    public TodolyTest() throws SQLException {
+    @LocalServerPort
+    private int randomServerPort;
+
+    @Autowired
+    private TestRestTemplate testRestTemplate;
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Test
+    public void shouldCreateTask() throws URISyntaxException {
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
+        LocalDateTime dueDate = LocalDateTime.parse(LocalDateTime.now().plusDays(10).format(dateTimeFormat));
+        TaskDTO taskDto = new TaskDTO("Created-title-of-task", "Created-description-of-task", dueDate);
+        HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
+
+        ResponseEntity<TaskDTO> createTaskResponse = this.testRestTemplate
+                .postForEntity(taskCreateUrl, request, TaskDTO.class);
+
+        assertThat(createTaskResponse.getStatusCode(), is(HttpStatus.CREATED));
+
+        Long createdTaskId = Objects.requireNonNull(createTaskResponse.getBody()).getId();
+        Task actual = taskRepository.get(createdTaskId);
+
+        assertThat(actual, is(notNullValue()));
+        assertThat(
+                actual, is(
+                        new Task(1L, "Created-title-of-task", "Created-description-of-task", dueDate)
+                )
+        );
     }
 
-    @Before
-    public void setUp() {
-        outContent = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outContent));
+    @Test
+    public void shouldAllowEmptyDescription() throws URISyntaxException {
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
+        LocalDateTime dueDate = LocalDateTime.parse(LocalDateTime.now().plusDays(10).format(dateTimeFormat));
+        TaskDTO taskDto = new TaskDTO("Title of task with empty description", null, dueDate);
+        HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
+
+        ResponseEntity<TaskDTO> createTaskResponse = this.testRestTemplate
+                .postForEntity(taskCreateUrl, request, TaskDTO.class);
+
+        assertThat(createTaskResponse.getStatusCode(), is(HttpStatus.CREATED));
+
+        Long createdTaskId = Objects.requireNonNull(createTaskResponse.getBody()).getId();
+        Task actual = taskRepository.get(createdTaskId);
+
+        assertThat(actual, is(notNullValue()));
+        assertThat(
+                actual, is(
+                        new Task(1L, "Title of task with empty description", null, dueDate)
+                )
+        );
     }
 
-    @After
-    public void tearDown() {
-        try {
-            Statement statement = connection.createStatement();
-            statement.executeUpdate("TRUNCATE TABLE task");
-            connection.close();
-            statement.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    @Test
+    public void shouldNotAllowEmptyTitle() throws URISyntaxException {
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
+        TaskDTO taskDto = new TaskDTO(null, "Description-of-task", LocalDateTime.now().plusDays(10));
+        HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
+
+        ResponseEntity<String> createTaskResponse = this.testRestTemplate
+                .postForEntity(taskCreateUrl, request, String.class);
+
+        assertThat(createTaskResponse.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+
+        String actual = createTaskResponse.getBody();
+        String expected = "Title must not be empty";
+
+        assertThat(taskRepository.list(), is(hasSize(0)));
+        assertThat(actual, is(containsString(expected)));
+    }
+
+    @Test
+    public void shouldNotAllowTitleLessThan5Characters() throws URISyntaxException {
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
+        TaskDTO taskDto = new TaskDTO("Titl", "Description-of-task", LocalDateTime.now().plusDays(10));
+        HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
+
+        ResponseEntity<String> createTaskResponse = this.testRestTemplate
+                .postForEntity(taskCreateUrl, request, String.class);
+
+        assertThat(createTaskResponse.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+
+        String actual = createTaskResponse.getBody();
+        String expected = "Title length must be between 5 and 120";
+
+        assertThat(taskRepository.list(), is(hasSize(0)));
+        assertThat(actual, is(containsString(expected)));
+    }
+
+    @Test
+    public void shouldNotAllowEmptyDueDate() throws URISyntaxException {
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
+        TaskDTO taskDto = new TaskDTO("Title-of-task", "Description-of-task", null);
+        HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
+
+        ResponseEntity<String> createTaskResponse = this.testRestTemplate
+                .postForEntity(taskCreateUrl, request, String.class);
+
+        assertThat(createTaskResponse.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+
+        String actual = createTaskResponse.getBody();
+        String expected = "Due Date must not be empty";
+
+        assertThat(taskRepository.list(), is(hasSize(0)));
+        assertThat(actual, is(containsString(expected)));
+    }
+
+    @Test
+    public void shouldNotAllowDueDateOlderThanNow() throws URISyntaxException {
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
+        TaskDTO taskDto = new TaskDTO("Title-of-task", "Description-of-task", LocalDateTime.now().plusMinutes(-1));
+        HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
+
+        ResponseEntity<String> createTaskResponse = this.testRestTemplate
+                .postForEntity(taskCreateUrl, request, String.class);
+
+        assertThat(createTaskResponse.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+
+        String actual = createTaskResponse.getBody();
+        String expected = "Due date must be a future date";
+
+        assertThat(taskRepository.list(), is(hasSize(0)));
+        assertThat(actual, is(containsString(expected)));
+    }
+
+    @Test
+    public void shouldNotAllowDueDateToBeEqualToNow() throws URISyntaxException {
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
+        TaskDTO taskDto = new TaskDTO("Title-of-task", "Description-of-task", LocalDateTime.now());
+        HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
+
+        ResponseEntity<String> createTaskResponse = this.testRestTemplate
+                .postForEntity(taskCreateUrl, request, String.class);
+
+        assertThat(createTaskResponse.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+
+        String actual = createTaskResponse.getBody();
+        String expected = "Due date must be a future date";
+
+        assertThat(taskRepository.list(), is(hasSize(0)));
+        assertThat(actual, is(containsString(expected)));
+    }
+
+    @Test
+    public void shouldListAllTasks() throws URISyntaxException, JsonProcessingException {
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
+        String title = "Listed-title-of-task", description = "Listed-description-of-task";
+
+        createTask(title + 1, description + 1, dueDate);
+        createTask(title + 2, description + 2, dueDate);
+        createTask(title + 3, description + 3, dueDate);
+
+        URI urlOfGetAll = new URI(createURLWithPort("/tasks"));
+        ResponseEntity<String> listAllTaskResponse =
+                this.testRestTemplate.getForEntity(urlOfGetAll, String.class);
+
+        assertThat(listAllTaskResponse.getStatusCode(), is(HttpStatus.OK));
+
+        String response = listAllTaskResponse.getBody();
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(response, TaskDTO[].class));
+
+        assertThat(actual, is(hasSize(3)));
+        assertThat(actual, hasItem(
+                new TaskDTO(1L, title + 1, description + 1, dueDate)
+        ));
+        assertThat(actual, hasItem(
+                new TaskDTO(2L, title + 2, description + 2, dueDate)
+        ));
+        assertThat(actual, hasItem(
+                new TaskDTO(1L, title + 3, description + 3, dueDate)
+        ));
+    }
+
+    @Test
+    public void shouldNotFindTaskToList() throws URISyntaxException, JsonProcessingException {
+        URI urlOfGetAll = new URI(createURLWithPort("/tasks"));
+        ResponseEntity<String> listAllTaskResponse =
+                this.testRestTemplate.getForEntity(urlOfGetAll, String.class);
+
+        assertThat(listAllTaskResponse.getStatusCode(), is(HttpStatus.OK));
+
+        String response = listAllTaskResponse.getBody();
+
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(response, TaskDTO[].class));
+
+        assertThat(actual, is(hasSize(0)));
+    }
+
+    @Test
+    public void shouldGetTaskById() throws URISyntaxException, JsonProcessingException {
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
+        String title = "Get-by-id-task-title", description = "Get-by-id-task-description";
+
+        createTask(title + 1, description + 1, dueDate);
+        createTask(title + 2, description + 2, dueDate);
+        createTask(title + 3, description + 3, dueDate);
+
+        URI urlOfGetById = new URI(createURLWithPort("/task/" + 2L));
+
+        ResponseEntity<String> getByIdResponse =
+                this.testRestTemplate.getForEntity(urlOfGetById, String.class);
+
+        assertThat(getByIdResponse.getStatusCode(), is(HttpStatus.OK));
+
+        String response = getByIdResponse.getBody();
+
+        TaskDTO taskDto = jsonMapper.readValue(response, TaskDTO.class);
+
+        assertThat(
+                taskDto, is(
+                        new TaskDTO(2L, title + 2, description + 3, dueDate)
+                )
+        );
+    }
+
+    @Test
+    public void shouldNotFindTaskById() throws URISyntaxException {
+        URI urlOfGetById = new URI(createURLWithPort("/task/446"));
+        ResponseEntity<String> getByIdResponse =
+                this.testRestTemplate.getForEntity(urlOfGetById, String.class);
+
+        assertThat(getByIdResponse.getStatusCode(), is(HttpStatus.NOT_FOUND));
+
+        String actual = getByIdResponse.getBody();
+        String expected = "Task not found with id = 446";
+
+        assertThat(actual, is(containsString(expected)));
+    }
+
+    @Test
+    public void shouldNotAllowValueOtherThanNumberWhenGetTaskById() throws URISyntaxException {
+        URI urlOfGetById = new URI(createURLWithPort("/task/A446"));
+        ResponseEntity<String> getByIdResponse =
+                this.testRestTemplate.getForEntity(urlOfGetById, String.class);
+
+        assertThat(getByIdResponse.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+
+        String actual = getByIdResponse.getBody();
+        String expected = "Failed to convert value of type of id";
+
+        assertThat(taskRepository.list(), is(hasSize(0)));
+        assertThat(actual, is(containsString(expected)));
+    }
+
+    @Test
+    public void shouldDeleteTaskById() throws URISyntaxException {
+        String title = "Delete-by-id-task-title", description = "Delete-by-id-task-description";
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10);
+
+        createTask(title + 1, description + 1, dueDate);
+        createTask(title + 2, description + 2, dueDate);
+        createTask(title + 3, description + 3, dueDate);
+
+        URI urlOfDelete = new URI(createURLWithPort("/task/2"));
+        ResponseEntity<String> deleteResponse = this.testRestTemplate.exchange(
+                urlOfDelete, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
+
+        assertThat(deleteResponse.getStatusCode(), is(HttpStatus.OK));
+
+        List<Task> afterRemoveTask = taskRepository.list();
+
+        String expected = "Deleted task with id : 2";
+
+        assertThat(afterRemoveTask, is(hasSize(2)));
+        assertThat(deleteResponse.getBody(), is(expected));
+    }
+
+    @Test
+    public void shouldFindNoTaskToDelete() throws URISyntaxException {
+        URI urlOfDelete = new URI(createURLWithPort("/task/446"));
+        ResponseEntity<String> deleteResponse = this.testRestTemplate.exchange(
+                urlOfDelete, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
+
+        assertThat(deleteResponse.getStatusCode(), is(HttpStatus.NOT_FOUND));
+
+        String actual = deleteResponse.getBody();
+        String expected = "Task not found with id = 446";
+
+        assertThat(actual, is(containsString(expected)));
+    }
+
+    @Test
+    public void shouldNotAllowValueOtherThanNumberWhenDeleteTaskById() throws URISyntaxException {
+        URI urlOfDelete = new URI(createURLWithPort("/task/A446"));
+        ResponseEntity<String> deleteResponse = this.testRestTemplate.exchange(
+                urlOfDelete, HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
+
+        assertThat(deleteResponse.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+
+        String actual = deleteResponse.getBody();
+        String expected = "Failed to convert value of type of id";
+
+        assertThat(actual, is(containsString(expected)));
+    }
+
+    @Test
+    public void shouldFilterTasksByTitle() throws URISyntaxException, JsonProcessingException {
+        String title = "Filter-by-title", noFilterTitle = "No-fil-ter-by-title";
+        String description = "Description-of-task", noFilterDesc = "No-fil-ter-by-desc";
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
+
+        for (int i = 1; i <= 3; i++) {
+            createTask(title, description, dueDate);
+            createTask(noFilterTitle, noFilterDesc, noFilterDueDate);
         }
+
+        URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/titleordesc?keyword=Filt"));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
+
+        assertThat(filterResponse.getStatusCode(), is(HttpStatus.OK));
+
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(filterResponse.getBody(), TaskDTO[].class));
+
+        assertThat(actual, is(hasSize(3)));
+        assertThat(actual, hasItem(
+                new TaskDTO(1L, title, description, dueDate)
+        ));
+        assertThat(actual, hasItem(
+                new TaskDTO(3L, title, description, dueDate)
+        ));
+        assertThat(actual, is(not(
+                hasItem(
+                        new TaskDTO(4L, noFilterTitle, noFilterDesc, noFilterDueDate)
+                )
+        )));
     }
 
     @Test
-    public void shouldNotAllowWrongSelection() {
-        provideInput(Arrays.asList("10", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Invalid input"));
+    public void shouldIgnoreCaseWhenFilteringTasksByTitle() throws URISyntaxException, JsonProcessingException {
+        String title = "FiLTER-t-i-T-l-E-ignore-CASE", noFilterTitle = "No-fil-ter-by-title";
+        String description = "Description-of-task ", noFilterDesc = "No-fil-ter-by-desc";
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
+
+        for (int i = 1; i <= 3; i++) {
+            createTask(title, description, dueDate);
+            createTask(noFilterTitle, noFilterDesc, noFilterDueDate);
+        }
+
+        URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/titleordesc?keyword=" + title.toLowerCase(Locale.ENGLISH)));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
+
+        assertThat(filterResponse.getStatusCode(), is(HttpStatus.OK));
+
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(filterResponse.getBody(), TaskDTO[].class));
+
+        assertThat(actual, is(hasSize(3)));
+        assertThat(actual, hasItem(
+                new TaskDTO(1L, title, description, dueDate)
+        ));
+        assertThat(actual, hasItem(
+                new TaskDTO(3L, title, description, dueDate)
+        ));
+        assertThat(actual, is(not(
+                hasItem(
+                        new TaskDTO(4L, noFilterTitle, noFilterDesc, noFilterDueDate)
+                )
+        )));
     }
 
     @Test
-    public void shouldNotAllowEmptyTitle() {
-        provideInput(Arrays.asList("1", "", "description-of-task", "2030-05-05", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Fill required fields"));
+    public void shouldFilterTasksByDescription() throws URISyntaxException, JsonProcessingException {
+        String title = "Title-of-Task", noFilterTitle = "No-fil-ter-by-title";
+        String description = "Filter-by-description", noFilterDesc = "No-fil-ter-by-desc";
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
+
+        for (int i = 1; i <= 3; i++) {
+            createTask(title, description, dueDate);
+            createTask(noFilterTitle, noFilterDesc, noFilterDueDate);
+        }
+
+        URI urlOfFilterByDesc = new URI(createURLWithPort("/tasks/titleordesc?keyword=Filt"));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByDesc, String.class);
+
+        assertThat(filterResponse.getStatusCode(), is(HttpStatus.OK));
+
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(filterResponse.getBody(), TaskDTO[].class));
+
+        assertThat(actual, is(hasSize(3)));
+        assertThat(actual, hasItem(
+                new TaskDTO(1L, title, description, dueDate)
+        ));
+        assertThat(actual, hasItem(
+                new TaskDTO(3L, title, description, dueDate)
+        ));
+        assertThat(actual, is(not(
+                hasItem(
+                        new TaskDTO(4L, noFilterTitle, noFilterDesc, noFilterDueDate)
+                )
+        )));
     }
 
     @Test
-    public void shouldNotAllowIncorrectDate() {
-        provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "21102021", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
+    public void shouldIgnoreCaseWhenFilteringTasksByDescription() throws URISyntaxException, JsonProcessingException {
+        String title = "Title-of-Task", noFilterTitle = "No-fil-ter-by-title";
+        String description = "FiLTER-d-e-scriPTioN-ignore-CASE", noFilterDesc = "No-fil-ter-by-desc";
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = LocalDateTime.now().plusMonths(5);
+
+        for (int i = 1; i <= 3; i++) {
+            createTask(title, description, dueDate);
+            createTask(noFilterTitle, noFilterDesc, noFilterDueDate);
+        }
+
+        URI urlOfFilterByDesc = new URI(createURLWithPort("/tasks/titleordesc?keyword=" + description.toLowerCase(Locale.ENGLISH)));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByDesc, String.class);
+
+        assertThat(filterResponse.getStatusCode(), is(HttpStatus.OK));
+
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(filterResponse.getBody(), TaskDTO[].class));
+
+        assertThat(actual, is(hasSize(3)));
+        assertThat(actual, hasItem(
+                new TaskDTO(1L, title, description, dueDate)
+        ));
+        assertThat(actual, hasItem(
+                new TaskDTO(3L, title, description, dueDate)
+        ));
+        assertThat(actual, is(not(
+                hasItem(
+                        new TaskDTO(4L, noFilterTitle, noFilterDesc, noFilterDueDate)
+                )
+        )));
     }
 
     @Test
-    public void shouldNotAllowOldDateFromNow() {
-        provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "2020-05-05", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("The given date can not be older than now"));
+    public void shouldFindNoTaskWhenFilterByTitleOrDescription() throws URISyntaxException, JsonProcessingException {
+        URI urlOfFilterByTitle = new URI(createURLWithPort("/tasks/titleordesc?keyword=Unavailable-title-or-description"));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByTitle, String.class);
+
+        assertThat(filterResponse.getStatusCode(), is(HttpStatus.OK));
+
+        String response = filterResponse.getBody();
+
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(response, TaskDTO[].class));
+
+        assertThat(actual, is(hasSize(0)));
     }
 
     @Test
-    public void shouldNotAllowEmptyDueDate() {
-        provideInput(Arrays.asList("1", "title-of-task", "description-of-task", "", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
+    public void shouldFilterByDueDate() throws URISyntaxException, JsonProcessingException {
+        String title = "Filter-by-due-date-title", noFilterTitle = "No-filter-by-title";
+        String description = "Filter-by-due-date-description", noFilterDesc = "No-filter-by-description";
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(10), noFilterDueDate = dueDate.plusMinutes(5);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+        for (int i = 1; i <= 3; i++) {
+            createTask(title, description, dueDate);
+            createTask(noFilterTitle, noFilterDesc, noFilterDueDate);
+        }
+
+        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate=" + dueDate.plusMinutes(4).format(formatter)));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
+
+        assertThat(filterResponse.getStatusCode(), is(HttpStatus.OK));
+
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(filterResponse.getBody(), TaskDTO[].class));
+
+        assertThat(actual, is(hasSize(3)));
+        assertThat(actual, hasItem(
+                new TaskDTO(1L, title, description, dueDate)
+        ));
+        assertThat(actual, hasItem(
+                new TaskDTO(3L, title, description, dueDate)
+        ));
+        assertThat(actual, is(not(
+                hasItem(
+                        new TaskDTO(4L, noFilterTitle, noFilterDesc, noFilterDueDate)
+                )
+        )));
     }
 
     @Test
-    public void shouldAllowEmptyDescription() {
-        provideInput(Arrays.asList("1", "title-of-task", "", "2030-05-05", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Task added"));
+    public void shouldFindNoTaskToFilterByDueDate() throws URISyntaxException, JsonProcessingException {
+        LocalDateTime dueDate = LocalDateTime.now().plusSeconds(1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate=" + dueDate.plusMinutes(4).format(formatter)));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
+
+        assertThat(filterResponse.getStatusCode(), is(HttpStatus.OK));
+
+        String response = filterResponse.getBody();
+
+        List<TaskDTO> actual = Arrays.asList(jsonMapper.readValue(response, TaskDTO[].class));
+
+        assertThat(actual, is(hasSize(0)));
     }
 
     @Test
-    public void shouldListAllTasks() {
-        addTask("title-of-the-task-to-be-listed", "description-of-task", "2030-05-05");
-        addTask("title-of-the-task-to-be-listed-2", "description-of-task", "2030-05-05");
-        provideInput(Arrays.asList("2", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("title-of-the-task-to-be-listed"));
-        Assert.assertTrue(outContent.toString().contains("title-of-the-task-to-be-listed-2"));
+    public void shouldNotAllowIncorrectDateFormatWhenFilterByDueDate() throws URISyntaxException {
+        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate=2090-05-05"));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
+
+        String actual = filterResponse.getBody();
+        String expected = "Check date format";
+
+        assertThat(filterResponse.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(actual, is(containsString(expected)));
     }
 
     @Test
-    public void shouldFindNoTaskToShowDetails() {
-        provideInput(Arrays.asList("3", "46856845672662", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("No task found"));
+    public void shouldNotAllowEmptyDueDateWhenFilterByDueDate() throws URISyntaxException {
+        URI urlOfFilterByDueDate = new URI(createURLWithPort("/tasks/duedate?duedate="));
+        ResponseEntity<String> filterResponse =
+                this.testRestTemplate.getForEntity(urlOfFilterByDueDate, String.class);
+
+        String actual = filterResponse.getBody();
+        String expected = "Check date format";
+
+        assertThat(filterResponse.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(actual, is(containsString(expected)));
     }
 
-    @Test
-    public void shouldShowTaskDetails() {
-        String title = "title-of-the-task";
-        String description = "description-of-task";
-        addTask(title, description, "2030-05-05");
+    public String createTask(String title, String description, LocalDateTime dueDate) throws URISyntaxException {
+        TaskDTO taskDto = new TaskDTO(title, description, dueDate);
+        URI taskCreateUrl = new URI(createURLWithPort("/task"));
+        HttpEntity<TaskDTO> request = new HttpEntity<>(taskDto);
+        ResponseEntity<String> responseEntity = this.testRestTemplate.postForEntity(taskCreateUrl, request, String.class);
 
-        String taskIdPattern = "(.+)\\sTask\\sadded";
-        Pattern r = Pattern.compile(taskIdPattern, Pattern.MULTILINE);
-        Matcher m = r.matcher(outContent.toString());
-        Assert.assertTrue(m.find());
-        String taskId = m.group(1);
-        Assert.assertNotNull(taskId);
-
-        provideInput(Arrays.asList("3", taskId, "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains(taskId));
-        Assert.assertTrue(outContent.toString().contains(title));
-        Assert.assertTrue(outContent.toString().contains(description));
+        return responseEntity.getBody();
     }
 
-    @Test
-    public void shouldFindNoTaskToDelete() {
-        provideInput(Arrays.asList("4", "e195e078-3dfc-4cab-bdbe-6edc82ad646d", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("No task found"));
-    }
-
-    @Test
-    public void shouldNotAllowMoreThan36Chars() {
-        provideInput(Arrays.asList("4", "e195e078-3dfc-4cab-bdbe-6edc82ad646d34534346", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("PLease enter the task id only!"));
-    }
-
-    @Test
-    public void shouldNotAllowLessThan36Chars() {
-        provideInput(Arrays.asList("4", "e195e078-3", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("PLease enter the task id only!"));
-    }
-
-    @Test
-    public void shouldDeleteTask() {
-        String title = "title-of-the-task-to-be-deleted";
-        addTask(title, "description-of-task", "2030-05-05");
-
-        String taskIdPattern = "^(.+)\\sTask\\sadded";
-        Pattern r = Pattern.compile(taskIdPattern, Pattern.MULTILINE);
-        Matcher m = r.matcher(outContent.toString());
-        Assert.assertTrue(m.find());
-        String taskId = m.group(1);
-        Assert.assertNotNull(taskId);
-
-        provideInput(Arrays.asList("4", taskId, "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Task deleted"));
-    }
-
-    @Test
-    public void shouldShowFilteringTaskByNameAndDescriptionWithMenuIndex6() {
-        provideInput(Collections.singletonList("q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("6- Filter tasks by name and description"));
-    }
-
-    @Test
-    public void shouldFindNoTask() {
-        provideInput(Arrays.asList("6", "un-existing-task-name", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("No task found"));
-    }
-
-    @Test
-    public void shouldFindTasksByTitle() {
-        addTask("title-of-task", "description-of-task", "2030-05-05");
-        provideInput(Arrays.asList("6", "tle-of", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("title-of-task"));
-    }
-
-    @Test
-    public void shouldIgnoreCaseWhenFiltertingTasksByTitle() {
-        addTask("title-of-task", "description-of-task", "2030-05-05");
-        provideInput(Arrays.asList("6", "TLE-OF", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("title-of-task"));
-    }
-
-    @Test
-    public void shouldFindTasksByDescription() {
-        addTask("title-of-task", "description-of-task", "2030-05-05");
-        provideInput(Arrays.asList("6", "descr", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("description-of-task"));
-    }
-
-    @Test
-    public void shouldIgnoreCaseWhenFiltertingTasksByDescription() {
-        addTask("title-of-task", "description-of-task", "2030-05-05");
-        provideInput(Arrays.asList("6", "DESCR", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("description-of-task"));
-    }
-
-    @Test
-    public void shouldFilterByDate() {
-        addTask("title-of-the-task-to-be-filter", "description-of-task", "2026-05-05");
-        addTask("title-of-the-task-to-be-filter-2", "description-of-task", "2030-05-05");
-        provideInput(Arrays.asList("5", "2027-05-05", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("title-of-the-task-to-be-filter"));
-        Assert.assertTrue(outContent.toString().contains("2026-05-05"));
-        Assert.assertFalse(outContent.toString().contains("title-of-the-task-to-be-filter-2"));
-        Assert.assertFalse(outContent.toString().contains("2030-05-05"));
-    }
-
-    @Test
-    public void shouldFindNoTaskBetweenTwoDates() {
-        provideInput(Arrays.asList("5", "2023-05-05", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("No task found in this date range"));
-    }
-
-    @Test
-    public void shouldNotAllowIncorrectDateFormatWhenFilteringByDate() {
-        provideInput(Arrays.asList("5", "01/012022", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
-    }
-
-    @Test
-    public void shouldNotAllowEmptyDateWhenFilteringByDate() {
-        provideInput(Arrays.asList("5", "", "q"));
-        App.main(new String[]{});
-        Assert.assertTrue(outContent.toString().contains("Incorrect date format"));
-    }
-
-    private void provideInput(List<String> inputs) {
-        final ByteArrayInputStream in = new ByteArrayInputStream(String.join("\n", inputs).getBytes(StandardCharsets.UTF_8));
-        System.setIn(in);
-    }
-
-    private void addTask(String title, String description, String dueDate) {
-        provideInput(Arrays.asList("1", title, description, dueDate, "q"));
-        App.main(new String[]{});
+    private String createURLWithPort(String uri) {
+        return "http://localhost:" + randomServerPort + "/todoly" + uri;
     }
 }
