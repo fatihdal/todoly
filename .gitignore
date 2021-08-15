@@ -28,6 +28,7 @@ hs_err_pid*
 build
 # Ignore Gradle project-specific cache directory
 .gradle
+./bootstrap.sh
 /.settings/
 /.classpath
 /.project
