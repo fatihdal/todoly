@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - eu
+      - us
+  Stage:
+    Type: String
+    AllowedValues:
+      - production
+      - staging
+  Version:
+    Type: String
+Resources:
+  LoadBalancerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName:
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "sg"
+            - "lb"
+      GroupDescription: "Security group for the load balancer"
+      VpcId: "vpc-eb365996"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+  InstanceSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName:
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "sg"
+            - "i"
+            - "Ref": "Version"
+      GroupDescription: "Security group for the instances"
+      VpcId: "vpc-eb365996"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: ami-09e67e426f25ce0d7
+      SecurityGroups:
+        - Ref: "InstanceSG"
+      InstanceType: "t2.micro"
+      KeyName: "todoly_keypair"
+      UserData: !Base64 |
+        #!/bin/bash -ex
+        sudo snap install aws-cli --classic
+        sudo snap install docker
+        eval $(aws ecr get-login --region us-east-1 --no-include-email)
+        docker run --rm -d -p 8080:8080 --env JAVA_OPTS="-Xss256k" --name todoly-app 962253134326.dkr.ecr.us-east-1.amazonaws.com/todoly:0.0.1
