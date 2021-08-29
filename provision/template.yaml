@@ -106,19 +106,31 @@ Resources:
             - "lc"
             - "Ref": "Version"
       ImageId: ami-09e67e426f25ce0d7
+      IamInstanceProfile: "arn:aws:iam::962253134326:instance-profile/AmazonLinuxEC2ImageBuilderRole"
       SecurityGroups:
         - Ref: "InstanceSG"
       InstanceType: !Ref InstanceType
       KeyName: "todoly_keypair"
+      InstanceMonitoring: false
       UserData: !Base64 |
         #!/bin/bash -ex
+
+        sudo apt update
         sudo snap install aws-cli --classic
-        sudo snap install docker
+        sudo apt install docker.io -y
         eval $(aws ecr get-login --region us-east-1 --no-include-email)
         docker run --rm -d -p 8080:8080 --env JAVA_OPTS="-Xss256k" --name todoly-app 962253134326.dkr.ecr.us-east-1.amazonaws.com/todoly:0.0.1
+
   LoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
+      LoadBalancerName:
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "lb"
       Tags:
         - Key: "Name"
           Value:
@@ -142,17 +154,50 @@ Resources:
           InstanceProtocol: HTTP
           LoadBalancerPort: '80'
           Protocol: HTTP
-      LoadBalancerName:
-        "Fn::Join":
-          - "-"
-          - - "Ref": "Environment"
-            - "Ref": "Stage"
-            - "todoly"
-            - "lb"
       HealthCheck:
         Target: HTTP:8080/actuator/health
         HealthyThreshold: '10'
         UnhealthyThreshold: '2'
         Interval: '30'
         Timeout: '20'
-
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName:
+         "Fn::Join":
+           - "-"
+           - - "Ref": "Environment"
+             - "Ref": "Stage"
+             - "todoly"
+             - "Ref": "Version"
+      AvailabilityZones :
+        - "us-east-1a"
+        - "us-east-1b"
+        - "us-east-1c"
+      MinSize: "0"
+      MaxSize: "0"
+      DesiredCapacity: "0"
+      HealthCheckGracePeriod: 300
+      LaunchConfigurationName: !Ref LaunchConfiguration
+      LoadBalancerNames:
+        - !Ref LoadBalancer
+      VPCZoneIdentifier:
+        - "subnet-1682d170"
+        - "subnet-06085127"
+        - "subnet-a61cffea"
+      Tags:
+        - Key: "Environment"
+          Value: !Ref Environment
+          PropagateAtLaunch: true
+        - Key: "Name"
+          Value:
+            "Fn::Join":
+              - "-"
+              - - "Ref": "Environment"
+                - "Ref": "Stage"
+                - "todoly"
+                - "Ref": "Version"
+          PropagateAtLaunch: true
+        - Key: "Version"
+          Value: !Ref Version
+          PropagateAtLaunch: true
