@@ -13,6 +13,14 @@ Parameters:
       - staging
   Version:
     Type: String
+  InstanceType:
+    Description: Amazon EC2 instance type for the instances
+    Type: String
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+    Default: t2.micro
 Resources:
   LoadBalancerSG:
     Type: AWS::EC2::SecurityGroup
@@ -61,13 +69,46 @@ Resources:
       SecurityGroupEgress:
         - IpProtocol: -1
           CidrIp: 0.0.0.0/0
+  LaunchConfigurationSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName:
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "lc"
+            - "Ref": "Version"
+      GroupDescription: "Security group for the launch configuration"
+      VpcId: "vpc-eb365996"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
   LaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
+      LaunchConfigurationName:
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "lc"
+            - "Ref": "Version"
       ImageId: ami-09e67e426f25ce0d7
       SecurityGroups:
         - Ref: "InstanceSG"
-      InstanceType: "t2.micro"
+      InstanceType: !Ref InstanceType
       KeyName: "todoly_keypair"
       UserData: !Base64 |
         #!/bin/bash -ex
@@ -75,3 +116,43 @@ Resources:
         sudo snap install docker
         eval $(aws ecr get-login --region us-east-1 --no-include-email)
         docker run --rm -d -p 8080:8080 --env JAVA_OPTS="-Xss256k" --name todoly-app 962253134326.dkr.ecr.us-east-1.amazonaws.com/todoly:0.0.1
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value:
+            "Fn::Join":
+              - "-"
+              - - "Ref": "Environment"
+                - "Ref": "Stage"
+                - "todoly"
+      AvailabilityZones:
+        - "us-east-1a"
+        - "us-east-1b"
+        - "us-east-1c"
+        - "us-east-1d"
+        - "us-east-1e"
+        - "us-east-1f"
+      CrossZone: true
+      SecurityGroups:
+        - Ref: "LoadBalancerSG"
+      Listeners:
+        - InstancePort: '8080'
+          InstanceProtocol: HTTP
+          LoadBalancerPort: '80'
+          Protocol: HTTP
+      LoadBalancerName:
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "lb"
+      HealthCheck:
+        Target: HTTP:8080/actuator/health
+        HealthyThreshold: '10'
+        UnhealthyThreshold: '2'
+        Interval: '30'
+        Timeout: '20'
+
