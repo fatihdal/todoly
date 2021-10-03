@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '2.4.4'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
+    id 'pl.allegro.tech.build.axion-release' version '1.13.3'
 }
 
 application {
@@ -10,7 +11,7 @@ application {
 }
 
 group = 'dal.fatih.todoly'
-version = '0.0.1'
+project.version = scmVersion.version
 sourceCompatibility = '1.8'
 
 repositories {

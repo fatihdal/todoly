@@ -1,0 +1,206 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - eu
+      - us
+  Stage:
+    Type: String
+    AllowedValues:
+      - production
+      - staging
+  Version:
+    Type: String
+  InstanceType:
+    Description: Amazon EC2 instance type for the instances
+    Type: String
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+    Default: t2.micro
+Resources:
+  LoadBalancerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName:
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "sg"
+            - "lb"
+      GroupDescription: "Security group for the load balancer"
+      VpcId: "vpc-eb365996"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+  InstanceSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName:
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "sg"
+            - "i"
+            - "Ref": "Version"
+      GroupDescription: "Security group for the instances"
+      VpcId: "vpc-eb365996"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+  LaunchConfigurationSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName:
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "lc"
+            - "Ref": "Version"
+      GroupDescription: "Security group for the launch configuration"
+      VpcId: "vpc-eb365996"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      LaunchConfigurationName:
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "lc"
+            - "Ref": "Version"
+      ImageId: ami-09e67e426f25ce0d7
+      IamInstanceProfile: "arn:aws:iam::962253134326:instance-profile/AmazonLinuxEC2ImageBuilderRole"
+      SecurityGroups:
+        - Ref: "InstanceSG"
+      InstanceType: !Ref InstanceType
+      KeyName: "todoly_keypair"
+      InstanceMonitoring: false
+      UserData: !Base64 |
+        #!/bin/bash -ex
+
+        apt update
+        snap install aws-cli --classic
+        apt install docker.io -y
+        eval $(aws ecr get-login --region us-east-1 --no-include-email)
+        docker run --rm -d -p 8080:8080 --env JAVA_OPTS="-Xss256k" --name todoly-app 962253134326.dkr.ecr.us-east-1.amazonaws.com/todoly:0.0.1
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      LoadBalancerName:
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "lb"
+      Tags:
+        - Key: "Name"
+          Value:
+            "Fn::Join":
+              - "-"
+              - - "Ref": "Environment"
+                - "Ref": "Stage"
+                - "todoly"
+      AvailabilityZones:
+        - "us-east-1a"
+        - "us-east-1b"
+        - "us-east-1c"
+        - "us-east-1d"
+        - "us-east-1e"
+        - "us-east-1f"
+      CrossZone: true
+      SecurityGroups:
+        - Ref: "LoadBalancerSG"
+      Listeners:
+        - InstancePort: '8080'
+          InstanceProtocol: HTTP
+          LoadBalancerPort: '80'
+          Protocol: HTTP
+      HealthCheck:
+        Target: HTTP:8080/actuator/health
+        HealthyThreshold: '10'
+        UnhealthyThreshold: '2'
+        Interval: '30'
+        Timeout: '20'
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        WaitOnResourceSignals: "true"
+    Properties:
+      AutoScalingGroupName:
+         "Fn::Join":
+           - "-"
+           - - "Ref": "Environment"
+             - "Ref": "Stage"
+             - "todoly"
+             - "Ref": "Version"
+      AvailabilityZones :
+        - "us-east-1a"
+        - "us-east-1b"
+        - "us-east-1c"
+      MinSize: "1"
+      MaxSize: "1"
+      DesiredCapacity: "1"
+      HealthCheckGracePeriod: 300
+      LaunchConfigurationName: !Ref LaunchConfiguration
+      LoadBalancerNames:
+        - !Ref LoadBalancer
+      VPCZoneIdentifier:
+        - "subnet-1682d170"
+        - "subnet-06085127"
+        - "subnet-a61cffea"
+      Tags:
+        - Key: "Environment"
+          Value: !Ref Environment
+          PropagateAtLaunch: true
+        - Key: "Name"
+          Value:
+            "Fn::Join":
+              - "-"
+              - - "Ref": "Environment"
+                - "Ref": "Stage"
+                - "todoly"
+                - "Ref": "Version"
+          PropagateAtLaunch: true
+        - Key: "Version"
+          Value: !Ref Version
+          PropagateAtLaunch: true
