@@ -34,7 +34,7 @@ Resources:
             - "sg"
             - "lb"
       GroupDescription: "Security group for the load balancer"
-      VpcId: "vpc-eb365996"
+      VpcId: "vpc-0ef26331de105b625"
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -56,7 +56,7 @@ Resources:
             - "i"
             - "Ref": "Version"
       GroupDescription: "Security group for the instances"
-      VpcId: "vpc-eb365996"
+      VpcId: "vpc-0ef26331de105b625"
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
@@ -81,7 +81,7 @@ Resources:
             - "lc"
             - "Ref": "Version"
       GroupDescription: "Security group for the launch configuration"
-      VpcId: "vpc-eb365996"
+      VpcId: "vpc-0ef26331de105b625"
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
@@ -106,7 +106,7 @@ Resources:
             - "lc"
             - "Ref": "Version"
       ImageId: ami-09e67e426f25ce0d7
-      IamInstanceProfile: "arn:aws:iam::962253134326:instance-profile/AmazonLinuxEC2ImageBuilderRole"
+      IamInstanceProfile: "arn:aws:iam::196503861677:instance-profile/AmazonLinuxEC2ImageBuilderRole"
       SecurityGroups:
         - Ref: "InstanceSG"
       InstanceType: !Ref InstanceType
@@ -119,7 +119,7 @@ Resources:
         snap install aws-cli --classic
         apt install docker.io -y
         eval $(aws ecr get-login --region us-east-1 --no-include-email)
-        docker run --rm -d -p 8080:8080 --env JAVA_OPTS="-Xss256k" --name todoly-app 962253134326.dkr.ecr.us-east-1.amazonaws.com/todoly:0.0.1
+        docker run --rm -d -p 8080:8080 --env JAVA_OPTS="-Xss256k" --name todoly-app 196503861677.dkr.ecr.us-east-1.amazonaws.com/todoly:0.0.1
 
   LoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
@@ -167,27 +167,28 @@ Resources:
         WaitOnResourceSignals: "true"
     Properties:
       AutoScalingGroupName:
-         "Fn::Join":
-           - "-"
-           - - "Ref": "Environment"
-             - "Ref": "Stage"
-             - "todoly"
-             - "Ref": "Version"
+        "Fn::Join":
+          - "-"
+          - - "Ref": "Environment"
+            - "Ref": "Stage"
+            - "todoly"
+            - "Ref": "Version"
       AvailabilityZones :
         - "us-east-1a"
         - "us-east-1b"
         - "us-east-1c"
-      MinSize: "1"
-      MaxSize: "1"
-      DesiredCapacity: "1"
+      MinSize: "0"
+      MaxSize: "0"
+      DesiredCapacity: "0"
       HealthCheckGracePeriod: 300
       LaunchConfigurationName: !Ref LaunchConfiguration
       LoadBalancerNames:
         - !Ref LoadBalancer
       VPCZoneIdentifier:
-        - "subnet-1682d170"
-        - "subnet-06085127"
-        - "subnet-a61cffea"
+        -
+        - "subnet-08afe4f738bf59698"
+        - "subnet-023fd2f37e428f7a0"
+        - "subnet-078dc535bd3a5bd46"
       Tags:
         - Key: "Environment"
           Value: !Ref Environment

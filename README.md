@@ -11,9 +11,9 @@
 #### For production
 
 ```
-./gradlew bootBuildImage --imageName=962253134326.dkr.ecr.us-east-1.amazonaws.com/todoly:0.0.1
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 962253134326.dkr.ecr.us-east-1.amazonaws.com
-docker push 962253134326.dkr.ecr.us-east-1.amazonaws.com/todoly:0.0.1
+./gradlew bootBuildImage --imageName=196503861677.dkr.ecr.us-east-1.amazonaws.com/todoly:0.0.1
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 196503861677.dkr.ecr.us-east-1.amazonaws.com
+docker push 196503861677.dkr.ecr.us-east-1.amazonaws.com/todoly:0.0.1
 ```
 ### Run
 
