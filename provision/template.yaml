@@ -185,7 +185,6 @@ Resources:
       LoadBalancerNames:
         - !Ref LoadBalancer
       VPCZoneIdentifier:
-        -
         - "subnet-08afe4f738bf59698"
         - "subnet-023fd2f37e428f7a0"
         - "subnet-078dc535bd3a5bd46"
